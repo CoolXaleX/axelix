@@ -1,0 +1,58 @@
+.MainWrapper {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.Caption {
+    font-weight: 600;
+    color: var(--axelix-bold-grey);
+}
+
+.Chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--axelix-medium-grey);
+    background-color: var(--axelix-primary-white);
+    color: var(--axelix-bold-grey);
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    transition:
+        border-color 0.15s,
+        color 0.15s,
+        background-color 0.15s;
+}
+
+.ChipDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background-color: var(--dot-color);
+}
+
+/* TODO: Improve in future */
+.Blocking {
+    --dot-color: var(--problem-blocking);
+}
+
+.NPlusOne {
+    --dot-color: var(--problem-nplusone);
+}
+
+.Pagination {
+    --dot-color: var(--problem-pagination);
+}
+
+.ActiveChip {
+    color: var(--dot-color);
+    border-color: var(--dot-color);
+
+    /* TODO: Improve in future */
+    background-color: color-mix(in srgb, var(--dot-color) 10%, var(--axelix-primary-white));
+}

@@ -1,0 +1,94 @@
+.MainWrapper:not(:last-child) {
+    border-bottom: 1px solid var(--axelix-light-grey);
+}
+
+.Row {
+    display: grid;
+    grid-template-columns: var(--tx-columns);
+    gap: 16px;
+    align-items: center;
+    min-height: 65px;
+    padding: 20px;
+    cursor: pointer;
+}
+
+.Row:hover {
+    background-color: #f9f9f9;
+}
+
+.Transaction {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.Signature {
+    font-family: "Roboto Mono", SFMono-Regular, Consolas, monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.Origin {
+    color: var(--axelix-bold-grey);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.Access {
+    justify-self: start;
+    padding: 4px 8px;
+    border-radius: var(--axelix-border-radius-small);
+    background-color: var(--axelix-light-grey);
+
+    /* TODO: Fix in the future */
+    color: #475569;
+    font-weight: 600;
+    font-family: "Roboto Mono", SFMono-Regular, Consolas, monospace;
+    white-space: nowrap;
+}
+
+.Duration {
+    display: flex;
+    flex-direction: column;
+}
+
+.Avg {
+    font-family: "Roboto Mono", SFMono-Regular, Consolas, monospace;
+    font-weight: 600;
+}
+
+.Range {
+    color: var(--axelix-bold-grey);
+    font-family: "Roboto Mono", SFMono-Regular, Consolas, monospace;
+}
+
+.Problems {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    overflow: hidden;
+}
+
+.More {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background-color: var(--axelix-light-grey);
+    color: var(--axelix-bold-grey);
+    font-weight: 600;
+}
+
+.NoProblemsInline {
+    color: var(--axelix-primary-green);
+    font-weight: 600;
+}
+
+.Caret {
+    justify-self: center;
+    color: var(--axelix-bold-grey);
+}

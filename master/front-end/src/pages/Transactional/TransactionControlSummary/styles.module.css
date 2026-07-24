@@ -1,0 +1,38 @@
+.MainWrapper {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.Card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px;
+    border: 1px solid var(--axelix-medium-grey);
+    border-radius: var(--axelix-border-radius-large);
+    background-color: var(--axelix-primary-white);
+}
+
+.Card:nth-child(2) {
+    /* TODO: Improve in the future */
+    border-color: #fed7aa;
+    color: var(--problem-blocking);
+}
+
+.Card:nth-child(3) {
+    /* TODO: Improve in the future */
+    border-color: #bbf7d0;
+    color: var(--axelix-primary-green);
+}
+
+.Label {
+    text-transform: uppercase;
+    color: var(--axelix-bold-grey);
+}
+
+@media (width <=720px) {
+    .MainWrapper {
+        grid-template-columns: 1fr;
+    }
+}

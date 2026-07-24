@@ -17,28 +17,33 @@
  */
 import { useTranslation } from "react-i18next";
 
-import { toFormattedTimeWithMs } from "helpers";
-import type { IQueryData } from "models";
+import type { EProblemType } from "models";
+import { problemClassToken, problemLabelKey } from "utils";
 
 import styles from "./styles.module.css";
 
 interface IProps {
     /**
-     * The query executed during a particular transaction.
+     * The problem type to render.
      */
-    query: IQueryData;
+    type: EProblemType;
+
+    /**
+     * How many times the problem was observed. A suffix is appended when it is greater than one.
+     */
+    multiplicity?: number;
 }
 
-export const QueryPreview = ({ query }: IProps) => {
+export const ProblemChip = ({ type, multiplicity }: IProps) => {
     const { t } = useTranslation();
 
-    const { startTimestampMs, endTimestampMs } = query;
-    const durationMs = endTimestampMs - startTimestampMs;
-
     return (
-        <div className={styles.MainWrapper}>
-            <div>{t("Transactional.previewDuration", { durationMs })}</div>
-            <div>Timestamp : {toFormattedTimeWithMs(startTimestampMs)}</div>
-        </div>
+        <>
+            <span className={`${styles.Chip} ${styles[problemClassToken[type]]}`}>
+                <span className={styles.Dot} />
+                {t(problemLabelKey[type])}
+                {multiplicity && multiplicity > 1 ? ` ×${multiplicity}` : ""}
+            </span>
+        </>
     );
 };

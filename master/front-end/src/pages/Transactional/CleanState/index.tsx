@@ -15,36 +15,26 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-import { Copy } from "components";
-import type { ITransactionalEntryPoint } from "models";
+import { useTranslation } from "react-i18next";
 
 import styles from "./styles.module.css";
 
 interface IProps {
     /**
-     * Single transactional data
+     * The total number of analyzed transactions, all of which are clean.
      */
-    transactional: ITransactionalEntryPoint;
+    analyzed: number;
 }
 
-export const TransactionalAccordionHeader = ({ transactional }: IProps) => {
-    const { className, methodName } = transactional;
+export const CleanState = ({ analyzed }: IProps) => {
+    const { t } = useTranslation();
 
     return (
         <>
             <div className={styles.MainWrapper}>
-                <div className={styles.HeaderWrapper}>
-                    <div className={styles.LabelWrapper}>
-                        <span className={styles.Label}>Class:</span>
-                        <span>{className}</span>
-                        <Copy text={className} />
-                    </div>
-                    <div className={styles.LabelWrapper}>
-                        <span className={styles.Label}>Method:</span>
-                        <span>{methodName}</span>
-                        <Copy text={methodName} />
-                    </div>
-                </div>
+                <span className={styles.Check} />
+                <h2 className={`TextMedium ${styles.Title}`}>{t("Transactional.clean.title")}</h2>
+                <p className={styles.Description}>{t("Transactional.clean.description", { count: analyzed })}</p>
             </div>
         </>
     );
