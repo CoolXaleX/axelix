@@ -28,21 +28,22 @@ export const Footer = () => {
                     <div className={styles.BrandSide}>
                         <LogoIcon color="#fff" />
                         <p className={styles.Tag}>
-                            AI monitoring for Spring Boot in production.{" "}
-                            <em>Open-source, MCP-native, never your bottleneck.</em>
+                            Your quality guardian for Java deployments.{" "}
+                            <em>Open-source, AI-Native, never your bottleneck.</em>
                         </p>
                         <div className={styles.Socials}>
                             <a href="https://github.com/axelixlabs/axelix" target="_blank" rel="noopener noreferrer">
                                 <GithubIcon />
                             </a>
-                            <a href="#" target="_blank" rel="noopener noreferrer">
+                            <a href="https://x.com/axelixlabs" target="_blank" rel="noopener noreferrer">
                                 <XTwitterIcon />
                             </a>
-                            <a href="#" target="_blank" rel="noopener noreferrer">
+                            <a
+                                href="https://www.linkedin.com/company/axelix-labs"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
                                 <LinkedinIcon />
-                            </a>
-                            <a href="#" target="_blank" rel="noopener noreferrer">
-                                <DiscordIcon />
                             </a>
                             <a href="mailto:hello@axelix.io">
                                 <EmailIcon />
