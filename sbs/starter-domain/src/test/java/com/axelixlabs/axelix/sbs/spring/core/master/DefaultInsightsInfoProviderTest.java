@@ -31,6 +31,8 @@ import com.axelixlabs.axelix.common.domain.insights.FeatureId;
 import com.axelixlabs.axelix.common.domain.insights.TypeExternalCall;
 import com.axelixlabs.axelix.sbs.spring.core.gclog.GcLogService;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.DefaultInsightsInfoProvider;
+import com.axelixlabs.axelix.sbs.spring.core.master.insights.JpaEntitiesProfileProvider;
+import com.axelixlabs.axelix.sbs.spring.core.master.insights.NoOpJpaEntitiesProfileProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.VmOptionsAccessor;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.MethodClassKey;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.SimpleExternalCallRecord;
@@ -64,7 +66,8 @@ class DefaultInsightsInfoProviderTest {
                 gcLogDisabled(),
                 emptyVmOptions(),
                 emptyTransactionStatsCollector(),
-                emptyTransactionAttributesRegistry());
+                emptyTransactionAttributesRegistry(),
+                noOpJpaEntitiesProfileProvider());
 
         // when.
         Insights insights = subject.getInsight();
@@ -86,7 +89,8 @@ class DefaultInsightsInfoProviderTest {
                 gcLogDisabled(),
                 vmOptions("-XX:SharedArchiveFile=/path/to/archive.jsa", "-XX:AOTCache=/path/to/cache"),
                 emptyTransactionStatsCollector(),
-                emptyTransactionAttributesRegistry());
+                emptyTransactionAttributesRegistry(),
+                noOpJpaEntitiesProfileProvider());
 
         // when.
         Insights insights = subject.getInsight();
@@ -104,7 +108,8 @@ class DefaultInsightsInfoProviderTest {
                 gcLogDisabled(),
                 vmOptions("-Xmx256m", "-XX:SharedArchiveFile=/path/to/archive.jsa"),
                 emptyTransactionStatsCollector(),
-                emptyTransactionAttributesRegistry());
+                emptyTransactionAttributesRegistry(),
+                noOpJpaEntitiesProfileProvider());
 
         // when.
         Insights insights = subject.getInsight();
@@ -121,7 +126,8 @@ class DefaultInsightsInfoProviderTest {
                 gcLogEnabled(),
                 emptyVmOptions(),
                 emptyTransactionStatsCollector(),
-                emptyTransactionAttributesRegistry());
+                emptyTransactionAttributesRegistry(),
+                noOpJpaEntitiesProfileProvider());
 
         // when.
         Insights insights = subject.getInsight();
@@ -139,7 +145,8 @@ class DefaultInsightsInfoProviderTest {
                 gcLogDisabled(),
                 emptyVmOptions(),
                 emptyTransactionStatsCollector(),
-                emptyTransactionAttributesRegistry());
+                emptyTransactionAttributesRegistry(),
+                noOpJpaEntitiesProfileProvider());
 
         // when.
         Insights insights = subject.getInsight();
@@ -157,7 +164,8 @@ class DefaultInsightsInfoProviderTest {
                 gcLogDisabled(),
                 vmOptions("-XX:+UseCompactObjectHeaders"),
                 emptyTransactionStatsCollector(),
-                emptyTransactionAttributesRegistry());
+                emptyTransactionAttributesRegistry(),
+                noOpJpaEntitiesProfileProvider());
 
         // when.
         Insights insights = subject.getInsight();
@@ -174,7 +182,8 @@ class DefaultInsightsInfoProviderTest {
                 gcLogFileSpecified(),
                 emptyVmOptions(),
                 emptyTransactionStatsCollector(),
-                emptyTransactionAttributesRegistry());
+                emptyTransactionAttributesRegistry(),
+                noOpJpaEntitiesProfileProvider());
 
         // when.
         Insights insights = subject.getInsight();
@@ -191,7 +200,8 @@ class DefaultInsightsInfoProviderTest {
                 gcLogDisabled(),
                 emptyVmOptions(),
                 emptyTransactionStatsCollector(),
-                emptyTransactionAttributesRegistry());
+                emptyTransactionAttributesRegistry(),
+                noOpJpaEntitiesProfileProvider());
 
         // when.
         Insights insights = subject.getInsight();
@@ -212,7 +222,12 @@ class DefaultInsightsInfoProviderTest {
         collector.recordTransaction(key, profile);
 
         var subject = new DefaultInsightsInfoProvider(
-                osivDisabled(), gcLogDisabled(), emptyVmOptions(), collector, emptyTransactionAttributesRegistry());
+                osivDisabled(),
+                gcLogDisabled(),
+                emptyVmOptions(),
+                collector,
+                emptyTransactionAttributesRegistry(),
+                noOpJpaEntitiesProfileProvider());
 
         // when.
         Insights insights = subject.getInsight();
@@ -241,8 +256,13 @@ class DefaultInsightsInfoProviderTest {
         profile.complete();
         collector.recordTransaction(key, profile);
 
-        var subject =
-                new DefaultInsightsInfoProvider(osivDisabled(), gcLogDisabled(), emptyVmOptions(), collector, registry);
+        var subject = new DefaultInsightsInfoProvider(
+                osivDisabled(),
+                gcLogDisabled(),
+                emptyVmOptions(),
+                collector,
+                registry,
+                noOpJpaEntitiesProfileProvider());
 
         // when.
         Insights insights = subject.getInsight();
@@ -277,6 +297,10 @@ class DefaultInsightsInfoProviderTest {
 
     private static TransactionAttributesRegistry emptyTransactionAttributesRegistry() {
         return new TransactionAttributesRegistry();
+    }
+
+    private static JpaEntitiesProfileProvider noOpJpaEntitiesProfileProvider() {
+        return new NoOpJpaEntitiesProfileProvider();
     }
 
     private static VmOptionsAccessor emptyVmOptions() {

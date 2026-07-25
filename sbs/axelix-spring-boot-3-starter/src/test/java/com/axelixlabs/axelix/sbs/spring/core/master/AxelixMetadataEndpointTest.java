@@ -90,7 +90,8 @@ class AxelixMetadataEndpointTest extends AbstractMasterSharedContextTest {
                   { "featureId" : "OSIV", "enabled" : false }
                 ],
                 "persistenceInsights" : {
-                  "transactions" : [ ]
+                  "transactions" : [ ],
+                  "entitiesMap" : null
                 }
               }
             }

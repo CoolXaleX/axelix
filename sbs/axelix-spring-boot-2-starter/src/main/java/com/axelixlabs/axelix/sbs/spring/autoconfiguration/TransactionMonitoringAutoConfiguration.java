@@ -19,6 +19,7 @@ package com.axelixlabs.axelix.sbs.spring.autoconfiguration;
 
 import java.util.List;
 
+import javax.persistence.EntityManagerFactory;
 import javax.servlet.DispatcherType;
 
 import org.hibernate.jpa.boot.spi.IntegratorProvider;
@@ -39,10 +40,13 @@ import org.springframework.core.Ordered;
 import org.springframework.web.client.RestTemplate;
 
 import com.axelixlabs.axelix.sbs.spring.core.config.TransactionMonitoringConfigurationProperties;
+import com.axelixlabs.axelix.sbs.spring.core.master.insights.JpaEntitiesProfileProvider;
 import com.axelixlabs.axelix.sbs.spring.core.metrics.AxelixMetricsPublisher;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.ProxyingDataSourceBeanPostProcessor;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.TransactionMonitoringBeanPostProcessor;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.TranssactionStackCleanupFilter;
+import com.axelixlabs.axelix.sbs.spring.core.persistence.entities.DefaultJpaEntitiesProfileProvider;
+import com.axelixlabs.axelix.sbs.spring.core.persistence.entities.EntityMappingScanner;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.hibernate.ConditionalOnHibernateActive;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.hibernate.ConditionalOnLoggingSystem;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.hibernate.Log4j2InMemoryPaginationAppenderRegistrar;
@@ -67,7 +71,9 @@ import static org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl.IN
  * @author Ilya Naumov
  * @author Vyacheslav Yanin
  */
-@AutoConfiguration(after = {AxelixMetricsPublisherAutoConfiguration.class, ValidationListenerAutoConfiguration.class})
+@AutoConfiguration(
+        after = {AxelixMetricsPublisherAutoConfiguration.class, ValidationListenerAutoConfiguration.class},
+        afterName = "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration")
 @ConditionalOnProperty(
         prefix = TransactionMonitoringConfigurationProperties.CONFIG_PROPS_PREFIX,
         name = "enabled",
@@ -157,6 +163,12 @@ public class TransactionMonitoringAutoConfiguration {
                     properties.put(INTEGRATOR_PROVIDER, (IntegratorProvider) () -> List.of(new NPlusOneIntegrator(
                             new NPlusOneEntityLoadListener(transactionAccessor),
                             new NPlusOneCollectionLoadListener(transactionAccessor))));
+        }
+
+        @Bean
+        @ConditionalOnMissingBean(JpaEntitiesProfileProvider.class)
+        public JpaEntitiesProfileProvider entitiesMapProvider(EntityManagerFactory entityManagerFactory) {
+            return new DefaultJpaEntitiesProfileProvider(new EntityMappingScanner(entityManagerFactory));
         }
     }
 

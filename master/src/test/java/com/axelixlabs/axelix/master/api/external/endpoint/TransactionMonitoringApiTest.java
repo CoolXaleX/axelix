@@ -87,7 +87,8 @@ class TransactionMonitoringApiTest {
                   "isolation": "DEFAULT",
                   "readOnly": false
                 }
-              ]
+              ],
+              "entitiesMap": null
             }
             """;
 
@@ -95,7 +96,8 @@ class TransactionMonitoringApiTest {
             // language=json
             """
             {
-              "transactions": []
+              "transactions": [],
+              "entitiesMap": null
             }
             """;
 

@@ -45,6 +45,8 @@ import com.axelixlabs.axelix.sbs.spring.core.master.OpenSessionInViewStateProvid
 import com.axelixlabs.axelix.sbs.spring.core.master.ShortBuildInfoProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.DefaultInsightsInfoProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
+import com.axelixlabs.axelix.sbs.spring.core.master.insights.JpaEntitiesProfileProvider;
+import com.axelixlabs.axelix.sbs.spring.core.master.insights.NoOpJpaEntitiesProfileProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.VmOptionsAccessor;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.TransactionAttributesRegistry;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.TransactionStatsCollector;
@@ -92,14 +94,16 @@ public class AxelixMetadataEndpointConfiguration {
             GcLogService gcLogService,
             VmOptionsAccessor vmOptionsAccessor,
             TransactionStatsCollector transactionStatsCollector,
-            TransactionAttributesRegistry transactionAttributesRegistry) {
+            TransactionAttributesRegistry transactionAttributesRegistry,
+            ObjectProvider<JpaEntitiesProfileProvider> entitiesMapProvider) {
 
         return new DefaultInsightsInfoProvider(
                 openSessionInViewStateProvider,
                 gcLogService,
                 vmOptionsAccessor,
                 transactionStatsCollector,
-                transactionAttributesRegistry);
+                transactionAttributesRegistry,
+                entitiesMapProvider.getIfAvailable(NoOpJpaEntitiesProfileProvider::new));
     }
 
     @Bean

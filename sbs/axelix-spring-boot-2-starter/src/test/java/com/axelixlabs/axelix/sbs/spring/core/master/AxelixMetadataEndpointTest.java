@@ -146,7 +146,8 @@ class AxelixMetadataEndpointTest {
                         + "      { \"featureId\" : \"OSIV\", \"enabled\" : false }\n"
                         + "    ],\n"
                         + "    \"persistenceInsights\" : {\n"
-                        + "      \"transactions\" : [ ]\n"
+                        + "      \"transactions\" : [ ],\n"
+                        + "      \"entitiesMap\" : null\n"
                         + "    }\n"
                         + "  }\n"
                         + "}");
