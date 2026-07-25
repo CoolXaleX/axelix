@@ -17,7 +17,7 @@
  */
 import { GithubIcon } from "@/assets";
 
-import { DOCS_URL, GITHUB_URL } from "../../../utils";
+import { BLOG_URL, DOCS_URL, GITHUB_URL } from "../../../utils";
 
 import styles from "./styles.module.css";
 
@@ -39,6 +39,15 @@ export const ExternalLinks = ({ onLinkClick, fullWidth }: IProps) => {
                 onClick={onLinkClick}
             >
                 Docs
+            </a>
+            <a
+                href={BLOG_URL}
+                className={`${styles.DocsLink} ${linkClassName}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={onLinkClick}
+            >
+                Blog
             </a>
             <a
                 href={GITHUB_URL}

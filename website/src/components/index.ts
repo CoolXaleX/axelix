@@ -22,7 +22,7 @@ export { Install } from "./Install";
 export { Problem } from "./Problem";
 export { ReferenceApp } from "./ReferenceApp";
 export { Reveal } from "./Reveal";
-export { Footer } from "./Footer";
+export { default as Footer } from "./Footer";
 export { Header } from "./Header";
 export { Hero } from "./Hero";
 export { FAQ } from "./FAQ";

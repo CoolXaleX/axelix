@@ -33,6 +33,7 @@ export const NAV_LINKS: INavLink[] = [
 ];
 
 export const DOCS_URL = "https://axelix.io/docs/product/introduction";
+export const BLOG_URL = "https://axelix.io/blog";
 export const GITHUB_URL = "https://github.com/axelixlabs/axelix";
 export const DEMO_APP_URL = "https://github.com/axelixlabs/order-service-demo";
 

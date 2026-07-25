@@ -19,7 +19,7 @@ import { DiscordIcon, EmailIcon, ExternalLinkIcon, GithubIcon, LinkedinIcon, Log
 
 import styles from "./styles.module.css";
 
-export const Footer = () => {
+const Footer = () => {
     return (
         <footer className={styles.Footer}>
             <div className={`MainContainer ${styles.Wrap}`}>
@@ -57,13 +57,10 @@ export const Footer = () => {
                             <h4>Product</h4>
                             <ul>
                                 <li>
-                                    <a href="#capabilities">Capabilities</a>
+                                    <a href="#reference-app">Why Axelix?</a>
                                 </li>
                                 <li>
                                     <a href="#install">Install</a>
-                                </li>
-                                <li>
-                                    <a href="#enterprise">Enterprise</a>
                                 </li>
                                 <li>
                                     <a href="#faq">FAQ</a>
@@ -93,20 +90,11 @@ export const Footer = () => {
                                 </li>
                                 <li>
                                     <a
-                                        href="https://axelix.io/docs/ui-guide/mcp"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        MCP catalog
-                                    </a>
-                                </li>
-                                <li>
-                                    <a
                                         href="https://github.com/axelixlabs/axelix/releases"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
-                                        Changelog
+                                        Changelog <ExternalLinkIcon className={styles.ExtArr} />
                                     </a>
                                 </li>
                             </ul>
@@ -121,18 +109,11 @@ export const Footer = () => {
                                 </li>
                                 <li>
                                     <a href="https://axelix.io/blog" target="_blank" rel="noopener noreferrer">
-                                        Blog
+                                        Blog <ExternalLinkIcon className={styles.ExtArr} />
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" target="_blank" rel="noopener noreferrer">
-                                        Careers
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="mailto:hello@axelix.io" target="_blank" rel="noopener noreferrer">
-                                        Contact
-                                    </a>
+                                    <a href="mailto:hello@axelix.io">Contact</a>
                                 </li>
                             </ul>
                         </div>
@@ -145,7 +126,7 @@ export const Footer = () => {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
-                                        LGPL-3.0
+                                        OSS License
                                     </a>
                                 </li>
                                 <li>
@@ -156,11 +137,6 @@ export const Footer = () => {
                                 <li>
                                     <a href="#" target="_blank" rel="noopener noreferrer">
                                         Terms
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" target="_blank" rel="noopener noreferrer">
-                                        Security
                                     </a>
                                 </li>
                             </ul>
@@ -179,12 +155,13 @@ export const Footer = () => {
                     <div className={styles.Meta}>
                         <span>v1.0.0</span>
                         <span className={styles.DotSep}></span>
-                        <span>LGPL-3.0</span>
+                        <span>Open Core</span>
                         <span className={styles.DotSep}></span>
-                        <span className={styles.Status}>All systems operational</span>
+                        <span className={styles.Status}>Everything is under control</span>
                     </div>
                 </div>
             </div>
         </footer>
     );
 };
+export default Footer;
