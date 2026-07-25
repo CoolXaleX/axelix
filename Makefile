@@ -34,6 +34,10 @@ build:
 	@echo "=== Running Backend Build ==="
 	./gradlew build
 
+re-build:
+	@echo "=== Running Backend Build ==="
+	./gradlew build --no-build-cache --no-configuration-cache --rerun-tasks
+
 build-plugins:
 	./gradlew :plugins:axelix-gradle-plugin:build :plugins:axelix-maven-plugin:build
 
