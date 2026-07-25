@@ -21,6 +21,7 @@ export { default as LockOutlinedIcon } from "../assets/icons/lockOutlined.svg?re
 export { default as ConfigPropsIcon } from "../assets/icons/configProps.svg?react";
 export { default as EnvironmentIcon } from "../assets/icons/environment.svg?react";
 export { default as TransactionIcon } from "../assets/icons/transaction.svg?react";
+export { default as EntitiesMapIcon } from "../assets/icons/entities.svg?react";
 export { default as ConditionsIcon } from "../assets/icons/conditions.svg?react";
 export { default as ThreadDumpIcon } from "../assets/icons/threadDump.svg?react";
 export { default as CheckmarkIcon } from "../assets/icons/checkmark.svg?react";

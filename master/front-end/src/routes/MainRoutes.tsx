@@ -30,6 +30,7 @@ const DashboardJava = Loadable(lazy(() => import("pages/Dashboard/DashboardJava"
 const GarbageCollector = Loadable(lazy(() => import("pages/GarbageCollector")));
 const ScheduledTasks = Loadable(lazy(() => import("pages/ScheduledTasks")));
 const Transactional = Loadable(lazy(() => import("pages/Transactional")));
+const EntitiesMap = Loadable(lazy(() => import("pages/EntitiesMap")));
 const Environment = Loadable(lazy(() => import("pages/Environment")));
 const ConfigProps = Loadable(lazy(() => import("pages/ConfigProps")));
 const UserProfile = Loadable(lazy(() => import("pages/UserProfile")));
@@ -83,6 +84,7 @@ export const MainRoutes = () => {
                     <Route path="/instance/:instanceId/thread-dump" element={<ThreadDump />} />
                     <Route path="/instance/:instanceId/garbage-collector" element={<GarbageCollector />} />
                     <Route path="/instance/:instanceId/transactional" element={<Transactional />} />
+                    <Route path="/instance/:instanceId/entities-map" element={<EntitiesMap />} />
                 </Route>
             </Routes>
         </>

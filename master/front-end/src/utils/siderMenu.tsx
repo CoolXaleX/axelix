@@ -26,6 +26,7 @@ import {
     ConditionsIcon,
     ConfigPropsIcon,
     DetailsIcon,
+    EntitiesMapIcon,
     EnvironmentIcon,
     GCIcon,
     InsightsIcon,
@@ -102,6 +103,11 @@ export const getInstanceItems = (instanceId: string, t: TFunction): AntdMenuItem
             path: `${basePath}/transactional`,
             icon: <TransactionIcon />,
             label: t("Sider.transactionControl"),
+        },
+        {
+            path: `${basePath}/entities-map`,
+            icon: <EntitiesMapIcon />,
+            label: t("Sider.entitiesMap"),
         },
     ];
 

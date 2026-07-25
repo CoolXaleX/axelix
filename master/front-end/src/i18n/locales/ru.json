@@ -102,6 +102,7 @@
         "caches": "Кэши",
         "threadDump": "Дамп потоков",
         "transactionControl" : "Мониторинг транзакций",
+        "entitiesMap": "Карта сущностей",
         "garbageCollector": "Сборщик Мусора"
     },
     "Caches": {
@@ -364,6 +365,42 @@
         "clean": {
             "title": "Проблемных транзакций нет",
             "description": "Все {{count}} проанализированных транзакций чисты — нет блокирующих вызовов, запросов N+1 и пагинации в памяти."
+        }
+    },
+    "EntitiesMap": {
+        "summary": {
+            "mapped": "Всего сущностей",
+            "withProblems": "С проблемами",
+            "clean": "Без проблем"
+        },
+        "problemType": "Тип проблемы:",
+        "columns": {
+            "entity": "Сущность",
+            "associations": "Ассоциации",
+            "problems": "Обнаруженные проблемы"
+        },
+        "mapped": "{{count}} всего",
+        "flagged": "{{count}} с проблемами",
+        "problems": {
+            "eager": "Жадная загрузка (EAGER)",
+            "listManyToMany": "List для @ManyToMany",
+            "cascade": "Некорректный CascadeType",
+            "unidirectional": "Однонаправленный @OneToMany"
+        },
+        "problemFixes": {
+            "eager": "Загружается при каждом чтении независимо от того, используются ли данные. Всегда используйте FetchType.LAZY и загружайте связи явно через JOIN FETCH при необходимости.",
+            "listManyToMany": "@ManyToMany на основе List заставляет Hibernate очищать и заново вставлять всю связующую таблицу при любом изменении. Моделируйте ManyToMany как Set.",
+            "cascade": "CascadeType.REMOVE (а значит и CascadeType.ALL) заставляет Hibernate выполнять N + 1 при удалении связи (так как Hibernate обязан соблюдать колбэки жизненного цикла сущности). Управляйте удалением вручную.",
+            "unidirectional": "@OneToMany без 'mappedBy' требует дополнительной связующей таблицы или построчных UPDATE. Сделайте его двунаправленным или перенесите владение на сторону @ManyToOne."
+        },
+        "detail": {
+            "table": "Таблица",
+            "associations": "Ассоциации",
+            "associationsValue": "{{mapped}} всего · {{flagged}} с проблемами"
+        },
+        "clean": {
+            "title": "Проблем в маппинге нет",
+            "description": "Все {{count}} сопоставленных сущностей чисты — нет жадной загрузки, нет @ManyToMany на основе List, нет опасных каскадов и нет однонаправленных @OneToMany."
         }
     },
     "Users": {

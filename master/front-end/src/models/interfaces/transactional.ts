@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-import type { EProblemType, ETransactionOrigin, ETypeExternalCall } from "models";
+import type { EProblemType, ETransactionOrigin, ETypeExternalCall, IJpaEntities } from "models";
 
 /**
  * Min / max / average timing aggregated across every invocation.
@@ -160,6 +160,12 @@ export interface IPersistenceInsights {
      * The aggregated profiles of every monitored transactional method.
      */
     transactions: ITransactionAggregatedProfile[];
+
+    /**
+     * The registry of JPA entities Axelix mapped in the instance and the problems detected in their associations,
+     * or null when the instance did not report it (e.g. no JPA on the classpath, or an older agent).
+     */
+    entitiesMap: IJpaEntities | null;
 }
 
 /**

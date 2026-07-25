@@ -15,18 +15,14 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-export * from "./dashboard/dashboardOverview";
-export * from "./dashboard/dashboardJava";
-export * from "./transactional";
-export * from "./entitiesMap";
-export * from "./threadDump";
-export * from "./siderMenu";
-export * from "./wallboard";
-export * from "./loggers";
-export * from "./details";
-export * from "./metrics";
-export * from "./globals";
-export * from "./caches";
-export * from "./users";
-export * from "./auth";
-export * from "./gc";
+
+/**
+ * A neutral category of a problem detected in a JPA association mapping while Axelix scanned the entities of an
+ * instance. The categories are not ranked against each other, they merely describe the kind of mapping smell found.
+ */
+export enum EAssociationProblem {
+    EAGER_FETCHING = "EAGER_FETCHING",
+    LIST_BACKED_MANY_TO_MANY = "LIST_BACKED_MANY_TO_MANY",
+    CASCADE_REMOVE_OR_ALL = "CASCADE_REMOVE_OR_ALL",
+    UNIDIRECTIONAL_ONE_TO_MANY = "UNIDIRECTIONAL_ONE_TO_MANY",
+}

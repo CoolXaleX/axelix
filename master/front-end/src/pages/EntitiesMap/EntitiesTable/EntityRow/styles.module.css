@@ -4,7 +4,7 @@
 
 .Row {
     display: grid;
-    grid-template-columns: var(--tx-columns);
+    grid-template-columns: var(--em-columns);
     gap: 16px;
     align-items: center;
     min-height: 65px;
@@ -16,49 +16,40 @@
     background-color: #f9f9f9;
 }
 
-.Transaction {
+.Entity {
     display: flex;
     flex-direction: column;
     gap: 5px;
     min-width: 0;
 }
 
-.Signature {
+.Name {
+    font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.Origin {
+.Subtitle {
     color: var(--axelix-bold-grey);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.Access {
-    justify-self: start;
-    padding: 4px 8px;
-    border-radius: var(--axelix-border-radius-small);
-    background-color: var(--axelix-light-grey);
-
-    /* TODO: Fix in the future */
-    color: #475569;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-.Duration {
+.Associations {
     display: flex;
     flex-direction: column;
+    gap: 2px;
 }
 
-.Avg {
+.Mapped {
     font-weight: 600;
 }
 
-.Range {
-    color: var(--axelix-bold-grey);
+.Flagged {
+    color: var(--problem-cascade);
+    font-weight: 600;
 }
 
 .Problems {
@@ -76,11 +67,6 @@
     border-radius: 999px;
     background-color: var(--axelix-light-grey);
     color: var(--axelix-bold-grey);
-    font-weight: 600;
-}
-
-.NoProblemsInline {
-    color: var(--axelix-primary-green);
     font-weight: 600;
 }
 

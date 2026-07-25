@@ -29,6 +29,7 @@ export { HashNavigable } from "./HashNavigable";
 export { UserRoleTags } from "./UsersRoleTags";
 export { EmptyHandler } from "./EmptyHandler";
 export { InfoTooltip } from "./InfoTooltip";
+export { HintTooltip } from "./HintTooltip";
 export { PageSearch } from "./PageSearch";
 export { AboutModal } from "./AboutModal";
 export { StyledLink } from "./StyledLink";
