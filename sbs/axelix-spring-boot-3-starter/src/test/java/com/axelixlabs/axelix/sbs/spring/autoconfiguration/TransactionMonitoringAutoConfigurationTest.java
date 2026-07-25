@@ -32,8 +32,10 @@ import org.springframework.web.client.RestTemplate;
 
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.TransactionMonitoringAutoConfiguration.Log4j2InMemoryPaginationAppenderConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.TransactionMonitoringAutoConfiguration.LogbackInMemoryPaginationAppenderConfiguration;
+import com.axelixlabs.axelix.sbs.spring.core.master.insights.JpaEntitiesProfileProvider;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.ProxyingDataSourceBeanPostProcessor;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.TransactionMonitoringBeanPostProcessor;
+import com.axelixlabs.axelix.sbs.spring.core.persistence.entities.DefaultJpaEntitiesProfileProvider;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.http.ExternalCallRestTemplateCustomizer;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.TransactionStatsCollector;
 
@@ -86,6 +88,22 @@ class TransactionMonitoringAutoConfigurationTest {
                     assertThat(context).hasSingleBean(TransactionMonitoringAutoConfiguration.class);
                     assertThat(context).doesNotHaveBean(ExternalCallRestTemplateCustomizer.class);
                 });
+    }
+
+    @Test
+    void shouldRegisterJpaEntitiesProfileProvider_whenHibernateIsActive() {
+        contextRunner
+                .withBean(EntityManagerFactory.class, () -> Mockito.mock(EntityManagerFactory.class))
+                .run(context -> {
+                    assertThat(context).hasSingleBean(JpaEntitiesProfileProvider.class);
+                    assertThat(context.getBean(JpaEntitiesProfileProvider.class))
+                            .isInstanceOf(DefaultJpaEntitiesProfileProvider.class);
+                });
+    }
+
+    @Test
+    void shouldNotRegisterJpaEntitiesProfileProvider_whenEntityManagerFactoryIsMissing() {
+        contextRunner.run(context -> assertThat(context).doesNotHaveBean(JpaEntitiesProfileProvider.class));
     }
 
     @Test // GH-1254

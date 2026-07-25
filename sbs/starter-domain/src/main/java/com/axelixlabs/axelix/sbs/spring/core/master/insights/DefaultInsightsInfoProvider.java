@@ -30,6 +30,7 @@ import com.axelixlabs.axelix.common.api.registration.insights.Insights;
 import com.axelixlabs.axelix.common.api.registration.insights.persistence.CountedLazyLoadingTarget;
 import com.axelixlabs.axelix.common.api.registration.insights.persistence.ExecutionStats;
 import com.axelixlabs.axelix.common.api.registration.insights.persistence.ExternalCallInsight;
+import com.axelixlabs.axelix.common.api.registration.insights.persistence.JpaEntities;
 import com.axelixlabs.axelix.common.api.registration.insights.persistence.PersistenceInsights;
 import com.axelixlabs.axelix.common.api.registration.insights.persistence.TransactionAggregatedProfile;
 import com.axelixlabs.axelix.common.api.registration.insights.persistence.TransactionOrigin;
@@ -63,23 +64,27 @@ public class DefaultInsightsInfoProvider implements InsightsInfoProvider {
     private final VmOptionsAccessor vmOptionsAccessor;
     private final TransactionStatsCollector transactionStatsCollector;
     private final TransactionAttributesRegistry transactionAttributesRegistry;
+    private final JpaEntitiesProfileProvider entitiesMapProvider;
 
     /**
      * Creates a new DefaultInsightsInfoProvider.
      *
      * @param openSessionInViewStateProvider provider of the Spring Open Session in View state.
+     * @param entitiesMapProvider            provider of the scanned JPA entities map.
      */
     public DefaultInsightsInfoProvider(
             OpenSessionInViewStateProvider openSessionInViewStateProvider,
             GcLogService gcLogService,
             VmOptionsAccessor vmOptionsAccessor,
             TransactionStatsCollector transactionStatsCollector,
-            TransactionAttributesRegistry transactionAttributesRegistry) {
+            TransactionAttributesRegistry transactionAttributesRegistry,
+            JpaEntitiesProfileProvider entitiesMapProvider) {
         this.openSessionInViewStateProvider = openSessionInViewStateProvider;
         this.gcLogService = gcLogService;
         this.vmOptionsAccessor = vmOptionsAccessor;
         this.transactionStatsCollector = transactionStatsCollector;
         this.transactionAttributesRegistry = transactionAttributesRegistry;
+        this.entitiesMapProvider = entitiesMapProvider;
     }
 
     @Override
@@ -124,7 +129,8 @@ public class DefaultInsightsInfoProvider implements InsightsInfoProvider {
                 })
                 .collect(Collectors.toList());
 
-        return new PersistenceInsights(transactions);
+        JpaEntities jpaEntities = entitiesMapProvider.getEntities();
+        return new PersistenceInsights(transactions, jpaEntities);
     }
 
     private static List<CountedLazyLoadingTarget> convertLazyLoadingTargets(

@@ -21,6 +21,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Insights of a particular Instance related to persistence.
@@ -34,12 +35,36 @@ public class PersistenceInsights {
      */
     private final List<TransactionAggregatedProfile> transactions;
 
+    /**
+     * The registry of JPA entities Axelix mapped in the Instance and the problems detected in their
+     * associations, or {@code null} when the Instance did not report it (e.g. no JPA on the classpath,
+     * or an older agent).
+     */
+    private final @Nullable JpaEntities jpaEntities;
+
+    /**
+     * Creates persistence insights without an entities map. Kept for callers (mostly tests) that only
+     * care about the transactional insights.
+     *
+     * @param transactions the aggregated transactional insights.
+     */
+    public PersistenceInsights(List<TransactionAggregatedProfile> transactions) {
+        this(transactions, null);
+    }
+
     @JsonCreator
-    public PersistenceInsights(@JsonProperty("transactions") List<TransactionAggregatedProfile> transactions) {
+    public PersistenceInsights(
+            @JsonProperty("transactions") List<TransactionAggregatedProfile> transactions,
+            @JsonProperty("entitiesMap") @Nullable JpaEntities jpaEntities) {
         this.transactions = transactions;
+        this.jpaEntities = jpaEntities;
     }
 
     public List<TransactionAggregatedProfile> getTransactions() {
         return transactions;
+    }
+
+    public @Nullable JpaEntities getEntitiesMap() {
+        return jpaEntities;
     }
 }
