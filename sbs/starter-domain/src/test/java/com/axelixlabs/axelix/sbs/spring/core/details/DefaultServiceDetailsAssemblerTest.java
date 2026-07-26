@@ -56,7 +56,7 @@ class DefaultServiceDetailsAssemblerTest extends AbstractDetailsSharedContextTes
         assertThat(git.getBranch()).isEqualTo("main");
         assertThat(git.getCommitAuthor().getName()).isEqualTo("Mikhail Polivakha");
         assertThat(git.getCommitAuthor().getEmail()).isEqualTo("mikhailpolivakha@email.com");
-        assertThat(git.getCommitTimestamp()).isEqualTo("1761249922000");
+        assertThat(git.getCommitTimestamp()).isEqualTo("2026-07-24T02:29:57+05:00");
 
         SpringDetails spring = result.getSpring();
         assertThat(spring).isNotNull();
@@ -73,8 +73,8 @@ class DefaultServiceDetailsAssemblerTest extends AbstractDetailsSharedContextTes
         BuildDetails build = result.getBuild();
         assertThat(build.getArtifact()).isEqualTo("axelix-sbs");
         assertThat(build.getVersion()).isEqualTo("1.0.0-SNAPSHOT");
-        assertThat(build.getGroup()).isEqualTo("com.axelixlabs.axelix");
-        assertThat(build.getTime()).isEqualTo("2025-10-30T09:10:13.428Z");
+        assertThat(build.getGroup()).isEqualTo("com.axelixlabs");
+        assertThat(build.getTime()).isEqualTo("2026-07-24T09:33:48.541842752Z");
 
         OsDetails os = result.getOs();
         assertThat(os).isNotNull();

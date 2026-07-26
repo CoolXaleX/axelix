@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Cherkasov Sergey
  */
-public class DefaultAuthorityResolverTest {
+class DefaultAuthorityResolverTest {
 
     private AuthorityResolver authorityResolver;
 

@@ -56,7 +56,7 @@ class AxelixMetadataEndpointTest extends AbstractMasterSharedContextTest {
                         """
             {
               "version": "1.1.3",
-              "serviceVersion" : "3.5.0-SNAPSHOT",
+              "serviceVersion" : "1.0.0-SNAPSHOT",
               "groupId" : "com.axelixlabs",
               "artifactId" : "axelix-sbs",
               "commitShortSha" : "a8b0929",

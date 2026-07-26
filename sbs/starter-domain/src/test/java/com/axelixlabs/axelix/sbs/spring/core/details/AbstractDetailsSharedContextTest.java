@@ -15,25 +15,31 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.sbs.spring.core.master;
+package com.axelixlabs.axelix.sbs.spring.core.details;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.actuate.health.HealthEndpoint;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.Resource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.axelixlabs.axelix.common.api.registration.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.common.domain.version.AxelixVersionDiscoverer;
-import com.axelixlabs.axelix.sbs.spring.core.Main;
-import com.axelixlabs.axelix.sbs.spring.core.auth.JwtAuthTestConfiguration;
-import com.axelixlabs.axelix.sbs.spring.core.master.AbstractMasterSharedContextTest.SharedConfig;
+import com.axelixlabs.axelix.sbs.spring.core.details.AbstractDetailsSharedContextTest.TestApplication;
+import com.axelixlabs.axelix.sbs.spring.core.master.BasicRegistrationMetadataAssembler;
+import com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoProperties;
+import com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoPropertiesLoader;
+import com.axelixlabs.axelix.sbs.spring.core.master.DefaultBasicRegistrationMetadataAssembler;
+import com.axelixlabs.axelix.sbs.spring.core.master.HealthDetectionFunction;
+import com.axelixlabs.axelix.sbs.spring.core.master.LibraryInformationProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
 import com.axelixlabs.axelix.sbs.spring.core.utils.TestInsightsInfoProvider;
 
@@ -48,11 +54,15 @@ import static com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoPropertie
  * @author Mikhail Polivakha
  * @author Artemiy Degtyarev
  */
-@SpringBootTest(classes = Main.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import({AxelixMetadataEndpoint.class, JwtAuthTestConfiguration.class, SharedConfig.class})
-abstract class AbstractMasterSharedContextTest {
+@SpringBootTest(classes = TestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+abstract class AbstractDetailsSharedContextTest {
 
-    @MockitoBean
+    @SpringBootConfiguration
+    @EnableAutoConfiguration
+    @Import(SharedConfig.class)
+    static class TestApplication {}
+
+    @MockBean
     private HealthEndpoint healthEndpoint;
 
     @TestConfiguration
@@ -70,7 +80,37 @@ abstract class AbstractMasterSharedContextTest {
 
         @Bean
         public LibraryInformationProvider libraryInformationProvider() {
-            return new DefaultLibraryInformationProvider();
+            return new LibraryInformationProvider() {
+                @Override
+                public String getKotlinVersion() {
+                    return "1.6.21";
+                }
+
+                @Override
+                public String getJavaVersion() {
+                    return System.getProperty("java.version");
+                }
+
+                @Override
+                public String getJdkVendorName() {
+                    return System.getProperty("java.vendor");
+                }
+
+                @Override
+                public String getSpringBootVersion() {
+                    return "2.7.18";
+                }
+
+                @Override
+                public String getSpringVersion() {
+                    return "5.3.31";
+                }
+
+                @Override
+                public String getSpringCloudVersion() {
+                    return "2022.0.4";
+                }
+            };
         }
 
         @Bean
@@ -85,6 +125,12 @@ abstract class AbstractMasterSharedContextTest {
             try (InputStream inputStream = axelixInfoResource.getInputStream()) {
                 return BuildGitInfoPropertiesLoader.load(inputStream);
             }
+        }
+
+        @Bean
+        public ServiceDetailsAssembler serviceDetailsAssembler(
+                BuildGitInfoProperties buildGitInfoProperties, LibraryInformationProvider libraryInformationProvider) {
+            return new DefaultServiceDetailsAssembler(buildGitInfoProperties, libraryInformationProvider);
         }
 
         @Bean

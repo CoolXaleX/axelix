@@ -17,22 +17,34 @@
  */
 package com.axelixlabs.axelix.sbs.spring.core.details;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.SpringVersion;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.axelixlabs.axelix.common.domain.http.HttpMethod;
 import com.axelixlabs.axelix.sbs.spring.core.auth.JwtAuthTestConfiguration;
-import com.axelixlabs.axelix.sbs.spring.core.details.DefaultServiceDetailsAssemblerTest.DefaultServiceDetailsAssemblerTestConfig;
+import com.axelixlabs.axelix.sbs.spring.core.details.AxelixDetailsEndpointTest.CurrentConfig;
+import com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoProperties;
+import com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoPropertiesLoader;
+import com.axelixlabs.axelix.sbs.spring.core.master.DefaultLibraryInformationProvider;
+import com.axelixlabs.axelix.sbs.spring.core.master.LibraryInformationProvider;
 import com.axelixlabs.axelix.sbs.spring.core.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.sbs.spring.core.utils.auth.ProtectedEndpointTests;
 
+import static com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoPropertiesLoader.AXELIX_INFO_LOCATION;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
@@ -46,7 +58,7 @@ import static org.assertj.core.data.MapEntry.entry;
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {"management.endpoints.web.exposure.include=axelix-details"})
-@Import({DefaultServiceDetailsAssemblerTestConfig.class, AxelixDetailsEndpoint.class, JwtAuthTestConfiguration.class})
+@Import({JwtAuthTestConfiguration.class, CurrentConfig.class})
 class AxelixDetailsEndpointTest {
 
     @Autowired
@@ -66,10 +78,7 @@ class AxelixDetailsEndpointTest {
         assertThatJson(responseBody)
                 .inPath("git")
                 .isObject()
-                .contains(
-                        entry("commitShaShort", "a8b0929"),
-                        entry("branch", "main"),
-                        entry("commitTimestamp", "1761249922000"))
+                .contains(entry("commitShaShort", "a8b0929"), entry("branch", "main"))
                 .containsKeys("commitAuthor", "commitTimestamp");
 
         assertThatJson(responseBody)
@@ -99,12 +108,41 @@ class AxelixDetailsEndpointTest {
                 .containsOnly(
                         entry("artifact", "axelix-sbs"),
                         entry("version", "1.0.0-SNAPSHOT"),
-                        entry("group", "com.axelixlabs.axelix"),
-                        entry("time", "2025-10-30T09:10:13.428Z"));
+                        entry("group", "com.axelixlabs"),
+                        entry("time", "2026-07-24T09:33:48.541842752Z"));
 
         assertThatJson(responseBody).inPath("os").isObject().containsOnlyKeys("name", "version", "arch");
     }
 
     @ProtectedEndpointTests(method = HttpMethod.GET, path = "/actuator/axelix-details")
     void negativeAuthTests() {}
+
+    @TestConfiguration
+    static class CurrentConfig {
+
+        @Bean
+        public LibraryInformationProvider libraryInformationProvider() {
+            return new DefaultLibraryInformationProvider();
+        }
+
+        @Bean
+        public ServiceDetailsAssembler serviceDetailsAssembler(
+                BuildGitInfoProperties buildGitInfoProperties, LibraryInformationProvider libraryInformationProvider) {
+            return new DefaultServiceDetailsAssembler(buildGitInfoProperties, libraryInformationProvider);
+        }
+
+        @Bean
+        public BuildGitInfoProperties buildGitInfoProperties(@Value(AXELIX_INFO_LOCATION) Resource axelixInfoResource)
+                throws IOException {
+
+            try (InputStream inputStream = axelixInfoResource.getInputStream()) {
+                return BuildGitInfoPropertiesLoader.load(inputStream);
+            }
+        }
+
+        @Bean
+        public AxelixDetailsEndpoint axelixDetailsEndpoint(ServiceDetailsAssembler serviceDetailsAssembler) {
+            return new AxelixDetailsEndpoint(serviceDetailsAssembler);
+        }
+    }
 }

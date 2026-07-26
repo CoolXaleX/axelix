@@ -18,6 +18,7 @@
 package com.axelixlabs.axelix.sbs.spring.core.master;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -31,18 +32,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.io.Resource;
 import org.springframework.test.context.TestPropertySource;
 
 import com.axelixlabs.axelix.common.api.registration.BasicRegistrationMetadata;
-import com.axelixlabs.axelix.common.api.registration.GitInfo;
 import com.axelixlabs.axelix.common.api.registration.HeartBeatMetadata;
-import com.axelixlabs.axelix.common.api.registration.ShortBuildInfo;
 import com.axelixlabs.axelix.common.api.registration.insights.HotSpotInsights;
 import com.axelixlabs.axelix.common.api.registration.insights.Insights;
 import com.axelixlabs.axelix.common.api.registration.insights.persistence.PersistenceInsights;
@@ -57,6 +58,7 @@ import com.axelixlabs.axelix.sbs.spring.core.config.HeartBeatConfigurationProper
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
 import com.axelixlabs.axelix.sbs.spring.core.testutils.NoOpLogger;
 
+import static com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoPropertiesLoader.AXELIX_INFO_LOCATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
@@ -151,17 +153,6 @@ class HeartBeatServiceTest {
         }
 
         @Bean
-        GitInformationProvider gitInformationProvider() {
-            return () ->
-                    new GitInfo("8f4b9f7", "main", "2026-02-06T10:15:30Z", new GitInfo.CommitAuthor("test", "test"));
-        }
-
-        @Bean
-        ShortBuildInfoProvider shortBuildInfoProvider() {
-            return () -> new ShortBuildInfo("2026-02-06T10:15:30Z", "1.1.3");
-        }
-
-        @Bean
         public LibraryInformationProvider libraryInformationProvider() {
             return new TestLibraryInformationProvider();
         }
@@ -175,23 +166,28 @@ class HeartBeatServiceTest {
         }
 
         @Bean
+        public BuildGitInfoProperties buildGitInfoProperties(@Value(AXELIX_INFO_LOCATION) Resource axelixInfoResource)
+                throws IOException {
+
+            try (InputStream inputStream = axelixInfoResource.getInputStream()) {
+                return BuildGitInfoPropertiesLoader.load(inputStream);
+            }
+        }
+
+        @Bean
         public DefaultBasicRegistrationMetadataAssembler serviceMetadataAssembler(
                 HealthDetectionFunction healthDetectionFunction,
                 AxelixVersionDiscoverer axelixVersionDiscoverer,
-                GitInformationProvider gitInformationProvider,
-                ShortBuildInfoProvider shortBuildInfoProvider,
                 LibraryInformationProvider libraryInformationProvider,
-                InsightsInfoProvider insightsInfoProvider) {
+                InsightsInfoProvider insightsInfoProvider,
+                BuildGitInfoProperties buildGitInfoProperties) {
 
             return new DefaultBasicRegistrationMetadataAssembler(
                     healthDetectionFunction,
                     axelixVersionDiscoverer,
-                    gitInformationProvider,
-                    shortBuildInfoProvider,
                     libraryInformationProvider,
                     insightsInfoProvider,
-                    "com.axelixlabs",
-                    "axelix-sbs");
+                    buildGitInfoProperties);
         }
     }
 

@@ -39,6 +39,8 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.file.DuplicatesStrategy;
+import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 
 import static com.axelixlabs.axelix.gradle.plugin.SpringTestProfilerDetector.PROFILER_DETECTED_PROPERTY;
@@ -103,7 +105,23 @@ public final class ProjectInfoGenerator {
                 task.dependsOn(generateTask);
 
                 if (task instanceof AbstractArchiveTask) {
-                    ((AbstractArchiveTask) task).from(generatedDir);
+                    // Now that processResources also copies the same file into
+                    // build/resources/main (see below), the standard 'jar' task (and a real
+                    // Spring Boot 'bootJar', which includes the main sourceSet output by default)
+                    // would see this file twice - once via that main output, once via this
+                    // explicit 'from'. Both copies are byte-for-byte identical (same generated
+                    // file), so excluding the duplicate is safe.
+                    ((AbstractArchiveTask) task)
+                            .from(generatedDir, spec -> spec.setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE));
+                }
+            } else if ("processResources".equals(taskName)) {
+                // Without this, the file only ends up inside the packaged jar/bootJar (via the
+                // wiring above) - `test`, `bootRun` and IDE runs use build/resources/main directly
+                // and would never see it.
+                task.dependsOn(generateTask);
+
+                if (task instanceof Copy) {
+                    ((Copy) task).from(generatedDir);
                 }
             }
         });

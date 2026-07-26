@@ -17,18 +17,15 @@
  */
 package com.axelixlabs.axelix.sbs.spring.autoconfiguration;
 
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.actuate.autoconfigure.endpoint.condition.ConditionalOnAvailableEndpoint;
-import org.springframework.boot.actuate.autoconfigure.info.InfoContributorAutoConfiguration;
 import org.springframework.boot.actuate.info.InfoEndpoint;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 
 import com.axelixlabs.axelix.sbs.spring.core.details.AxelixDetailsEndpoint;
 import com.axelixlabs.axelix.sbs.spring.core.details.DefaultServiceDetailsAssembler;
 import com.axelixlabs.axelix.sbs.spring.core.details.ServiceDetailsAssembler;
-import com.axelixlabs.axelix.sbs.spring.core.master.GitInformationProvider;
+import com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoProperties;
 import com.axelixlabs.axelix.sbs.spring.core.master.LibraryInformationProvider;
 
 /**
@@ -38,10 +35,7 @@ import com.axelixlabs.axelix.sbs.spring.core.master.LibraryInformationProvider;
  * @author Nikita Kirillov, Sergey Cherkasov
  */
 @AutoConfiguration(
-        after = {
-            InfoContributorAutoConfiguration.class,
-            GitInformationProviderAutoConfiguration.class,
-            LibraryInformationProviderAutoConfiguration.class
+        after = {AxelixBuildGitInfoPropertiesAutoConfiguration.class, LibraryInformationProviderAutoConfiguration.class
         })
 @ConditionalOnAvailableEndpoint(endpoint = InfoEndpoint.class)
 public class AxelixDetailsEndpointAutoConfiguration {
@@ -53,10 +47,7 @@ public class AxelixDetailsEndpointAutoConfiguration {
 
     @Bean
     public ServiceDetailsAssembler serviceDetailsAssembler(
-            GitInformationProvider gitInformationProvider,
-            ObjectProvider<BuildProperties> providerBuildProperties,
-            LibraryInformationProvider libraryInformationProvider) {
-        return new DefaultServiceDetailsAssembler(
-                gitInformationProvider, providerBuildProperties, libraryInformationProvider);
+            BuildGitInfoProperties buildGitInfoProperties, LibraryInformationProvider libraryInformationProvider) {
+        return new DefaultServiceDetailsAssembler(buildGitInfoProperties, libraryInformationProvider);
     }
 }

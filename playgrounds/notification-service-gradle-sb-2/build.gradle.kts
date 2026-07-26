@@ -8,9 +8,9 @@ plugins {
     kotlin("plugin.spring") version "2.2.20"
     id("org.springframework.boot") version "2.7.18"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.gorylenko.gradle-git-properties") version "4.0.1"
     id("com.diffplug.spotless") version "8.0.0"
     id("org.cyclonedx.bom") version "2.3.1"
+    id("com.axelixlabs.axelix") version "1.0.0-SNAPSHOT"
 }
 
 group = "com.sivalabs.ft"
@@ -80,20 +80,6 @@ tasks.bootJar {
     archiveFileName = "notification-service-0.0.2-SNAPSHOT.jar"
 }
 
-springBoot {
-    buildInfo {
-        properties {
-            additional =
-                mapOf(
-                    "encoding.source" to "UTF-8",
-                    "encoding.reporting" to "UTF-8",
-                    "java.source" to javaVersionString,
-                    "java.target" to javaVersionString,
-                )
-        }
-    }
-}
-
 dependencyManagement {
     imports {
         mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
@@ -116,10 +102,6 @@ tasks.withType<Test> {
         showCauses = true
         showStackTraces = true
     }
-}
-
-gitProperties {
-    failOnNoGitDirectory = false
 }
 
 spotless {

@@ -20,13 +20,10 @@ package com.axelixlabs.axelix.sbs.spring.autoconfiguration;
 import java.lang.management.ManagementFactory;
 
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.actuate.autoconfigure.health.HealthEndpointAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.info.InfoContributorAutoConfiguration;
-import org.springframework.boot.actuate.health.HealthEndpoint;
-import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.info.ProjectInfoAutoConfiguration;
-import org.springframework.boot.info.BuildProperties;
+import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
+import org.springframework.boot.health.autoconfigure.actuate.endpoint.HealthEndpointAutoConfiguration;
+import org.springframework.boot.health.contributor.Status;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 
@@ -36,13 +33,12 @@ import com.axelixlabs.axelix.common.domain.version.PropertiesAxelixVersionDiscov
 import com.axelixlabs.axelix.sbs.spring.core.gclog.GcLogService;
 import com.axelixlabs.axelix.sbs.spring.core.master.AxelixMetadataEndpoint;
 import com.axelixlabs.axelix.sbs.spring.core.master.BasicRegistrationMetadataAssembler;
+import com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoProperties;
 import com.axelixlabs.axelix.sbs.spring.core.master.CachingAxelixVersionDiscoverer;
 import com.axelixlabs.axelix.sbs.spring.core.master.DefaultBasicRegistrationMetadataAssembler;
 import com.axelixlabs.axelix.sbs.spring.core.master.DefaultOpenSessionInViewStateProvider;
-import com.axelixlabs.axelix.sbs.spring.core.master.GitInformationProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.LibraryInformationProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.OpenSessionInViewStateProvider;
-import com.axelixlabs.axelix.sbs.spring.core.master.ShortBuildInfoProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.DefaultInsightsInfoProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.JpaEntitiesProfileProvider;
@@ -50,8 +46,6 @@ import com.axelixlabs.axelix.sbs.spring.core.master.insights.NoOpJpaEntitiesProf
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.VmOptionsAccessor;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.TransactionAttributesRegistry;
 import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.TransactionStatsCollector;
-
-import static com.axelixlabs.axelix.sbs.spring.core.utils.StringUtils.emptyIfNull;
 
 /**
  * Auto-configuration for the {@link AxelixMetadataEndpoint}.
@@ -61,16 +55,13 @@ import static com.axelixlabs.axelix.sbs.spring.core.utils.StringUtils.emptyIfNul
  */
 @AutoConfiguration(
         after = {
-            InfoContributorAutoConfiguration.class,
-            ProjectInfoAutoConfiguration.class,
             GarbageCollectionAutoConfiguration.class,
             HealthEndpointAutoConfiguration.class,
-            GitInformationProviderAutoConfiguration.class,
+            AxelixBuildGitInfoPropertiesAutoConfiguration.class,
             LibraryInformationProviderAutoConfiguration.class,
-            ShortBuildInfoProviderAutoConfiguration.class,
             TransactionMonitoringAutoConfiguration.class,
         })
-public class AxelixMetadataEndpointConfiguration {
+public class AxelixMetadataEndpointAutoConfiguration {
 
     @Bean
     public AxelixVersionDiscoverer axelixVersionDiscoverer() {
@@ -96,6 +87,7 @@ public class AxelixMetadataEndpointConfiguration {
             TransactionStatsCollector transactionStatsCollector,
             TransactionAttributesRegistry transactionAttributesRegistry,
             ObjectProvider<JpaEntitiesProfileProvider> entitiesMapProvider) {
+
         return new DefaultInsightsInfoProvider(
                 openSessionInViewStateProvider,
                 gcLogService,
@@ -109,24 +101,16 @@ public class AxelixMetadataEndpointConfiguration {
     public BasicRegistrationMetadataAssembler serviceMetadataAssembler(
             HealthEndpoint healthEndpoint,
             AxelixVersionDiscoverer axelixVersionDiscoverer,
-            GitInformationProvider gitInformationProvider,
-            ShortBuildInfoProvider shortBuildInfoProvider,
             LibraryInformationProvider libraryInformationProvider,
             InsightsInfoProvider insightsInfoProvider,
-            ObjectProvider<BuildProperties> buildProperties) {
+            BuildGitInfoProperties buildGitInfoProperties) {
 
-        BuildProperties resolvedBuildProperties = buildProperties.getIfAvailable();
         return new DefaultBasicRegistrationMetadataAssembler(
                 () -> getCurrentHealth(healthEndpoint),
                 axelixVersionDiscoverer,
-                gitInformationProvider,
-                shortBuildInfoProvider,
                 libraryInformationProvider,
                 insightsInfoProvider,
-
-                // TODO: https://github.com/axelixlabs/axelix/issues/1305
-                resolvedBuildProperties != null ? emptyIfNull(resolvedBuildProperties.getGroup()) : "",
-                resolvedBuildProperties != null ? emptyIfNull(resolvedBuildProperties.getArtifact()) : "");
+                buildGitInfoProperties);
     }
 
     @Bean

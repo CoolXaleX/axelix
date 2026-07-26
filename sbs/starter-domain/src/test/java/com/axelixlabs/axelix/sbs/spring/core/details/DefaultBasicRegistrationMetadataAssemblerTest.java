@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.sbs.spring.core.master;
+package com.axelixlabs.axelix.sbs.spring.core.details;
 
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootVersion;
 
 import com.axelixlabs.axelix.common.api.registration.BasicRegistrationMetadata;
+import com.axelixlabs.axelix.sbs.spring.core.master.DefaultBasicRegistrationMetadataAssembler;
 
 import static com.axelixlabs.axelix.sbs.spring.core.utils.TestInsightsInfoProvider.TEST_INSIGHTS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,9 +32,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Integration test for {@link DefaultBasicRegistrationMetadataAssembler}.
  *
  * @author Mikhail Polivakha
- * @author Artemiy Degtyarev
  */
-class DefaultBasicRegistrationMetadataAssemblerTest extends AbstractMasterSharedContextTest {
+class DefaultBasicRegistrationMetadataAssemblerTest extends AbstractDetailsSharedContextTest {
 
     @Autowired
     private DefaultBasicRegistrationMetadataAssembler subject;
@@ -46,6 +46,8 @@ class DefaultBasicRegistrationMetadataAssemblerTest extends AbstractMasterShared
         // then.
         assertThat(serviceMetadata.getCommitShortSha()).isEqualTo("a8b0929");
         assertThat(serviceMetadata.getServiceVersion()).isEqualTo("1.0.0-SNAPSHOT");
+        assertThat(serviceMetadata.getGroupId()).isEqualTo("com.axelixlabs");
+        assertThat(serviceMetadata.getArtifactId()).isEqualTo("axelix-sbs");
         assertThat(serviceMetadata.getSoftwareVersions().getJava()).isEqualTo(System.getProperty("java.version"));
         assertThat(serviceMetadata.getVersion()).isEqualTo("1.1.3");
         assertThat(serviceMetadata.getSoftwareVersions().getSpringBoot()).isEqualTo(SpringBootVersion.getVersion());

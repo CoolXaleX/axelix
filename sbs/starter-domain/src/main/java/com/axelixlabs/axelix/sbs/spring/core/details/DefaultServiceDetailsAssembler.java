@@ -17,13 +17,6 @@
  */
 package com.axelixlabs.axelix.sbs.spring.core.details;
 
-import java.time.Instant;
-
-import org.jspecify.annotations.Nullable;
-
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.info.BuildProperties;
-
 import com.axelixlabs.axelix.common.api.InstanceDetails;
 import com.axelixlabs.axelix.common.api.InstanceDetails.BuildDetails;
 import com.axelixlabs.axelix.common.api.InstanceDetails.GitDetails;
@@ -31,8 +24,7 @@ import com.axelixlabs.axelix.common.api.InstanceDetails.GitDetails.CommitAuthor;
 import com.axelixlabs.axelix.common.api.InstanceDetails.OsDetails;
 import com.axelixlabs.axelix.common.api.InstanceDetails.RuntimeDetails;
 import com.axelixlabs.axelix.common.api.InstanceDetails.SpringDetails;
-import com.axelixlabs.axelix.common.api.registration.GitInfo;
-import com.axelixlabs.axelix.sbs.spring.core.master.GitInformationProvider;
+import com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoProperties;
 import com.axelixlabs.axelix.sbs.spring.core.master.LibraryInformationProvider;
 
 import static com.axelixlabs.axelix.sbs.spring.core.utils.StringUtils.emptyIfNull;
@@ -45,16 +37,12 @@ import static com.axelixlabs.axelix.sbs.spring.core.utils.StringUtils.emptyIfNul
  */
 public class DefaultServiceDetailsAssembler implements ServiceDetailsAssembler {
 
-    private final GitInformationProvider gitInformationProvider;
-    private final @Nullable BuildProperties buildProperties;
+    private final BuildGitInfoProperties buildGitInfoProperties;
     private final LibraryInformationProvider libraryInformationProvider;
 
     public DefaultServiceDetailsAssembler(
-            GitInformationProvider gitInformationProvider,
-            ObjectProvider<BuildProperties> providerBuildProperties,
-            LibraryInformationProvider libraryInformationProvider) {
-        this.gitInformationProvider = gitInformationProvider;
-        this.buildProperties = providerBuildProperties.getIfAvailable();
+            BuildGitInfoProperties buildGitInfoProperties, LibraryInformationProvider libraryInformationProvider) {
+        this.buildGitInfoProperties = buildGitInfoProperties;
         this.libraryInformationProvider = libraryInformationProvider;
     }
 
@@ -70,14 +58,14 @@ public class DefaultServiceDetailsAssembler implements ServiceDetailsAssembler {
     }
 
     private GitDetails getGitDetails() {
-        GitInfo gitCommitInfo = gitInformationProvider.getGitCommitInfo();
-        GitInfo.CommitAuthor commitAuthor = gitCommitInfo.commitAuthor();
+        CommitAuthor commitAuthor = new CommitAuthor(
+                buildGitInfoProperties.getCommitUserName(), buildGitInfoProperties.getCommitUserEmail());
 
         return new GitDetails(
-                emptyIfNull(gitCommitInfo.commitShaShort()),
-                emptyIfNull(gitCommitInfo.branch()),
-                new CommitAuthor(emptyIfNull(commitAuthor.name()), emptyIfNull(commitAuthor.email())),
-                gitCommitInfo.commitTimestamp());
+                buildGitInfoProperties.getCommitShaShort(),
+                buildGitInfoProperties.getBranch(),
+                commitAuthor,
+                buildGitInfoProperties.getCommitTimestamp());
     }
 
     private SpringDetails getSpringDetails() {
@@ -95,16 +83,12 @@ public class DefaultServiceDetailsAssembler implements ServiceDetailsAssembler {
     }
 
     private BuildDetails getBuildDetails() {
-        if (buildProperties == null) {
-            return new BuildDetails("", "", "", "");
-        }
 
-        Instant buildTime = buildProperties.getTime();
         return new BuildDetails(
-                emptyIfNull(buildProperties.getArtifact()),
-                emptyIfNull(buildProperties.getVersion()),
-                emptyIfNull(buildProperties.getGroup()),
-                buildTime != null ? buildTime.toString() : "");
+                buildGitInfoProperties.getArtifactId(),
+                buildGitInfoProperties.getServiceVersion(),
+                buildGitInfoProperties.getGroupId(),
+                buildGitInfoProperties.getBuildTimestamp());
     }
 
     private OsDetails getOsDetails() {
