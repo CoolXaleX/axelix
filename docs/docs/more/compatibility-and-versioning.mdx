@@ -110,3 +110,26 @@ These will change **only in major releases**.
 Depend on Master's **properties** (names, defaults, types) — those are stable within a major version. Do **not** depend
 on Master's Java classes, methods, or other code-level members — those can change in any release.
 :::
+
+### Starters
+
+Starters **are** consumed as libraries — they are Spring Boot starters, so they bring auto-configurations with beans
+into your application (bootstrap wiring, the internal proxying strategy, and so on). That reality shapes two rules.
+
+**Do not override Axelix beans.** We intentionally **do not** allow end users to override the internal beans Axelix
+declares in order to tinker with the bootstrap process, the proxying strategy, or similar internals. This is a
+deliberate choice. Axelix works hard to add **no measurable overhead** to your app and to be as efficient and bug-free
+as possible; letting you override beans like `BeanPostProcessor`s or `ProxyFactoryBean` instances would open a backdoor
+to subtle bugs and worse performance. So please do not try to swap out Axelix's beans.
+
+**Do not depend on a starter's public Java API.** We have to acknowledge that starters run inside real applications, so
+their public Java API *can* technically be reached from your code — but this is **not intended**, and we strongly
+discourage it. To move fast and stay competitive, we **may** change the public Java API of the starters too. We will
+avoid it at all costs, but if we deem it necessary we may change it in a **minor** version bump.
+
+:::tip[Missing a feature? File an issue instead of tinkering]
+The rule of thumb is simple: if you need something, or a feature is missing, **do not tinker with the starter** — open
+an issue in our [GitHub issue tracker](https://github.com/axelixlabs/axelix/issues). We promise to review it. When we
+add the feature you requested, we will give you a **property** to control that behavior — a stable, supported knob
+rather than a bean override or a code-level dependency.
+:::
