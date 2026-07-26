@@ -40,17 +40,18 @@ public class DefaultMcpEndpointResolver implements McpEndpointResolver {
     private static final AuthenticationException PARSING_EXCEPTION =
             new AuthenticationException("Unable to parse the incoming JSON-RPC request from the AI Agent");
 
-    private static final Map<String, McpEndpoint> ENDPOINT_MAPPING = Map.of(
-            McpEndpoints.BEANS_FEED_TOOL_NAME, McpEndpoints.BEANS_FEED,
-            McpEndpoints.ENVIRONMENT_FEED_TOOL_NAME, McpEndpoints.ENVIRONMENT,
-            McpEndpoints.CONFIG_PROPS_FEED_TOOL_NAME, McpEndpoints.CONFIG_PROPS,
-            McpEndpoints.CONDITIONS_FEED_TOOL_NAME, McpEndpoints.CONDITIONS,
-            McpEndpoints.SCHEDULED_TASKS_FEED_TOOL_NAME, McpEndpoints.SCHEDULED_TASKS,
-            McpEndpoints.WALLBOARD_TOOL_NAME, McpEndpoints.WALLBOARD,
-            McpEndpoints.CACHES_FEED_TOOL_NAME, McpEndpoints.ALL_CACHES,
-            McpEndpoints.CLEAR_ALL_CACHES_TOOL_NAME, McpEndpoints.CLEAR_ALL_CACHES,
-            McpEndpoints.CLEAR_SPECIFIC_CACHE_TOOL_NAME, McpEndpoints.CLEAR_SPECIFIC_CACHE,
-            McpEndpoints.TRANSACTIONS_PROFILE_TOOL_NAME, McpEndpoints.TRANSACTIONS_PROFILE);
+    private static final Map<String, McpEndpoint> ENDPOINT_MAPPING = Map.ofEntries(
+            Map.entry(McpEndpoints.BEANS_FEED_TOOL_NAME, McpEndpoints.BEANS_FEED),
+            Map.entry(McpEndpoints.ENVIRONMENT_FEED_TOOL_NAME, McpEndpoints.ENVIRONMENT),
+            Map.entry(McpEndpoints.CONFIG_PROPS_FEED_TOOL_NAME, McpEndpoints.CONFIG_PROPS),
+            Map.entry(McpEndpoints.CONDITIONS_FEED_TOOL_NAME, McpEndpoints.CONDITIONS),
+            Map.entry(McpEndpoints.SCHEDULED_TASKS_FEED_TOOL_NAME, McpEndpoints.SCHEDULED_TASKS),
+            Map.entry(McpEndpoints.WALLBOARD_TOOL_NAME, McpEndpoints.WALLBOARD),
+            Map.entry(McpEndpoints.CACHES_FEED_TOOL_NAME, McpEndpoints.ALL_CACHES),
+            Map.entry(McpEndpoints.CLEAR_ALL_CACHES_TOOL_NAME, McpEndpoints.CLEAR_ALL_CACHES),
+            Map.entry(McpEndpoints.CLEAR_SPECIFIC_CACHE_TOOL_NAME, McpEndpoints.CLEAR_SPECIFIC_CACHE),
+            Map.entry(McpEndpoints.TRANSACTIONS_PROFILE_TOOL_NAME, McpEndpoints.TRANSACTIONS_PROFILE),
+            Map.entry(McpEndpoints.ENTITIES_PROFILE_TOOL_NAME, McpEndpoints.ENTITIES_PROFILE));
 
     private final JsonMapper jsonMapper;
 
