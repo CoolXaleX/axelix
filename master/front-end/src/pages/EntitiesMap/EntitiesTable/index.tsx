@@ -44,7 +44,6 @@ export const EntitiesTable = ({ entities }: IProps) => {
                     <span>{t("EntitiesMap.columns.entity")}</span>
                     <span>{t("EntitiesMap.columns.associations")}</span>
                     <span>{t("EntitiesMap.columns.problems")}</span>
-                    <span />
                 </div>
                 {entities.map((entity) => (
                     <EntityRow key={entity.name} entity={entity} />

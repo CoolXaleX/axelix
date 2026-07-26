@@ -45,7 +45,6 @@ export const TransactionsTable = ({ transactions }: IProps) => {
                     <span>{t("Transactional.columns.access")}</span>
                     <span>{t("Transactional.columns.avgTime")}</span>
                     <span>{t("Transactional.columns.problems")}</span>
-                    <span />
                 </div>
                 {transactions.map((transaction) => (
                     <TransactionRow

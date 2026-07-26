@@ -1,5 +1,9 @@
-.MainWrapper:not(:last-child) {
-    border-bottom: 1px solid var(--axelix-light-grey);
+.MainWrapper {
+    border-bottom-color: var(--axelix-light-grey);
+}
+
+.MainWrapper:last-child {
+    border-bottom: none;
 }
 
 .Row {
@@ -8,8 +12,9 @@
     gap: 16px;
     align-items: center;
     min-height: 65px;
-    padding: 20px;
-    cursor: pointer;
+
+    /* left padding leaves room for the Accordion arrow icon */
+    padding: 12px 20px 12px 45px;
 }
 
 .Row:hover {
@@ -84,7 +89,7 @@
     font-weight: 600;
 }
 
-.Caret {
-    justify-self: center;
-    color: var(--axelix-bold-grey);
+/* the detail brings its own padding/background, so drop the Accordion default */
+.Content {
+    padding: 0;
 }

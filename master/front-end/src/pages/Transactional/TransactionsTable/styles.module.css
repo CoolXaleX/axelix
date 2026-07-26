@@ -4,7 +4,7 @@
 
 .Table {
     /* TODO: Fix in future */
-    --tx-columns: minmax(0, 2.2fr) 120px 150px minmax(220px, 2.4fr) 40px;
+    --tx-columns: minmax(0, 2.2fr) 120px 150px minmax(220px, 2.4fr);
 
     min-width: 750px;
     border: 1px solid var(--axelix-light-grey);
@@ -18,7 +18,9 @@
     grid-template-columns: var(--tx-columns);
     gap: 16px;
     align-items: center;
-    padding: 12px 20px;
+
+    /* left padding matches the row arrow inset so columns line up */
+    padding: 12px 20px 12px 45px;
     background-color: var(--axelix-primary-light-green);
     border-bottom: 1px solid var(--axelix-light-grey);
     font-weight: 700;

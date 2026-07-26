@@ -15,9 +15,9 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Accordion } from "components";
 import { groupEntityProblems } from "helpers";
 import type { IMappedEntity } from "models";
 
@@ -37,7 +37,6 @@ const MAX_CHIPS = 2;
 
 export const EntityRow = ({ entity }: IProps) => {
     const { t } = useTranslation();
-    const [open, setOpen] = useState<boolean>(false);
 
     const flaggedCount = entity.flaggedAssociations.length;
     const groupedChips = groupEntityProblems(entity);
@@ -46,32 +45,36 @@ export const EntityRow = ({ entity }: IProps) => {
     const hiddenChips = groupedChips.length - shownChips.length;
 
     return (
-        <div className={styles.MainWrapper}>
-            <div className={styles.Row} onClick={() => setOpen((prev) => !prev)}>
-                <div className={styles.Entity}>
-                    <span className={`TextSmall ${styles.Name}`}>{entity.name}</span>
-                    <span className={`TextUltraSmall ${styles.Subtitle}`}>@Entity · {entity.table}</span>
-                </div>
-                <div className={styles.Associations}>
-                    <span className={`TextSmall ${styles.Mapped}`}>
-                        {entity.associationsCount === null
-                            ? "—"
-                            : t("EntitiesMap.mapped", { count: entity.associationsCount })}
-                    </span>
-                    <span className={`TextUltraSmall ${styles.Flagged}`}>
-                        {t("EntitiesMap.flagged", { count: flaggedCount })}
-                    </span>
-                </div>
-                <div className={styles.Problems}>
-                    {shownChips.map((group) => (
-                        <AssociationProblemChip key={group.type} type={group.type} multiplicity={group.count} />
-                    ))}
-                    {hiddenChips > 0 && <span className={`TextUltraSmall ${styles.More}`}>+{hiddenChips}</span>}
-                </div>
-                <span className={styles.Caret}>{open ? "▾" : "▸"}</span>
-            </div>
-
-            {open && <EntityDetail entity={entity} />}
-        </div>
+        <Accordion
+            wrapperStyles={styles.MainWrapper}
+            headerStyles={styles.Row}
+            contentStyles={styles.Content}
+            header={
+                <>
+                    <div className={styles.Entity}>
+                        <span className={`TextSmall ${styles.Name}`}>{entity.name}</span>
+                        <span className={`TextUltraSmall ${styles.Subtitle}`}>@Entity · {entity.table}</span>
+                    </div>
+                    <div className={styles.Associations}>
+                        <span className={`TextSmall ${styles.Mapped}`}>
+                            {entity.associationsCount === null
+                                ? "—"
+                                : t("EntitiesMap.mapped", { count: entity.associationsCount })}
+                        </span>
+                        <span className={`TextUltraSmall ${styles.Flagged}`}>
+                            {t("EntitiesMap.flagged", { count: flaggedCount })}
+                        </span>
+                    </div>
+                    <div className={styles.Problems}>
+                        {shownChips.map((group) => (
+                            <AssociationProblemChip key={group.type} type={group.type} multiplicity={group.count} />
+                        ))}
+                        {hiddenChips > 0 && <span className={`TextUltraSmall ${styles.More}`}>+{hiddenChips}</span>}
+                    </div>
+                </>
+            }
+        >
+            <EntityDetail entity={entity} />
+        </Accordion>
     );
 };

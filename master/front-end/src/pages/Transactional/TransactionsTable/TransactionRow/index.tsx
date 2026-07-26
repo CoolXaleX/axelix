@@ -15,9 +15,9 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Accordion } from "components";
 import { deriveProblems, formatTransactionDuration, simpleClassName } from "helpers";
 import type { ITransactionAggregatedProfile } from "models";
 import { PROBLEM_TYPE_ORDER, originLabelKey } from "utils";
@@ -38,7 +38,6 @@ const MAX_CHIPS = 2;
 
 export const TransactionRow = ({ transaction }: IProps) => {
     const { t } = useTranslation();
-    const [open, setOpen] = useState<boolean>(false);
 
     const { className, methodName } = transaction.transactionalKey;
     const { minMs, maxMs, averageMs } = transaction.transactionOverallStats;
@@ -54,41 +53,47 @@ export const TransactionRow = ({ transaction }: IProps) => {
     const hiddenChips = groupedChips.length - shownChips.length;
 
     return (
-        <div className={styles.MainWrapper}>
-            <div className={styles.Row} onClick={() => setOpen((prev) => !prev)}>
-                <div className={styles.Transaction}>
-                    <span className={`TextSmall ${styles.Signature}`}>
-                        {simpleClassName(className)}#{methodName}()
-                    </span>
-                    <span className={`TextUltraSmall ${styles.Origin}`}>
-                        {t(originLabelKey[transaction.transactionOrigin])}
-                    </span>
-                </div>
-                <span className={`TextUltraSmall ${styles.Access}`}>{accessLabel}</span>
-                <div className={styles.Duration}>
-                    <span className={`TextSmall ${styles.Avg}`}>{formatTransactionDuration(averageMs)}</span>
-                    <span className={`TextUltraSmall ${styles.Range}`}>
-                        {formatTransactionDuration(minMs)}–{formatTransactionDuration(maxMs)}
-                    </span>
-                </div>
-                <div className={styles.Problems}>
-                    {groupedChips.length === 0 ? (
-                        <span className={`TextUltraSmall ${styles.NoProblemsInline}`}>
-                            {t("Transactional.noProblems")}
+        <Accordion
+            wrapperStyles={styles.MainWrapper}
+            headerStyles={styles.Row}
+            contentStyles={styles.Content}
+            header={
+                <>
+                    <div className={styles.Transaction}>
+                        <span className={`TextSmall ${styles.Signature}`}>
+                            {simpleClassName(className)}#{methodName}()
                         </span>
-                    ) : (
-                        <>
-                            {shownChips.map((group) => (
-                                <ProblemChip key={group.type} type={group.type} multiplicity={group.count} />
-                            ))}
-                            {hiddenChips > 0 && <span className={`TextUltraSmall ${styles.More}`}>+{hiddenChips}</span>}
-                        </>
-                    )}
-                </div>
-                <span className={styles.Caret}>{open ? "▾" : "▸"}</span>
-            </div>
-
-            {open && <TransactionDetail transaction={transaction} />}
-        </div>
+                        <span className={`TextUltraSmall ${styles.Origin}`}>
+                            {t(originLabelKey[transaction.transactionOrigin])}
+                        </span>
+                    </div>
+                    <span className={`TextUltraSmall ${styles.Access}`}>{accessLabel}</span>
+                    <div className={styles.Duration}>
+                        <span className={`TextSmall ${styles.Avg}`}>{formatTransactionDuration(averageMs)}</span>
+                        <span className={`TextUltraSmall ${styles.Range}`}>
+                            {formatTransactionDuration(minMs)}–{formatTransactionDuration(maxMs)}
+                        </span>
+                    </div>
+                    <div className={styles.Problems}>
+                        {groupedChips.length === 0 ? (
+                            <span className={`TextUltraSmall ${styles.NoProblemsInline}`}>
+                                {t("Transactional.noProblems")}
+                            </span>
+                        ) : (
+                            <>
+                                {shownChips.map((group) => (
+                                    <ProblemChip key={group.type} type={group.type} multiplicity={group.count} />
+                                ))}
+                                {hiddenChips > 0 && (
+                                    <span className={`TextUltraSmall ${styles.More}`}>+{hiddenChips}</span>
+                                )}
+                            </>
+                        )}
+                    </div>
+                </>
+            }
+        >
+            <TransactionDetail transaction={transaction} />
+        </Accordion>
     );
 };
