@@ -35,46 +35,33 @@ public class DefaultBasicRegistrationMetadataAssembler implements BasicRegistrat
     private static final MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
 
     private final HealthDetectionFunction healthDetectionFunction;
-    private final GitInformationProvider gitInformationProvider;
-    private final ShortBuildInfoProvider shortBuildInfoProvider;
     private final AxelixVersionDiscoverer axelixVersionDiscoverer;
     private final LibraryInformationProvider libraryInformationProvider;
     private final InsightsInfoProvider insightsInfoProvider;
-    private final String groupId;
-    private final String artifactId;
+    private final BuildGitInfoProperties buildGitInfoProperties;
 
     public DefaultBasicRegistrationMetadataAssembler(
             HealthDetectionFunction healthDetectionFunction,
             AxelixVersionDiscoverer axelixVersionDiscoverer,
-            GitInformationProvider gitInformationProvider,
-            ShortBuildInfoProvider shortBuildInfoProvider,
             LibraryInformationProvider libraryInformationProvider,
             InsightsInfoProvider insightsInfoProvider,
-
-            // TODO: https://github.com/axelixlabs/axelix/issues/1305
-            String groupId,
-            String artifactId) {
+            BuildGitInfoProperties buildGitInfoProperties) {
 
         this.healthDetectionFunction = healthDetectionFunction;
         this.axelixVersionDiscoverer = axelixVersionDiscoverer;
-        this.gitInformationProvider = gitInformationProvider;
-        this.shortBuildInfoProvider = shortBuildInfoProvider;
         this.libraryInformationProvider = libraryInformationProvider;
         this.insightsInfoProvider = insightsInfoProvider;
-        this.groupId = groupId;
-        this.artifactId = artifactId;
+        this.buildGitInfoProperties = buildGitInfoProperties;
     }
 
     @Override
     public BasicRegistrationMetadata assemble() {
-        var gitCommitInfo = gitInformationProvider.getGitCommitInfo();
-
         return new BasicRegistrationMetadata(
                 axelixVersionDiscoverer.getVersion(),
-                shortBuildInfoProvider.getShortBuildInfo().serviceVersion(),
-                groupId,
-                artifactId,
-                gitCommitInfo.commitShaShort(),
+                buildGitInfoProperties.getServiceVersion(),
+                buildGitInfoProperties.getGroupId(),
+                buildGitInfoProperties.getArtifactId(),
+                buildGitInfoProperties.getCommitShaShort(),
                 libraryInformationProvider.getJdkVendorName(),
                 GarbageCollectorInfoAssembler.getGarbageCollectorInfo(),
                 buildSoftwareVersionInUse(),

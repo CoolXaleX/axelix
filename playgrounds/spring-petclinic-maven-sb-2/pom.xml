@@ -219,6 +219,12 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>com.axelixlabs</groupId>
+        <artifactId>axelix-maven-plugin</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <extensions>true</extensions>
+      </plugin>
+      <plugin>
         <groupId>org.graalvm.buildtools</groupId>
         <artifactId>native-maven-plugin</artifactId>
       </plugin>
@@ -232,14 +238,6 @@
             <goals>
               <goal>build-info</goal>
             </goals>
-            <configuration>
-              <additionalProperties>
-                <encoding.source>${project.build.sourceEncoding}</encoding.source>
-                <encoding.reporting>${project.reporting.outputEncoding}</encoding.reporting>
-                <java.source>${java.version}</java.source>
-                <java.target>${java.version}</java.target>
-              </additionalProperties>
-            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -263,26 +261,6 @@
         </executions>
       </plugin>
 
-      <!-- Spring Boot Actuator displays build-related information if a git.properties file is
-      present at the classpath -->
-      <plugin>
-        <groupId>io.github.git-commit-id</groupId>
-        <artifactId>git-commit-id-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>validate</phase>
-            <goals>
-              <goal>revision</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <failOnNoGitDirectory>false</failOnNoGitDirectory>
-          <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
-          <generateGitPropertiesFile>true</generateGitPropertiesFile>
-          <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
-        </configuration>
-      </plugin>
       <!-- Spring Boot Actuator displays sbom-related information if a CycloneDX SBOM file is
       present at the classpath -->
       <plugin>

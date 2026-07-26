@@ -17,14 +17,19 @@
  */
 package com.axelixlabs.axelix.sbs.spring.core.master;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import net.javacrumbs.jsonunit.assertj.JsonAssertions;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
 import com.axelixlabs.axelix.common.api.registration.BasicRegistrationMetadata;
@@ -36,6 +41,7 @@ import com.axelixlabs.axelix.sbs.spring.core.utils.TestInsightsInfoProvider;
 import com.axelixlabs.axelix.sbs.spring.core.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.sbs.spring.core.utils.auth.ProtectedEndpointTests;
 
+import static com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoPropertiesLoader.AXELIX_INFO_LOCATION;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -44,13 +50,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Mikhail Polivakha
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import({
-    AxelixMetadataEndpoint.class,
-    AxelixMetadataEndpointTest.CurrentConfig.class,
-    CommitIdPluginGitInformationProvider.class,
-    CommitIdPluginShortBuildInfoProvider.class,
-    JwtAuthTestConfiguration.class
-})
+@Import({AxelixMetadataEndpoint.class, AxelixMetadataEndpointTest.CurrentConfig.class, JwtAuthTestConfiguration.class})
 class AxelixMetadataEndpointTest {
 
     @Autowired
@@ -79,24 +79,28 @@ class AxelixMetadataEndpointTest {
             return new TestInsightsInfoProvider();
         }
 
-        // TODO: fallback to @Import once https://github.com/axelixlabs/axelix/issues/1305 is done
         @Bean
         public DefaultBasicRegistrationMetadataAssembler serviceMetadataAssembler(
                 HealthDetectionFunction healthDetectionFunction,
                 AxelixVersionDiscoverer axelixVersionDiscoverer,
-                GitInformationProvider gitInformationProvider,
-                ShortBuildInfoProvider shortBuildInfoProvider,
                 LibraryInformationProvider libraryInformationProvider,
-                InsightsInfoProvider insightsInfoProvider) {
+                InsightsInfoProvider insightsInfoProvider,
+                BuildGitInfoProperties buildGitInfoProperties) {
             return new DefaultBasicRegistrationMetadataAssembler(
                     healthDetectionFunction,
                     axelixVersionDiscoverer,
-                    gitInformationProvider,
-                    shortBuildInfoProvider,
                     libraryInformationProvider,
                     insightsInfoProvider,
-                    "com.axelixlabs",
-                    "axelix-sbs");
+                    buildGitInfoProperties);
+        }
+
+        @Bean
+        public BuildGitInfoProperties buildGitInfoProperties(@Value(AXELIX_INFO_LOCATION) Resource axelixInfoResource)
+                throws IOException {
+
+            try (InputStream inputStream = axelixInfoResource.getInputStream()) {
+                return BuildGitInfoPropertiesLoader.load(inputStream);
+            }
         }
     }
 
@@ -112,7 +116,7 @@ class AxelixMetadataEndpointTest {
                 // we do not want to know exactly the java version on which the test is going to run
                 .whenIgnoringPaths("softwareVersions")
                 .isEqualTo("{\n" + "  \"version\": \"1.1.3\",\n"
-                        + "  \"serviceVersion\" : \"3.5.0-SNAPSHOT\",\n"
+                        + "  \"serviceVersion\" : \"1.0.0-SNAPSHOT\",\n"
                         + "  \"groupId\" : \"com.axelixlabs\",\n"
                         + "  \"artifactId\" : \"axelix-sbs\",\n"
                         + "  \"commitShortSha\" : \"a8b0929\",\n"

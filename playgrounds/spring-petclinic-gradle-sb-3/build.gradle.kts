@@ -1,7 +1,3 @@
-import java.nio.charset.StandardCharsets
-import java.nio.file.Paths
-import kotlin.io.path.readText
-
 plugins {
   java
   checkstyle
@@ -11,7 +7,7 @@ plugins {
   id("org.cyclonedx.bom") version "2.3.1"
   id("com.diffplug.spotless") version "8.6.0"
   id("io.spring.nohttp") version "0.0.11"
-  id("com.gorylenko.gradle-git-properties") version "4.0.1"
+  id("com.axelixlabs.axelix") version "1.0.0-SNAPSHOT"
 }
 
 group = "org.springframework.samples"
@@ -39,10 +35,6 @@ val springJavaformatCheckstyleVersion by ext("0.0.46")
 val webjarsLocatorLiteVersion by ext("1.1.0")
 val webjarsFontawesomeVersion by ext("4.7.0")
 val webjarsBootstrapVersion by ext("5.3.6")
-
-gitProperties {
-    failOnNoGitDirectory = false
-}
 
 configurations.all {
   resolutionStrategy.cacheChangingModulesFor(0, TimeUnit.SECONDS)
@@ -76,20 +68,6 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-docker-compose")
   testImplementation("org.testcontainers:junit-jupiter")
   testImplementation("org.testcontainers:mysql")
-}
-
-springBoot {
-    buildInfo {
-        properties {
-            additional =
-                mapOf(
-                    "encoding.source" to "UTF-8",
-                    "encoding.reporting" to "UTF-8",
-                    "java.source" to javaVersionString,
-                    "java.target" to javaVersionString,
-                )
-        }
-    }
 }
 
 tasks.named<Test>("test") {

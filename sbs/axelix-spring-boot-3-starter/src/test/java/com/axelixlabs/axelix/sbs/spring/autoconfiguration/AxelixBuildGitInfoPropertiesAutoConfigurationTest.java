@@ -20,35 +20,28 @@ package com.axelixlabs.axelix.sbs.spring.autoconfiguration;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.info.ProjectInfoAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
-import com.axelixlabs.axelix.sbs.spring.core.master.CommitIdPluginShortBuildInfoProvider;
-import com.axelixlabs.axelix.sbs.spring.core.master.ShortBuildInfoProvider;
+import com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Integration tests for {@link ShortBuildInfoProviderAutoConfiguration}
+ * Integration tests for {@link AxelixBuildGitInfoPropertiesAutoConfiguration}
  *
- * @since 10.02.2026
+ * @since 09.02.2026
  * @author Nikita Kirillov
  * @author Mikhail Polivakha
  */
-class ShortBuildInfoProviderAutoConfigurationTest {
+class AxelixBuildGitInfoPropertiesAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withPropertyValues("spring.info.git.location=classpath:other/git.properties")
-            .withConfiguration(AutoConfigurations.of(
-                    ShortBuildInfoProviderAutoConfiguration.class, ProjectInfoAutoConfiguration.class));
+            .withConfiguration(AutoConfigurations.of(AxelixBuildGitInfoPropertiesAutoConfiguration.class));
 
     @Test
-    void shouldCreateCommitIdPluginProviderWhenGitPropertiesBeanExists() {
+    void shouldCreateBuildGitInfoProperties() {
         contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(ShortBuildInfoProvider.class);
-            assertThat(context)
-                    .getBean(ShortBuildInfoProvider.class)
-                    .isInstanceOf(CommitIdPluginShortBuildInfoProvider.class);
+            assertThat(context).hasSingleBean(BuildGitInfoProperties.class);
         });
     }
 }

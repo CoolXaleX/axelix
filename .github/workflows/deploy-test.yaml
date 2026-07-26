@@ -165,7 +165,7 @@ jobs:
           JAVA_21_HOME: ${{ steps.setup-java-21.outputs.path }}
           JAVA_25_HOME: ${{ steps.build-backend.outputs.java-25-home }}
         run: |
-          make build-playground BUILD_ALL_PLAYGROUNDS="true"
+          make build-playground BUILD_SB2="true" BUILD_SB3="true"
 
       - name: Deploy Playground Spring Petclinic Maven SB 2
         env:

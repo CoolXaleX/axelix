@@ -132,6 +132,24 @@ class ProjectInfoGeneratorFunctionalTest extends AbstractAxelixPluginFunctionalT
         assertGitBuildProperties(loadPropertiesFromJar(), true);
     }
 
+    @ParameterizedTest
+    @MethodSource("gradleVersionsUnderTest")
+    void writesProjectInfoIntoMainResourcesSoItIsOnTheClasspathWithoutPackaging(String gradleVersion)
+            throws IOException, InterruptedException {
+        // given. consumers like 'test' or 'bootRun' run off build/resources/main directly, never
+        // touching the packaged jar.
+        setupProject("build-info.gradle.kts");
+        initGitRepository();
+
+        // when.
+        BuildResult result =
+                createRunner(gradleVersion, "processResources", "--stacktrace").build();
+
+        // then.
+        assertThat(result.task(":processResources").getOutcome()).isEqualTo(TaskOutcome.SUCCESS);
+        assertGitBuildProperties(loadPropertiesFromMainResources(), true);
+    }
+
     private void setupProject(String buildGradleFixture) throws IOException {
         writeFile("settings.gradle", "rootProject.name = 'axelix-plugin-test'\n");
         String buildFileName = buildGradleFixture.endsWith(".kts") ? "build.gradle.kts" : "build.gradle";
@@ -140,6 +158,16 @@ class ProjectInfoGeneratorFunctionalTest extends AbstractAxelixPluginFunctionalT
 
     private Properties loadProperties() throws IOException {
         Path infoFile = projectDir.resolve("build/generated/axelix-info/" + PROPERTIES_PATH);
+        assertThat(infoFile).exists();
+        Properties properties = new Properties();
+        try (InputStream inputStream = Files.newInputStream(infoFile)) {
+            properties.load(inputStream);
+        }
+        return properties;
+    }
+
+    private Properties loadPropertiesFromMainResources() throws IOException {
+        Path infoFile = projectDir.resolve("build/resources/main/" + PROPERTIES_PATH);
         assertThat(infoFile).exists();
         Properties properties = new Properties();
         try (InputStream inputStream = Files.newInputStream(infoFile)) {

@@ -1,7 +1,8 @@
 .PHONY: clean clean-playgrounds clean-all build build-playground build-all spotless spotless-all \
         publish-local build-plugins publish-starter-sb-2 publish-starter-sb-3 \
         build-spring-petclinic-maven-sb-2 build-notification-service-gradle-sb-2 \
-        build-feature-service-maven-sb-3 build-spring-petclinic-gradle-sb-3
+        build-feature-service-maven-sb-3 build-spring-petclinic-gradle-sb-3 publish-plugins \
+        publish-gradle-plugin publish-maven-plugin
 
 BUILD_SB2             ?= true
 BUILD_SB3             ?= true
@@ -45,24 +46,19 @@ build-all: build
 	$(MAKE) build-playground BUILD_SB2="true" BUILD_SB3="true"
 
 # BUILD PLAYGROUND PROJECTS
-build-playground:
-
+# Listed as plain prerequisites (not recursive $(MAKE) calls). Starter publication is modeled
+# as each playground build's own prerequisite (see below), not listed here as a sibling - sibling
+# prerequisites are not ordered under make -j, so that would let a build start before its starter
+# is published.
+PLAYGROUND_TARGETS :=
 ifeq ($(BUILD_SB2),true)
-	@echo "=== Publish Axelix Spring Boot 2 Starter ==="
-	$(MAKE) publish-starter-sb-2
-	@echo "=== Build Spring Petclinic Maven Spring Boot 2 ==="
-	$(MAKE) build-spring-petclinic-maven-sb-2
-	@echo "=== Build Notification Service Gradle Spring Boot 2 ==="
-	$(MAKE) build-notification-service-gradle-sb-2
+PLAYGROUND_TARGETS += build-spring-petclinic-maven-sb-2 build-notification-service-gradle-sb-2
 endif
 ifeq ($(BUILD_SB3),true)
-	@echo "=== Publish Axelix Spring Boot 3 Starter ==="
-	$(MAKE) publish-starter-sb-3
-	@echo "=== Build Spring Petclinic Gradle Spring Boot 3 ==="
-	$(MAKE) build-spring-petclinic-gradle-sb-3
-	@echo "=== Build Feature Service Maven Spring Boot 3 ==="
-	$(MAKE) build-feature-service-maven-sb-3
+PLAYGROUND_TARGETS += build-spring-petclinic-gradle-sb-3 build-feature-service-maven-sb-3
 endif
+
+build-playground: publish-plugins $(PLAYGROUND_TARGETS)
 
 LOCAL_JAVA_17 := $(firstword $(wildcard \
     $(JAVA_17_HOME) \
@@ -91,19 +87,30 @@ publish-starter-sb-3:
 	@echo "=== Publishing Spring Boot 3 Axelix Starter ==="
 	./gradlew :sbs:axelix-spring-boot-3-starter:publishToMavenLocal
 
+# PUBLISH PLUGINS
+publish-plugins: publish-gradle-plugin publish-maven-plugin
+
+publish-gradle-plugin:
+	@echo "=== Publishing Axelix Gradle Plugin ==="
+	./gradlew :plugins:axelix-gradle-plugin:publishToMavenLocal
+
+publish-maven-plugin:
+	@echo "=== Publishing Axelix Maven Plugin ==="
+	./gradlew :plugins:axelix-maven-plugin:publishToMavenLocal
+
 # BUILD SPECIFIC PLAYGROUNDS
-build-spring-petclinic-maven-sb-2:
+build-spring-petclinic-maven-sb-2: publish-maven-plugin publish-starter-sb-2
 	@echo "=== Running Maven build for Petclinic Spring Boot 2 ==="
 	cd playgrounds/spring-petclinic-maven-sb-2 && JAVA_HOME=$(LOCAL_JAVA_17) ./mvnw package -B
 
-build-notification-service-gradle-sb-2:
+build-notification-service-gradle-sb-2: publish-gradle-plugin publish-starter-sb-2
 	@echo "=== Running Gradle build for Notification Service Spring Boot 2 ==="
 	cd playgrounds/notification-service-gradle-sb-2 && JAVA_HOME=$(LOCAL_JAVA_21) ./gradlew build
 
-build-feature-service-maven-sb-3:
+build-feature-service-maven-sb-3: publish-maven-plugin publish-starter-sb-3
 	@echo "=== Running Maven build for Feature Service Spring Boot 3 ==="
 	cd playgrounds/feature-service-maven-sb-3 && JAVA_HOME=$(LOCAL_JAVA_25) ./mvnw package -B
 
-build-spring-petclinic-gradle-sb-3:
+build-spring-petclinic-gradle-sb-3: publish-gradle-plugin publish-starter-sb-3
 	@echo "=== Running Gradle build for Petclinic Spring Boot 3 ==="
 	cd playgrounds/spring-petclinic-gradle-sb-3 && JAVA_HOME=$(LOCAL_JAVA_17) ./gradlew build

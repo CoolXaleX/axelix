@@ -17,20 +17,26 @@
  */
 package com.axelixlabs.axelix.sbs.spring.core.master;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.io.Resource;
 
 import com.axelixlabs.axelix.common.api.registration.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.common.domain.version.AxelixVersionDiscoverer;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
 import com.axelixlabs.axelix.sbs.spring.core.utils.TestInsightsInfoProvider;
 
+import static com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoPropertiesLoader.AXELIX_INFO_LOCATION;
 import static com.axelixlabs.axelix.sbs.spring.core.utils.TestInsightsInfoProvider.TEST_INSIGHTS;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,11 +46,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Mikhail Polivakha
  */
 @SpringBootTest
-@Import({
-    CommitIdPluginGitInformationProvider.class,
-    CommitIdPluginShortBuildInfoProvider.class,
-    DefaultBasicRegistrationMetadataAssemblerTest.CurrentConfig.class
-})
+@Import({DefaultBasicRegistrationMetadataAssemblerTest.CurrentConfig.class})
 class DefaultBasicRegistrationMetadataAssemblerTest {
 
     @Autowired
@@ -74,22 +76,27 @@ class DefaultBasicRegistrationMetadataAssemblerTest {
         }
 
         @Bean
+        public BuildGitInfoProperties buildGitInfoProperties(@Value(AXELIX_INFO_LOCATION) Resource axelixInfoResource)
+                throws IOException {
+
+            try (InputStream inputStream = axelixInfoResource.getInputStream()) {
+                return BuildGitInfoPropertiesLoader.load(inputStream);
+            }
+        }
+
+        @Bean
         public DefaultBasicRegistrationMetadataAssembler serviceMetadataAssembler(
                 HealthDetectionFunction healthDetectionFunction,
                 AxelixVersionDiscoverer axelixVersionDiscoverer,
-                GitInformationProvider gitInformationProvider,
-                ShortBuildInfoProvider shortBuildInfoProvider,
                 LibraryInformationProvider libraryInformationProvider,
-                InsightsInfoProvider insightsInfoProvider) {
+                InsightsInfoProvider insightsInfoProvider,
+                BuildGitInfoProperties buildGitInfoProperties) {
             return new DefaultBasicRegistrationMetadataAssembler(
                     healthDetectionFunction,
                     axelixVersionDiscoverer,
-                    gitInformationProvider,
-                    shortBuildInfoProvider,
                     libraryInformationProvider,
                     insightsInfoProvider,
-                    "com.axelixlabs",
-                    "axelix-sbs");
+                    buildGitInfoProperties);
         }
     }
 
@@ -100,7 +107,7 @@ class DefaultBasicRegistrationMetadataAssemblerTest {
 
         // then.
         assertThat(serviceMetadata.getCommitShortSha()).isEqualTo("a8b0929");
-        assertThat(serviceMetadata.getServiceVersion()).isEqualTo("3.5.0-SNAPSHOT");
+        assertThat(serviceMetadata.getServiceVersion()).isEqualTo("1.0.0-SNAPSHOT");
         assertThat(serviceMetadata.getGroupId()).isEqualTo("com.axelixlabs");
         assertThat(serviceMetadata.getArtifactId()).isEqualTo("axelix-sbs");
         assertThat(serviceMetadata.getSoftwareVersions().getJava()).isEqualTo(System.getProperty("java.version"));

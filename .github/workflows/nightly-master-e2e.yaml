@@ -70,6 +70,9 @@ jobs:
       - name: Build Master Docker image
         run: docker build --tag ${{ env.MASTER_IMAGE_NAME }}:${{ env.MASTER_IMAGE_TAG }} --file Dockerfile .
 
+      - name: Publish Axelix Gradle Plugin to Maven local
+        run: ./gradlew :plugins:axelix-gradle-plugin:publishToMavenLocal --no-configuration-cache --no-build-cache
+
       - name: Publish Spring Boot 2 Starter to Maven local
         run: ./gradlew :sbs:axelix-spring-boot-2-starter:publishToMavenLocal --no-configuration-cache --no-build-cache
 

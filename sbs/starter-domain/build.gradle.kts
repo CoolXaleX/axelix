@@ -20,6 +20,7 @@ dependencies {
     // Test
     testImplementation(platform("org.springframework.boot:spring-boot-dependencies:$springBootTestPlatformVersion"))
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-actuator")
     testImplementation("org.springframework:spring-web")
     testImplementation("com.squareup.okhttp3:mockwebserver")
     testImplementation("digital.pragmatech.testing:spring-test-profiler:0.1.2")

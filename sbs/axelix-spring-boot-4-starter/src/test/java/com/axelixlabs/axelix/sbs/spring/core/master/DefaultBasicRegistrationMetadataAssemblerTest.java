@@ -45,7 +45,7 @@ class DefaultBasicRegistrationMetadataAssemblerTest extends AbstractMasterShared
 
         // then.
         assertThat(serviceMetadata.getCommitShortSha()).isEqualTo("a8b0929");
-        assertThat(serviceMetadata.getServiceVersion()).isEqualTo("3.5.0-SNAPSHOT");
+        assertThat(serviceMetadata.getServiceVersion()).isEqualTo("1.0.0-SNAPSHOT");
         assertThat(serviceMetadata.getSoftwareVersions().getJava()).isEqualTo(System.getProperty("java.version"));
         assertThat(serviceMetadata.getVersion()).isEqualTo("1.1.3");
         assertThat(serviceMetadata.getSoftwareVersions().getSpringBoot()).isEqualTo(SpringBootVersion.getVersion());
