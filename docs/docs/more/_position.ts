@@ -5,7 +5,7 @@ const prefix = 'more';
 const pages: string[] = [
   'glossary',
   'why-not-spring-boot-admin',
-  'compatibility-matrix',
+  'compatibility-and-versioning',
 ].map((id) => `${prefix}/${id}`);
 
 export default pages;
