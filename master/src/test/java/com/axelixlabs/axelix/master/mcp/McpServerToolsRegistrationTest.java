@@ -64,6 +64,7 @@ class McpServerToolsRegistrationTest {
                         "changeLoggingLevelByLoggerName",
                         "changeLoggingLevelByGroupName",
                         "resetLoggingLevelByLoggerName",
-                        "getApplicationTransactionsProfile");
+                        "getApplicationTransactionsProfile",
+                        "getApplicationEntitiesProfile");
     }
 }
