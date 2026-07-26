@@ -83,3 +83,30 @@ Drift on the **minor** or **patch** level is acceptable, but it is **not a best 
 account for security patches, bug fixes, and performance improvements on the starter side. Keep starters and Master on
 the same version where you can, and treat a **major** version match as the hard compatibility requirement.
 :::
+
+## Backward compatibility guarantees between releases
+
+### Axelix Master
+
+Axelix Master is a Java application meant to be **run as a standalone process** — in Kubernetes, in Docker, or as a
+plain JAR. It is **not** meant to be consumed as a library. Because of that, we **do not** treat the Java public
+surface as a public contract: **public classes, public methods, constructors, fields, enums, and constants are all
+considered internal**.
+
+In practice this means we may change that public Java API in **minor or even patch** releases. The assumption is that
+nobody depends on Master as a library, so mutating its Java API freely lets us **move development faster**. It is a
+deliberate trade-off that realistically affects almost no one — a big win for the pace of the project.
+
+What we **do** treat as Master's public contract is its **configuration**:
+
+- The **names** of properties — both for the Axelix Master **Helm chart** and for Axelix Master run as a **standalone
+  JAR**.
+- Their **default values**.
+- Their **types**.
+
+These will change **only in major releases**.
+
+:::info[Rule of thumb for Master]
+Depend on Master's **properties** (names, defaults, types) — those are stable within a major version. Do **not** depend
+on Master's Java classes, methods, or other code-level members — those can change in any release.
+:::
