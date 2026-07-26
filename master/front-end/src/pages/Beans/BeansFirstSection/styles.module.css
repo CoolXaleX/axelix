@@ -1,9 +1,13 @@
-.MainWrapper {
+.NoSelectedBeanMainWrapper {
     margin-bottom: 30px;
 }
 
+.SelectedBeanMainWrapper {
+    margin-bottom: 15px;
+}
+
 .SelectedBeanTagWrapper {
-    margin-top: 8px;
+    margin-top: 12px;
 }
 
 .Tag {

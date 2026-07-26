@@ -1,6 +1,6 @@
 .MainWrapper {
     /* TODO: Remove this magic number after layout improvement */
-    height: calc(100vh - 225px);
+    max-height: calc(100vh - 225px);
     overflow: auto;
 }
 
