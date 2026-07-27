@@ -85,7 +85,6 @@ public class DiscoveryAutoConfiguration {
             return new KubernetesClientBuilder()
                     .withConfig(new ConfigBuilder()
                             .withMasterUrl(kubernetesDiscoveryProperties.getKubeApiserverUrl())
-                            // TODO: For some reason caCert it is not yet working
                             .withCaCertFile(kubernetesDiscoveryProperties.getCaCertPath())
                             .withOauthToken(Files.readString(Paths.get(kubernetesDiscoveryProperties.getSaTokenPath())))
                             .build())

@@ -27,7 +27,6 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,10 +47,10 @@ public class SuperAdminPasswordEncoder {
     private final Set<String> supportedEncoderIds;
     private final DelegatingPasswordEncoder passwordEncoder;
 
-    public SuperAdminPasswordEncoder(BCryptPasswordEncoder bcryptPasswordEncoder) {
+    public SuperAdminPasswordEncoder(PasswordEncoder passwordEncoder) {
         Map<String, PasswordEncoder> encoders = new HashMap<>();
         encoders.put("noop", NoOpPasswordEncoder.getInstance());
-        encoders.put("bcrypt", bcryptPasswordEncoder);
+        encoders.put("bcrypt", passwordEncoder);
         this.passwordEncoder = new DelegatingPasswordEncoder("bcrypt", encoders);
         this.passwordEncoder.setDefaultPasswordEncoderForMatches(NoOpPasswordEncoder.getInstance());
         this.supportedEncoderIds = Set.copyOf(encoders.keySet());

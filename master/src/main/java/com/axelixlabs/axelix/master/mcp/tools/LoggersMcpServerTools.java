@@ -329,7 +329,6 @@ public class LoggersMcpServerTools {
 
         HttpPayload payload = HttpPayload.json(
                 Map.of("name", groupName),
-                // TODO: implement https://github.com/axelixlabs/axelix/issues/1204
                 jacksonMessageSerializationStrategy.serialize(new LogLevelChangeRequest(loggerLevel, null)));
         endpointInvoker.invokeNoValue(InstanceId.of(instanceId), ActuatorEndpoints.SET_FOR_LOGGER_GROUP, payload);
     }

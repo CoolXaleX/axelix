@@ -104,7 +104,7 @@ public class SecurityAutoConfiguration {
      * The main password encoder to be used in both database & super-admin credentials.
      */
     @Bean
-    public BCryptPasswordEncoder bcryptPasswordEncoder() {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
@@ -194,10 +194,9 @@ public class SecurityAutoConfiguration {
 
         @Bean
         public SuperAdminUserAuthenticator staticCredentialsUserAuthenticator(
-                SuperAdminConfigurationProperties staticCredentialsConfig,
-                BCryptPasswordEncoder bcryptPasswordEncoder) {
+                SuperAdminConfigurationProperties staticCredentialsConfig, PasswordEncoder passwordEncoder) {
             return new SuperAdminUserAuthenticator(
-                    staticCredentialsConfig, new SuperAdminPasswordEncoder(bcryptPasswordEncoder));
+                    staticCredentialsConfig, new SuperAdminPasswordEncoder(passwordEncoder));
         }
     }
 
