@@ -59,6 +59,7 @@ class McpServerToolsRegistrationTest {
                         "clearSpecificCacheEntity",
                         "getAvailableLoggingLevels",
                         "getLoggerGroupsFeed",
+                        "getLoggersFeed",
                         "findLoggersByName",
                         "findGroupsByName",
                         "changeLoggingLevelByLoggerName",

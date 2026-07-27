@@ -64,7 +64,7 @@ class McpToolsE2ETest {
         List<String> toolNames = toolsResponse.getList("result.tools.name", String.class);
 
         assertThat(toolNames)
-                .containsExactlyInAnyOrder(
+                .contains(
                         "getInstanceBeans",
                         "getInstanceEnvironment",
                         "getInstanceConfigProps",

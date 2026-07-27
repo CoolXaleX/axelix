@@ -20,6 +20,8 @@ package com.axelixlabs.axelix.master.mcp.tools;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import tools.jackson.databind.ObjectMapper;
+
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.stereotype.Service;
@@ -51,10 +53,15 @@ public class LoggersMcpServerTools {
 
     private final JacksonMessageSerializationStrategy jacksonMessageSerializationStrategy;
 
+    private final ObjectMapper objectMapper;
+
     public LoggersMcpServerTools(
-            EndpointInvoker endpointInvoker, JacksonMessageSerializationStrategy jacksonMessageSerializationStrategy) {
+            EndpointInvoker endpointInvoker,
+            JacksonMessageSerializationStrategy jacksonMessageSerializationStrategy,
+            ObjectMapper objectMapper) {
         this.endpointInvoker = endpointInvoker;
         this.jacksonMessageSerializationStrategy = jacksonMessageSerializationStrategy;
+        this.objectMapper = objectMapper;
     }
 
     @McpTool(
@@ -101,7 +108,32 @@ public class LoggersMcpServerTools {
                             idempotentHint = true,
                             openWorldHint = false))
     public String getLoggerGroupsFeed(@McpToolParam(description = "The instance ID") String instanceId) {
-        return getAllLoggers(instanceId).getGroups().toString();
+        return objectMapper.writeValueAsString(getAllLoggers(instanceId).getGroups());
+    }
+
+    @McpTool(
+            title = "Loggers Feed",
+            description = """
+            Get the full list of ALL individual loggers configured for a specific instance, along with
+            their currently effective logging level.
+
+            Use this to get a complete overview of every logger in the application.
+
+            Do NOT use this when the user mentions a specific logger by name — use "Find Logger" instead.
+            Do NOT use this for logger groups — use "Logger Groups Feed" instead.
+
+            Because this Tool accepts "Instance ID" you probably will need to call 'getWallboard'
+            tool to first retrieve the instances feed.
+            """,
+            annotations =
+                    @McpTool.McpAnnotations(
+                            title = "Provides the full list of individual loggers within this Spring Boot app",
+                            readOnlyHint = true,
+                            destructiveHint = false,
+                            idempotentHint = true,
+                            openWorldHint = false))
+    public String getLoggersFeed(@McpToolParam(description = "The instance ID") String instanceId) {
+        return objectMapper.writeValueAsString(getAllLoggers(instanceId).getLoggers());
     }
 
     @McpTool(
@@ -138,10 +170,10 @@ public class LoggersMcpServerTools {
                 Partial names are supported.""") String loggerName) {
 
         try {
-            HttpPayload payload = new DefaultHttpPayload(Map.of("logger.name", loggerName));
+            HttpPayload payload = new DefaultHttpPayload(Map.of("name", loggerName));
 
-            SingleLoggerProfile logger =
-                    endpointInvoker.invoke(InstanceId.of(instanceId), ActuatorEndpoints.GET_ONE_LOGGER, payload);
+            byte[] body = endpointInvoker.invoke(InstanceId.of(instanceId), ActuatorEndpoints.GET_ONE_LOGGER, payload);
+            SingleLoggerProfile logger = objectMapper.readValue(body, SingleLoggerProfile.class);
 
             return Map.of(loggerName, logger.toString());
         } catch (EndpointInvocationException | BadRequestException e) {
@@ -185,10 +217,11 @@ public class LoggersMcpServerTools {
                 The Group Name. The exact or approximate name of the group loggers.
                 Partial names are supported.""") String groupName) {
         try {
-            HttpPayload payload = new DefaultHttpPayload(Map.of("group.name", groupName));
+            HttpPayload payload = new DefaultHttpPayload(Map.of("name", groupName));
 
-            LoggersGroupProfile logger =
+            byte[] body =
                     endpointInvoker.invoke(InstanceId.of(instanceId), ActuatorEndpoints.GET_LOGGER_GROUP, payload);
+            LoggersGroupProfile logger = objectMapper.readValue(body, LoggersGroupProfile.class);
 
             return Map.of(groupName, logger.toString());
         } catch (EndpointInvocationException | BadRequestException e) {
@@ -207,6 +240,11 @@ public class LoggersMcpServerTools {
             - The user explicitly asks to change the logging level of a specific individual logger.
 
             Do NOT use this tool for logger groups — use "Set Group Loggers Level" instead.
+
+            The change can optionally be made temporary via 'ttlSeconds': after that many seconds, the logger
+            automatically reverts to the level it had before this change. If 'ttlSeconds' is omitted, the change
+            is permanent. If the user does not say whether the change should be temporary or permanent, ask them
+            before calling this tool — do not assume either way.
 
             If the invocation succeeds, do NOT ask for confirmation.
 
@@ -237,12 +275,14 @@ public class LoggersMcpServerTools {
             @McpToolParam(description = """
                 The Logger Name. The exact or approximate name of the logger.
                 Partial names are supported.""") String loggerName,
-            @McpToolParam(description = "The logging level.") String loggerLevel) {
+            @McpToolParam(description = "The logging level.") String loggerLevel,
+            @McpToolParam(required = false, description = """
+                Optional. Number of seconds after which the logger automatically reverts to its previous level.
+                Omit for a permanent change.""") Long ttlSeconds) {
 
         HttpPayload payload = HttpPayload.json(
-                Map.of("logger.name", loggerName),
-                // TODO: implement https://github.com/axelixlabs/axelix/issues/1204
-                jacksonMessageSerializationStrategy.serialize(new LogLevelChangeRequest(loggerLevel, null)));
+                Map.of("name", loggerName),
+                jacksonMessageSerializationStrategy.serialize(new LogLevelChangeRequest(loggerLevel, ttlSeconds)));
         endpointInvoker.invokeNoValue(InstanceId.of(instanceId), ActuatorEndpoints.SET_ONE_LOGGER, payload);
     }
 
@@ -288,7 +328,7 @@ public class LoggersMcpServerTools {
             @McpToolParam(description = "The logging level.") String loggerLevel) {
 
         HttpPayload payload = HttpPayload.json(
-                Map.of("group.name", groupName),
+                Map.of("name", groupName),
                 // TODO: implement https://github.com/axelixlabs/axelix/issues/1204
                 jacksonMessageSerializationStrategy.serialize(new LogLevelChangeRequest(loggerLevel, null)));
         endpointInvoker.invokeNoValue(InstanceId.of(instanceId), ActuatorEndpoints.SET_FOR_LOGGER_GROUP, payload);
@@ -335,11 +375,12 @@ public class LoggersMcpServerTools {
         endpointInvoker.invokeNoValue(
                 InstanceId.of(instanceId),
                 ActuatorEndpoints.RESET_FOR_LOGGER,
-                new DefaultHttpPayload(Map.of("logger.name", loggerName)));
+                new DefaultHttpPayload(Map.of("name", loggerName)));
     }
 
     private LoggersFeed getAllLoggers(String instanceId) {
-        return endpointInvoker.invoke(
+        byte[] body = endpointInvoker.invoke(
                 InstanceId.of(instanceId), ActuatorEndpoints.GET_ALL_LOGGERS, NoHttpPayload.INSTANCE);
+        return objectMapper.readValue(body, LoggersFeed.class);
     }
 }

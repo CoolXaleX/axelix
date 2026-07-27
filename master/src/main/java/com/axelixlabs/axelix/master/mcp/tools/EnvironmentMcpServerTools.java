@@ -17,6 +17,8 @@
  */
 package com.axelixlabs.axelix.master.mcp.tools;
 
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpTool.McpAnnotations;
 import org.springframework.ai.mcp.annotation.McpToolParam;
@@ -64,7 +66,8 @@ public class EnvironmentMcpServerTools {
                             idempotentHint = true,
                             openWorldHint = false))
     public String getInstanceEnvironment(@McpToolParam(description = "The instance ID") String instanceId) {
-        return String.valueOf(endpointInvoker.invoke(
-                InstanceId.of(instanceId), ActuatorEndpoints.GET_ALL_ENV_PROPERTIES, NoHttpPayload.INSTANCE));
+        byte[] body = endpointInvoker.invoke(
+                InstanceId.of(instanceId), ActuatorEndpoints.GET_ALL_ENV_PROPERTIES, NoHttpPayload.INSTANCE);
+        return new String(body, StandardCharsets.UTF_8);
     }
 }
