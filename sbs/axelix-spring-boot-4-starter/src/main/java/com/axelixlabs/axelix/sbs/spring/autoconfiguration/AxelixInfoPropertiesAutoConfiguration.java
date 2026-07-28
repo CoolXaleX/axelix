@@ -42,12 +42,10 @@ public class AxelixInfoPropertiesAutoConfiguration {
 
     @Bean
     public AxelixInfoProperties axelixInfoProperties(@Value(AXELIX_INFO_LOCATION) Resource axelixInfoResource) {
-        AxelixInfoProperties emptyProperties = AxelixInfoPropertiesLoader.empty();
-
         try (InputStream inputStream = axelixInfoResource.getInputStream()) {
             return AxelixInfoPropertiesLoader.load(inputStream);
         } catch (Exception ignored) {
         }
-        return emptyProperties;
+        return AxelixInfoPropertiesLoader.empty();
     }
 }
