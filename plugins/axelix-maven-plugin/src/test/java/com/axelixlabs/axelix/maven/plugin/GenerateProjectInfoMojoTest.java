@@ -75,11 +75,11 @@ class GenerateProjectInfoMojoTest {
         private static final String POM_CONTENT = """
             <project xmlns="http://maven.apache.org/POM/4.0.0">
                 <modelVersion>4.0.0</modelVersion>
-            
+
                 <groupId>com.example</groupId>
                 <artifactId>axelix-plugin-test</artifactId>
                 <version>1.2.3</version>
-            
+
                 <build>
                     <plugins>
                         <plugin>
@@ -216,7 +216,8 @@ class GenerateProjectInfoMojoTest {
 
             // then.
             Path infoFile = Paths.get(baseDir, "target/classes/META-INF/axelix-info.properties");
-            assertThat(loadProperties(infoFile).getProperty(PROFILER_DETECTED_PROPERTY)).isEqualTo("false");
+            assertThat(loadProperties(infoFile).getProperty(PROFILER_DETECTED_PROPERTY))
+                    .isEqualTo("false");
         }
 
         @Test
@@ -232,7 +233,8 @@ class GenerateProjectInfoMojoTest {
 
             // then.
             Path infoFile = Paths.get(baseDir, "target/classes/META-INF/axelix-info.properties");
-            assertThat(loadProperties(infoFile).getProperty(PROFILER_DETECTED_PROPERTY)).isEqualTo("true");
+            assertThat(loadProperties(infoFile).getProperty(PROFILER_DETECTED_PROPERTY))
+                    .isEqualTo("true");
         }
 
         @Test
