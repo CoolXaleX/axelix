@@ -35,15 +35,15 @@ import com.axelixlabs.axelix.common.api.registration.BasicRegistrationMetadata;
 import com.axelixlabs.axelix.common.domain.version.AxelixVersionDiscoverer;
 import com.axelixlabs.axelix.sbs.spring.core.details.AbstractDetailsSharedContextTest.TestApplication;
 import com.axelixlabs.axelix.sbs.spring.core.master.BasicRegistrationMetadataAssembler;
-import com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoProperties;
-import com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoPropertiesLoader;
+import com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoProperties;
+import com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoPropertiesLoader;
 import com.axelixlabs.axelix.sbs.spring.core.master.DefaultBasicRegistrationMetadataAssembler;
 import com.axelixlabs.axelix.sbs.spring.core.master.HealthDetectionFunction;
 import com.axelixlabs.axelix.sbs.spring.core.master.LibraryInformationProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
 import com.axelixlabs.axelix.sbs.spring.core.utils.TestInsightsInfoProvider;
 
-import static com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoPropertiesLoader.AXELIX_INFO_LOCATION;
+import static com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoPropertiesLoader.AXELIX_INFO_LOCATION;
 
 /**
  * Shared base for the {@code master} integration tests. By defining a single, unioned context here and having every
@@ -119,18 +119,18 @@ abstract class AbstractDetailsSharedContextTest {
         }
 
         @Bean
-        public BuildGitInfoProperties buildGitInfoProperties(@Value(AXELIX_INFO_LOCATION) Resource axelixInfoResource)
+        public AxelixInfoProperties axelixInfoProperties(@Value(AXELIX_INFO_LOCATION) Resource axelixInfoResource)
                 throws IOException {
 
             try (InputStream inputStream = axelixInfoResource.getInputStream()) {
-                return BuildGitInfoPropertiesLoader.load(inputStream);
+                return AxelixInfoPropertiesLoader.load(inputStream);
             }
         }
 
         @Bean
         public ServiceDetailsAssembler serviceDetailsAssembler(
-                BuildGitInfoProperties buildGitInfoProperties, LibraryInformationProvider libraryInformationProvider) {
-            return new DefaultServiceDetailsAssembler(buildGitInfoProperties, libraryInformationProvider);
+                AxelixInfoProperties axelixInfoProperties, LibraryInformationProvider libraryInformationProvider) {
+            return new DefaultServiceDetailsAssembler(axelixInfoProperties, libraryInformationProvider);
         }
 
         @Bean
@@ -139,13 +139,13 @@ abstract class AbstractDetailsSharedContextTest {
                 AxelixVersionDiscoverer axelixVersionDiscoverer,
                 LibraryInformationProvider libraryInformationProvider,
                 InsightsInfoProvider insightsInfoProvider,
-                BuildGitInfoProperties buildGitInfoProperties) {
+                AxelixInfoProperties axelixInfoProperties) {
             return new DefaultBasicRegistrationMetadataAssembler(
                     healthDetectionFunction,
                     axelixVersionDiscoverer,
                     libraryInformationProvider,
                     insightsInfoProvider,
-                    buildGitInfoProperties);
+                    axelixInfoProperties);
         }
     }
 }

@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Bean;
 import com.axelixlabs.axelix.sbs.spring.core.details.AxelixDetailsEndpoint;
 import com.axelixlabs.axelix.sbs.spring.core.details.DefaultServiceDetailsAssembler;
 import com.axelixlabs.axelix.sbs.spring.core.details.ServiceDetailsAssembler;
-import com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoProperties;
+import com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoProperties;
 import com.axelixlabs.axelix.sbs.spring.core.master.LibraryInformationProvider;
 
 /**
@@ -35,7 +35,7 @@ import com.axelixlabs.axelix.sbs.spring.core.master.LibraryInformationProvider;
  * @author Nikita Kirillov, Sergey Cherkasov
  */
 @AutoConfiguration(
-        after = {AxelixBuildGitInfoPropertiesAutoConfiguration.class, LibraryInformationProviderAutoConfiguration.class
+        after = {AxelixInfoPropertiesAutoConfiguration.class, LibraryInformationProviderAutoConfiguration.class
         })
 @ConditionalOnAvailableEndpoint(endpoint = InfoEndpoint.class)
 public class AxelixDetailsEndpointAutoConfiguration {
@@ -47,7 +47,7 @@ public class AxelixDetailsEndpointAutoConfiguration {
 
     @Bean
     public ServiceDetailsAssembler serviceDetailsAssembler(
-            BuildGitInfoProperties buildGitInfoProperties, LibraryInformationProvider libraryInformationProvider) {
-        return new DefaultServiceDetailsAssembler(buildGitInfoProperties, libraryInformationProvider);
+            AxelixInfoProperties axelixInfoProperties, LibraryInformationProvider libraryInformationProvider) {
+        return new DefaultServiceDetailsAssembler(axelixInfoProperties, libraryInformationProvider);
     }
 }

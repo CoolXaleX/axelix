@@ -33,7 +33,7 @@ import com.axelixlabs.axelix.common.domain.version.PropertiesAxelixVersionDiscov
 import com.axelixlabs.axelix.sbs.spring.core.gclog.GcLogService;
 import com.axelixlabs.axelix.sbs.spring.core.master.AxelixMetadataEndpoint;
 import com.axelixlabs.axelix.sbs.spring.core.master.BasicRegistrationMetadataAssembler;
-import com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoProperties;
+import com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoProperties;
 import com.axelixlabs.axelix.sbs.spring.core.master.CachingAxelixVersionDiscoverer;
 import com.axelixlabs.axelix.sbs.spring.core.master.DefaultBasicRegistrationMetadataAssembler;
 import com.axelixlabs.axelix.sbs.spring.core.master.DefaultOpenSessionInViewStateProvider;
@@ -57,7 +57,7 @@ import com.axelixlabs.axelix.sbs.spring.core.persistence.transaction.Transaction
         after = {
             GarbageCollectionAutoConfiguration.class,
             HealthEndpointAutoConfiguration.class,
-            AxelixBuildGitInfoPropertiesAutoConfiguration.class,
+            AxelixInfoPropertiesAutoConfiguration.class,
             LibraryInformationProviderAutoConfiguration.class,
             TransactionMonitoringAutoConfiguration.class,
         })
@@ -101,7 +101,7 @@ public class AxelixMetadataEndpointAutoConfiguration {
     public BasicRegistrationMetadataAssembler serviceMetadataAssembler(
             HealthEndpoint healthEndpoint,
             AxelixVersionDiscoverer axelixVersionDiscoverer,
-            BuildGitInfoProperties buildGitInfoProperties,
+            AxelixInfoProperties axelixInfoProperties,
             LibraryInformationProvider libraryInformationProvider,
             InsightsInfoProvider insightsInfoProvider) {
 
@@ -110,7 +110,7 @@ public class AxelixMetadataEndpointAutoConfiguration {
                 axelixVersionDiscoverer,
                 libraryInformationProvider,
                 insightsInfoProvider,
-                buildGitInfoProperties);
+                axelixInfoProperties);
     }
 
     @Bean

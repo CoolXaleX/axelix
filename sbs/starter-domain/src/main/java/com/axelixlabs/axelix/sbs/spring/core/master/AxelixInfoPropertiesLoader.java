@@ -22,29 +22,29 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Loads {@link BuildGitInfoProperties} from the raw {@code axelix-info.properties} content.
+ * Loads {@link AxelixInfoProperties} from the raw {@code axelix-info.properties} content.
  *
  * @author Nikita Kirillov
  */
-public class BuildGitInfoPropertiesLoader {
+public class AxelixInfoPropertiesLoader {
 
     public static final String AXELIX_INFO_LOCATION =
             "${axelix.info.location:classpath:META-INF/axelix-info.properties}";
 
-    private BuildGitInfoPropertiesLoader() {}
+    private AxelixInfoPropertiesLoader() {}
 
     /**
      * @param inputStream the stream over the raw {@code axelix-info.properties} content. Not closed
      *                    by this method - the caller remains responsible for it.
      * @return the parsed properties.
      */
-    public static BuildGitInfoProperties load(InputStream inputStream) throws IOException {
+    public static AxelixInfoProperties load(InputStream inputStream) throws IOException {
         Properties properties = new Properties();
         properties.load(inputStream);
-        return new BuildGitInfoProperties(properties);
+        return new AxelixInfoProperties(properties);
     }
 
-    public static BuildGitInfoProperties empty() {
-        return new BuildGitInfoProperties(new Properties());
+    public static AxelixInfoProperties empty() {
+        return new AxelixInfoProperties(new Properties());
     }
 }

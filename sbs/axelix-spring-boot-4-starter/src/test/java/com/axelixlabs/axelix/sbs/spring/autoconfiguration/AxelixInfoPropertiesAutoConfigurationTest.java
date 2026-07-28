@@ -22,26 +22,26 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
-import com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoProperties;
+import com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Integration tests for {@link AxelixBuildGitInfoPropertiesAutoConfiguration}
+ * Integration tests for {@link AxelixInfoPropertiesAutoConfiguration}
  *
  * @since 09.02.2026
  * @author Nikita Kirillov
  * @author Mikhail Polivakha
  */
-class AxelixBuildGitInfoPropertiesAutoConfigurationTest {
+class AxelixInfoPropertiesAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(AxelixBuildGitInfoPropertiesAutoConfiguration.class));
+            .withConfiguration(AutoConfigurations.of(AxelixInfoPropertiesAutoConfiguration.class));
 
     @Test
-    void shouldCreateBuildGitInfoProperties() {
+    void shouldCreateAxelixInfoProperties() {
         contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(BuildGitInfoProperties.class);
+            assertThat(context).hasSingleBean(AxelixInfoProperties.class);
         });
     }
 }

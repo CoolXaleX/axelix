@@ -38,30 +38,30 @@ public class DefaultBasicRegistrationMetadataAssembler implements BasicRegistrat
     private final AxelixVersionDiscoverer axelixVersionDiscoverer;
     private final LibraryInformationProvider libraryInformationProvider;
     private final InsightsInfoProvider insightsInfoProvider;
-    private final BuildGitInfoProperties buildGitInfoProperties;
+    private final AxelixInfoProperties axelixInfoProperties;
 
     public DefaultBasicRegistrationMetadataAssembler(
             HealthDetectionFunction healthDetectionFunction,
             AxelixVersionDiscoverer axelixVersionDiscoverer,
             LibraryInformationProvider libraryInformationProvider,
             InsightsInfoProvider insightsInfoProvider,
-            BuildGitInfoProperties buildGitInfoProperties) {
+            AxelixInfoProperties axelixInfoProperties) {
 
         this.healthDetectionFunction = healthDetectionFunction;
         this.axelixVersionDiscoverer = axelixVersionDiscoverer;
         this.libraryInformationProvider = libraryInformationProvider;
         this.insightsInfoProvider = insightsInfoProvider;
-        this.buildGitInfoProperties = buildGitInfoProperties;
+        this.axelixInfoProperties = axelixInfoProperties;
     }
 
     @Override
     public BasicRegistrationMetadata assemble() {
         return new BasicRegistrationMetadata(
                 axelixVersionDiscoverer.getVersion(),
-                buildGitInfoProperties.getServiceVersion(),
-                buildGitInfoProperties.getGroupId(),
-                buildGitInfoProperties.getArtifactId(),
-                buildGitInfoProperties.getCommitShaShort(),
+                axelixInfoProperties.getServiceVersion(),
+                axelixInfoProperties.getGroupId(),
+                axelixInfoProperties.getArtifactId(),
+                axelixInfoProperties.getCommitShaShort(),
                 libraryInformationProvider.getJdkVendorName(),
                 GarbageCollectorInfoAssembler.getGarbageCollectorInfo(),
                 buildSoftwareVersionInUse(),

@@ -23,7 +23,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixBeansEndpointAutoConfiguration;
-import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixBuildGitInfoPropertiesAutoConfiguration;
+import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixInfoPropertiesAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixCachesEndpointAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixConditionsEndpointAutoConfiguration;
 import com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixConfigurationsPropertiesEndpointAutoConfiguration;
@@ -57,7 +57,7 @@ import com.axelixlabs.axelix.sbs.spring.autoconfiguration.ValidationListenerAuto
 @SpringBootApplication(
         exclude = {
             AxelixBeansEndpointAutoConfiguration.class,
-            AxelixBuildGitInfoPropertiesAutoConfiguration.class,
+            AxelixInfoPropertiesAutoConfiguration.class,
             AxelixCachesEndpointAutoConfiguration.class,
             AxelixConditionsEndpointAutoConfiguration.class,
             AxelixConfigurationsPropertiesEndpointAutoConfiguration.class,

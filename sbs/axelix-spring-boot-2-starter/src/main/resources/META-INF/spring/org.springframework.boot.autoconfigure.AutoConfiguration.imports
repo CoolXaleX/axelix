@@ -12,7 +12,7 @@ com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixMetricsAutoConfiguratio
 com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixMetricsPublisherAutoConfiguration
 com.axelixlabs.axelix.sbs.spring.autoconfiguration.EndpointPropertiesSupportAutoConfiguration
 com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixGcEndpointAutoConfiguration
-com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixBuildGitInfoPropertiesAutoConfiguration
+com.axelixlabs.axelix.sbs.spring.autoconfiguration.AxelixInfoPropertiesAutoConfiguration
 com.axelixlabs.axelix.sbs.spring.autoconfiguration.JwtAuthAutoConfiguration
 com.axelixlabs.axelix.sbs.spring.autoconfiguration.LibraryInformationProviderAutoConfiguration
 com.axelixlabs.axelix.sbs.spring.autoconfiguration.HeartBeatAutoConfiguration

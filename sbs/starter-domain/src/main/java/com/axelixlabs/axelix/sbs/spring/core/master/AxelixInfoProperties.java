@@ -27,7 +27,7 @@ import static com.axelixlabs.axelix.sbs.spring.core.utils.StringUtils.emptyIfNul
  *
  * @author Nikita Kirillov
  */
-public final class BuildGitInfoProperties {
+public final class AxelixInfoProperties {
 
     private static final String BUILD_GROUP = "build.group";
     private static final String BUILD_NAME = "build.name";
@@ -41,7 +41,7 @@ public final class BuildGitInfoProperties {
 
     private final Properties properties;
 
-    public BuildGitInfoProperties(Properties properties) {
+    public AxelixInfoProperties(Properties properties) {
         this.properties = properties;
     }
 

@@ -47,7 +47,7 @@ import com.axelixlabs.axelix.common.domain.version.AxelixVersionDiscoverer;
 import com.axelixlabs.axelix.sbs.spring.core.config.HeartBeatConfigurationProperties;
 import com.axelixlabs.axelix.sbs.spring.core.master.insights.InsightsInfoProvider;
 
-import static com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoPropertiesLoader.AXELIX_INFO_LOCATION;
+import static com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoPropertiesLoader.AXELIX_INFO_LOCATION;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -122,11 +122,11 @@ class DefaultHeartBeatMetadataAssemblerTest {
         }
 
         @Bean
-        public BuildGitInfoProperties buildGitInfoProperties(@Value(AXELIX_INFO_LOCATION) Resource axelixInfoResource)
+        public AxelixInfoProperties axelixInfoProperties(@Value(AXELIX_INFO_LOCATION) Resource axelixInfoResource)
                 throws IOException {
 
             try (InputStream inputStream = axelixInfoResource.getInputStream()) {
-                return BuildGitInfoPropertiesLoader.load(inputStream);
+                return AxelixInfoPropertiesLoader.load(inputStream);
             }
         }
 
@@ -136,13 +136,13 @@ class DefaultHeartBeatMetadataAssemblerTest {
                 AxelixVersionDiscoverer axelixVersionDiscoverer,
                 LibraryInformationProvider libraryInformationProvider,
                 InsightsInfoProvider insightsInfoProvider,
-                BuildGitInfoProperties buildGitInfoProperties) {
+                AxelixInfoProperties axelixInfoProperties) {
             return new DefaultBasicRegistrationMetadataAssembler(
                     healthDetectionFunction,
                     axelixVersionDiscoverer,
                     libraryInformationProvider,
                     insightsInfoProvider,
-                    buildGitInfoProperties);
+                axelixInfoProperties);
         }
     }
 

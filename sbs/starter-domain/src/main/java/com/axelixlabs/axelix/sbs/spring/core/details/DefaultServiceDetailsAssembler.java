@@ -24,7 +24,7 @@ import com.axelixlabs.axelix.common.api.InstanceDetails.GitDetails.CommitAuthor;
 import com.axelixlabs.axelix.common.api.InstanceDetails.OsDetails;
 import com.axelixlabs.axelix.common.api.InstanceDetails.RuntimeDetails;
 import com.axelixlabs.axelix.common.api.InstanceDetails.SpringDetails;
-import com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoProperties;
+import com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoProperties;
 import com.axelixlabs.axelix.sbs.spring.core.master.LibraryInformationProvider;
 
 import static com.axelixlabs.axelix.sbs.spring.core.utils.StringUtils.emptyIfNull;
@@ -37,12 +37,12 @@ import static com.axelixlabs.axelix.sbs.spring.core.utils.StringUtils.emptyIfNul
  */
 public class DefaultServiceDetailsAssembler implements ServiceDetailsAssembler {
 
-    private final BuildGitInfoProperties buildGitInfoProperties;
+    private final AxelixInfoProperties axelixInfoProperties;
     private final LibraryInformationProvider libraryInformationProvider;
 
     public DefaultServiceDetailsAssembler(
-            BuildGitInfoProperties buildGitInfoProperties, LibraryInformationProvider libraryInformationProvider) {
-        this.buildGitInfoProperties = buildGitInfoProperties;
+        AxelixInfoProperties axelixInfoProperties, LibraryInformationProvider libraryInformationProvider) {
+        this.axelixInfoProperties = axelixInfoProperties;
         this.libraryInformationProvider = libraryInformationProvider;
     }
 
@@ -59,13 +59,13 @@ public class DefaultServiceDetailsAssembler implements ServiceDetailsAssembler {
 
     private GitDetails getGitDetails() {
         CommitAuthor commitAuthor = new CommitAuthor(
-                buildGitInfoProperties.getCommitUserName(), buildGitInfoProperties.getCommitUserEmail());
+                axelixInfoProperties.getCommitUserName(), axelixInfoProperties.getCommitUserEmail());
 
         return new GitDetails(
-                buildGitInfoProperties.getCommitShaShort(),
-                buildGitInfoProperties.getBranch(),
+                axelixInfoProperties.getCommitShaShort(),
+                axelixInfoProperties.getBranch(),
                 commitAuthor,
-                buildGitInfoProperties.getCommitTimestamp());
+                axelixInfoProperties.getCommitTimestamp());
     }
 
     private SpringDetails getSpringDetails() {
@@ -85,10 +85,10 @@ public class DefaultServiceDetailsAssembler implements ServiceDetailsAssembler {
     private BuildDetails getBuildDetails() {
 
         return new BuildDetails(
-                buildGitInfoProperties.getArtifactId(),
-                buildGitInfoProperties.getServiceVersion(),
-                buildGitInfoProperties.getGroupId(),
-                buildGitInfoProperties.getBuildTimestamp());
+                axelixInfoProperties.getArtifactId(),
+                axelixInfoProperties.getServiceVersion(),
+                axelixInfoProperties.getGroupId(),
+                axelixInfoProperties.getBuildTimestamp());
     }
 
     private OsDetails getOsDetails() {

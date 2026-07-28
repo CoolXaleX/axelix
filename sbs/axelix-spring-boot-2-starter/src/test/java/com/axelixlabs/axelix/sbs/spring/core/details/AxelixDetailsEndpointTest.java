@@ -37,14 +37,14 @@ import org.springframework.http.ResponseEntity;
 import com.axelixlabs.axelix.common.domain.http.HttpMethod;
 import com.axelixlabs.axelix.sbs.spring.core.auth.JwtAuthTestConfiguration;
 import com.axelixlabs.axelix.sbs.spring.core.details.AxelixDetailsEndpointTest.CurrentConfig;
-import com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoProperties;
-import com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoPropertiesLoader;
+import com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoProperties;
+import com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoPropertiesLoader;
 import com.axelixlabs.axelix.sbs.spring.core.master.DefaultLibraryInformationProvider;
 import com.axelixlabs.axelix.sbs.spring.core.master.LibraryInformationProvider;
 import com.axelixlabs.axelix.sbs.spring.core.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.sbs.spring.core.utils.auth.ProtectedEndpointTests;
 
-import static com.axelixlabs.axelix.sbs.spring.core.master.BuildGitInfoPropertiesLoader.AXELIX_INFO_LOCATION;
+import static com.axelixlabs.axelix.sbs.spring.core.master.AxelixInfoPropertiesLoader.AXELIX_INFO_LOCATION;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.MapEntry.entry;
@@ -127,16 +127,16 @@ class AxelixDetailsEndpointTest {
 
         @Bean
         public ServiceDetailsAssembler serviceDetailsAssembler(
-                BuildGitInfoProperties buildGitInfoProperties, LibraryInformationProvider libraryInformationProvider) {
-            return new DefaultServiceDetailsAssembler(buildGitInfoProperties, libraryInformationProvider);
+                AxelixInfoProperties axelixInfoProperties, LibraryInformationProvider libraryInformationProvider) {
+            return new DefaultServiceDetailsAssembler(axelixInfoProperties, libraryInformationProvider);
         }
 
         @Bean
-        public BuildGitInfoProperties buildGitInfoProperties(@Value(AXELIX_INFO_LOCATION) Resource axelixInfoResource)
+        public AxelixInfoProperties axelixInfoProperties(@Value(AXELIX_INFO_LOCATION) Resource axelixInfoResource)
                 throws IOException {
 
             try (InputStream inputStream = axelixInfoResource.getInputStream()) {
-                return BuildGitInfoPropertiesLoader.load(inputStream);
+                return AxelixInfoPropertiesLoader.load(inputStream);
             }
         }
 
