@@ -173,6 +173,13 @@ Or, with Maven:
   <groupId>com.axelixlabs</groupId>
   <artifactId>axelix-maven-plugin</artifactId>
   <version>1.0.0</version>
+  <executions>
+    <execution>
+      <goals>
+        <goal>axelix-generate-project-info</goal>
+      </goals>
+    </execution>
+  </executions>
 </plugin>
 ```
 

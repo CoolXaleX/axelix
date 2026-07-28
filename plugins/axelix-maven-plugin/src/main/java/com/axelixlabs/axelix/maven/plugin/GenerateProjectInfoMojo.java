@@ -27,12 +27,15 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 
+import javax.inject.Inject;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.jgit.lib.AbbreviatedObjectId;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
@@ -42,23 +45,35 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
-import static com.axelixlabs.axelix.maven.plugin.AxelixLifecycleParticipant.PROFILER_DETECTED_PROPERTY;
-
 /**
  * Mojo that generates {@code META-INF/axelix-info.properties} — build coordinates plus git commit
  * metadata — directly into the output directory, so it is packaged by {@code jar} or Spring
  * Boot's repackage goal without any further configuration.
+ *
+ * <p>It also records whether the Spring Boot Test Profiler is present on this module's own
+ * dependency graph, so each module reports its own outcome independently; it never adds the
+ * dependency itself.
  *
  * @author Nikita Kirillov
  */
 @Mojo(name = "axelix-generate-project-info", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class GenerateProjectInfoMojo extends AbstractMojo {
 
+    public static final String PROFILER_DETECTED_PROPERTY = "spring.test.profiler.detected";
+
     private static final int ABBREVIATED_ID_LENGTH = 7;
 
     @Parameter(readonly = true, defaultValue = "${project}")
     @SuppressWarnings("NullAway")
     private MavenProject mavenProject;
+
+    @Parameter(readonly = true, defaultValue = "${repositorySystemSession}")
+    @SuppressWarnings("NullAway")
+    private RepositorySystemSession repositorySystemSession;
+
+    @Inject
+    @SuppressWarnings("NullAway")
+    private SpringTestProfilerDetector springTestProfilerDetector;
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -83,10 +98,22 @@ public class GenerateProjectInfoMojo extends AbstractMojo {
         properties.setProperty("build.name", mavenProject.getArtifactId());
         properties.setProperty("build.version", mavenProject.getVersion());
         properties.setProperty("build.time", Instant.now().toString());
-        properties.setProperty(
-                PROFILER_DETECTED_PROPERTY,
-                mavenProject.getProperties().getProperty(PROFILER_DETECTED_PROPERTY, "false"));
+        properties.setProperty(PROFILER_DETECTED_PROPERTY, String.valueOf(isProfilerPresentInModule()));
         return properties;
+    }
+
+    /**
+     * Detection is scoped to this module alone: the profiler is looked up on {@code mavenProject}'s
+     * own dependency graph, so each module records its own outcome independently of its siblings.
+     */
+    private boolean isProfilerPresentInModule() {
+        boolean detected = springTestProfilerDetector.isProfilerPresent(mavenProject, repositorySystemSession);
+        if (detected) {
+            getLog().info("Spring Test Profiler detected in module '" + mavenProject.getArtifactId() + "'");
+        } else {
+            getLog().info("Spring Test Profiler not detected in module '" + mavenProject.getArtifactId() + "'");
+        }
+        return detected;
     }
 
     private void collectGitInfo(Properties properties) {
