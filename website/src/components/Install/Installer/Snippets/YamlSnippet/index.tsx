@@ -60,7 +60,7 @@ export const YamlSnippet = ({ refEl }: IProps) => {
                 </span>
                 <span className={styles.Line}>
                     {"      "}
-                    <span className={styles.At}>auto</span>: <span className={styles.St}>true</span>
+                    <span className={styles.At}>self-registration</span>: <span className={styles.St}>true</span>
                 </span>
                 <span className={styles.Line}>
                     {"      "}
