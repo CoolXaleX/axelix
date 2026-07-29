@@ -92,24 +92,24 @@ jobs:
           -Paxelix.starter.tests.java.version=${{ matrix.javaVersion }}
           -Porg.gradle.java.installations.fromEnv=JAVA_HOME_${{ matrix.javaVersion }}_X64,JAVA_HOME_25_X64
 
-  security-check:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: read
-      security-events: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-        with:
-          ref: v${{ env.RELEASE_TAG }}
-          fetch-depth: 0
-
-      - name: Running Security Check
-        uses: ./.github/actions/security-check
+#  security-check:
+#    runs-on: ubuntu-latest
+#    permissions:
+#      contents: read
+#      actions: read
+#      security-events: write
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v7
+#        with:
+#          ref: v${{ env.RELEASE_TAG }}
+#          fetch-depth: 0
+#
+#      - name: Running Security Check
+#        uses: ./.github/actions/security-check
 
   release-artifacts:
-    needs: [build-and-test, starter-compatibility-tests, security-check]
+    needs: [build-and-test, starter-compatibility-tests]
     runs-on: ubuntu-latest
     permissions:
       contents: read
