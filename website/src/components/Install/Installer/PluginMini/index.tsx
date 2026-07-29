@@ -50,7 +50,13 @@ export const PluginMini = ({ activeSnippetRef }: IProps) => {
     <groupId>com.axelixlabs</groupId>
     <artifactId>axelix-maven-plugin</artifactId>
     <version>${axelixActualVersion}</version>
-    <extensions>true</extensions>
+    <executions>
+        <execution>
+            <goals>
+                <goal>axelix-generate-project-info</goal>
+            </goals>
+        </execution>
+    </executions>
 </plugin>`,
         },
     ];
