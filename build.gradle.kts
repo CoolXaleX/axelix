@@ -174,8 +174,9 @@ val starterModules = listOf(
     project(":sbs:axelix-spring-boot-4-starter")
 )
 
+val gradlePluginModule = project(":plugins:axelix-gradle-plugin")
 val pluginModules = listOf(
-    project(":plugins:axelix-gradle-plugin"),
+    gradlePluginModule,
     project(":plugins:axelix-maven-plugin")
 )
 
@@ -201,9 +202,14 @@ if (starterTestJavaVersion != null) {
 
 // Apply publishing and signing plugins to all starter and plugin modules
 val mavenCentral = "ossrh-staging-api"
+// the main publication that handles all the modules in the Axelix monorepo
 val mainPublication = "main"
+// this publication is created by axelix-gradle-plugin
+val pluginMavenPublication = "pluginMaven"
 
 configure(publishableModules) {
+    val isGradlePluginModule = path == gradlePluginModule.path
+
     apply(plugin = "maven-publish")
     apply(plugin = "signing")
 
@@ -250,16 +256,19 @@ configure(publishableModules) {
 
         publications {
 
-            // The 'main' publication. Created for each subproject that is supposed to be published.
-            register<MavenPublication>(mainPublication) {
-                from(components["java"])
+            // The java-gradle-plugin creates pluginMaven and the plugin marker publication itself. So, the main
+            // publication must not really be added for gradle plugin
+            if (!isGradlePluginModule) {
+                register<MavenPublication>(mainPublication) {
+                    from(components["java"])
+                }
+            }
 
-                // Configure the POM file details
+            withType<MavenPublication>().configureEach {
                 pom {
                     name.set(project.name)
                     description = "An AI-native monitoring solution for Java Spring Boot deployments"
                     url = "https://github.com/axelixlabs/axelix"
-                    packaging = "jar"
 
                     organization {
                         name.set("Axelix Labs")
@@ -319,7 +328,9 @@ configure(publishableModules) {
         if (signingKey != null && signingPassword != null) {
             useInMemoryPgpKeys(signingKey, signingPassword)
         }
-        sign(publishing.publications.getByName(mainPublication))
+        publishing.publications.configureEach {
+            signing.sign(this)
+        }
     }
 
     gradle.taskGraph.whenReady {
@@ -340,10 +351,18 @@ configure(publishableModules) {
 
     // We're doing that as a hack. The problem is that for now, there is no "good" or standard way of publishing maven-like
     // artifacts from gradle build system to maven central (surprise!). They're currently working on it being fixed, but in order
-    // to make the standard mavne-publish plugin work, we need to add one more HTTP query to the Maven OSSRH registry. That is what is
+    // to make the standard maven-publish plugin work, we need to add one more HTTP query to the Maven OSSRH registry. That is what is
     // actually happening here
     tasks.withType<PublishToMavenRepository>().configureEach {
-        if (repository.name == mavenCentral && publication.name == mainPublication) {
+        val triggerPublication =
+            if (isGradlePluginModule) pluginMavenPublication else mainPublication
+        val triggerTaskName =
+            "publish${triggerPublication.replaceFirstChar(Char::uppercase)}PublicationTo" +
+                "${mavenCentral.replaceFirstChar(Char::uppercase)}Repository"
+        if (name == triggerTaskName) {
+            mustRunAfter(
+                tasks.withType<PublishToMavenRepository>().matching { it.name != triggerTaskName }
+            )
             doLast {
                 val endpoint =
                     "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/$projectNamespace"
