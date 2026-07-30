@@ -1,0 +1,176 @@
+---
+title: "Axelix goes GA. A journey of a thousand miles begins with a single step"
+date: 2026-07-30
+authors: ["Mikhail Polivakha"]
+tags: ["Announcements", "Releases"]
+heroImagePath: /posts/never-use-natural-keys/Natural_IDs_Preview-selection.png
+description: "On behalf of the core Axelix team, and everybody who has contributed to the community, I want to declare: we finally did it. Axelix, finally, goes GA. In this post, I want to share the story and the motivation behind the product overall. I hope you find it interesting."
+metaDescription: "On behalf of the core Axelix team, and everybody who has contributed to the community, I want to declare: we finally did it. Axelix, finally, goes GA. In this post, I want to share the story and the motivation behind the product overall. I hope you find it interesting."
+---
+
+# Axelix. A journey of a thousand miles begins with a single step.
+
+On behalf of the core Axelix team, and everybody who has contributed to the community, I want to declare: we finally did it.
+
+**Axelix, finally, [goes GA (Generally Available)!](https://github.com/axelixlabs/axelix/releases/tag/v1.0.0)**
+
+For those who do not know - Axelix is a product with an Open Source core, that allows you to discover the common problems, pitfalls and inefficiencies in Java applications at large scale.
+
+We're available [on GitHub](https://github.com/axelixlabs/axelix) (btw - give us a star!).
+
+In this post, I want to share the story and the motivation behind the product overall. I hope you find it interesting.
+
+## The Story. Big "Why" Behind Axelix
+
+Java is quite an interesting language and ecosystem in general. I think a lot of people will not argue that it is quite old, and it was one of the first so-called "Object-Oriented" languages, that actually gained massive adoption. It both was, and it still is the backbone of modern enterprise.
+
+For anyone who claims that Java is dead - I recommend checking the [JetBrains State of Developer Ecosystem survey](https://devecosystem-2025.jetbrains.com/) or even the [Stack Overflow survey for 2025](https://survey.stackoverflow.co/2025/technology) (and Stack Overflow has, sadly, become a part of history). It is clear that Java as a language and the "ecosystem" around it (including Kotlin) is still relatively popular, and it remains true.
+
+## Ecosystems around Languages
+
+The experienced developer knows that today's ecosystems that evolve around languages are typically very diverse. For example, let's talk about JavaScript. If we decide to run JavaScript on the server, then we're probably going to work with a database of some sort. Therefore, we're also going to need a framework, a library to work with the database, e.g. an ORM (I know that we may work without it but let's leave that aside).
+
+And in JavaScript, we have quite a lot of options:
+
+- Prisma
+- TypeORM
+- DrizzleORM
+- Kysely and so on.
+
+We can pretty safely state that [Prisma ORM is _probably_ the most used ORM on JavaScript](https://www.prisma.io/blog/how-prisma-orm-became-the-most-downloaded-orm-for-node-js). But notice that it is far from being the definitive JavaScript ORM.
+
+It is not like Prisma is the default choice and is by far the most popular ORM - it is just not the case. I want to emphasize - even by Prisma's own assessment of its popularity, it is not far ahead of its competitors. They are all very close. **So, the way people work with the database in JavaScript may differ heavily from team-to-team.**
+
+## The defining trait of Java Ecosystem
+
+In Java, if we're going to take the same problem (working with the database), then we will quickly realize, that the industry is heavily concentrated.
+
+We generally can state that Spring Data JPA as a solution around Hibernate occupies above 50% of all the data access solutions, let alone ORMs. I remember some time ago Josh Long, the much-loved Developer Advocate for Spring, posted a survey on X (formerly Twitter) about the data access technologies usage:
+
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Which JDBC-centric persistence technology do you prefer?</p>&mdash; Josh Long (@starbuxman) <a href="https://x.com/starbuxman/status/1528655715933597697?ref_src=twsrc%5Etfw">May 23, 2022</a></blockquote> <script async src="https://platform.x.com/widgets.js" charset="utf-8"></script>
+
+We must of course acknowledge that there are fast-growing alternative solutions to JPA that are explored, such as jOOQ, but Spring Data JPA dominates the field. So, the way we work with the database in Java (at least on the server side) is relatively well-defined and revolves around Spring Data JPA.
+
+But there is more to it, it is not just the ORMs or data-access libraries. It's something bigger.
+
+## Spring Framework as the Phenomenon
+
+We cannot talk about Java ecosystem and not talk about Spring Framework. If we're going to look in the [aforementioned Developer Ecosystem State report from JetBrains](https://devecosystem-2025.jetbrains.com/), we're going to get the following insights. I have assembled them carefully for you - share them freely as you want. Also note that the respondents had multiple choices:
+
+| Framework | Users | Share of framework users |
+|---|---:|---:|
+| **Spring Framework** | 3,042 | 87.8% |
+| Ktor | 362 | 10.5% |
+| Quarkus | 287 | 8.3% |
+| Other | 210 | 6.1% |
+| Vaadin | 104 | 3.0% |
+| Micronaut | 95 | 2.7% |
+| Grails | 61 | 1.8% |
+| Helidon | 36 | 1.0% |
+
+This is (at least AFAIK) one of the most recent and most trusted data we have. Many thanks to JetBrains for publishing it.
+
+So, yes, although other ecosystems are also growing, e.g. Quarkus along with its Quarkiverse, but they still have a very, _very_ long way to catch up with Spring Framework. So at the end of 2025 (I wager that even today) we can safely state:
+
+> The most common Java app, which **by far** represents more than half of Java server side deployments is a Spring Framework app.
+
+Again, it is just data, you can download it and check yourself.
+
+But even if we consider different ecosystems: Spring Framework, Quarkus or Micronaut etc - we're going to quickly realize that these are not just "libraries" or "frameworks" in a traditional sense. **They are themselves large frameworks that build an entire sub-ecosystem around them**. For example, are you working with Data? Well, you have
+
+- Spring Data in Spring
+- Jakarta Data in Quarkus
+- Micronaut Data in Micronaut
+
+Oh, you want to send an HTTP request? The most common thing on the backend! Well, we have:
+
+- Spring Cloud Exchange/OpenFeign in Spring
+- RestClients in Quarkus
+- Declarative HTTP Clients in Micronaut
+
+Notice that every framework has its own solution.
+
+In other ecosystems, e.g. in JavaScript on the server side, we may use:
+
+- ExpressJS for web server
+- Axios for sending requests
+- Prisma as an ORM
+
+And these are all just individual choices made by the team. We may use Axios or we may use Got. We may use Prisma or we may use TypeORM. Some solutions are more popular than others, but they are all independent - they exist outside of a single umbrella, like Spring Framework, for example.
+
+To put it simply:
+
+> In the Java world, if we have any kind of problem, most likely, we **do NOT** need to seek the solution on GitHub, find some fork that does what you want (which is a common JavaScript practice btw). There is almost 100% chance that Spring Framework has a solution for us already.
+
+## Why am I telling you about this?
+
+Because it is important to understand, that since Java Ecosystem is so solidified around the Spring Framework technological stack, **it often suffers the same problems in production**.
+
+What are these problems? Well, there are a lot of them. And we know all of them with our very own butts:
+
+- Our connection pool leaks
+- Our API endpoints are performing slow (maybe the problem is in the database?)
+- We accidentally expose `/actuator/env` in production and leak secrets
+- Our applications consume too much memory and start very slowly...
+
+And so on. And the industry, throughout decades of Java experience in production, has developed a set of recommendations, best-practices, "solutions", guidelines. And these guidelines exist on different levels of the application, e.g:
+
+Guidelines for Hibernate/ORM
+
+- [Do not use `EAGER` fetch, ever!](https://thorben-janssen.com/entity-mappings-introduction-jpa-fetchtypes/)
+- [Do not use `CascadeType.ALL` or `CascadeType.REMOVE` for "XToMany"](https://thorben-janssen.com/avoid-cascadetype-delete-many-assocations/)
+- [Do not use `List` for `@ManyToMany`](https://thorben-janssen.com/best-practices-for-many-to-many-associations-with-hibernate-and-jpa/)
+- [Do not use one-directional `@OneToMany`!](https://thorben-janssen.com/hibernate-tips-unidirectional-one-to-many-association-without-junction-table/)
+
+and so on. Guidelines for Spring performance:
+
+- [Disable OSIV](https://www.reddit.com/r/java/comments/1hcgyc4/the_opensessioninview_pattern_of_spring_boot_a/)
+- Use [Spring Test Profiler!](https://rieckpil.de/achieve-faster-build-times-with-the-spring-test-profiler/) (many thanks to Philip Riecks for such a tool)
+- Use [Spring smart context caching!](https://github.com/seregamorph/spring-test-smart-context) (Sergey Chernov, a highly experienced Engineer and a buddy of mine, developed the tool)!
+- [Do not set `spring.jpa.show-sql=true` or other dangerous properties in production!](https://vladmihalcea.com/log-sql-spring-boot/)
+
+and so on. Guidelines for even our beloved Java!
+
+- For Christ’s sake, [use Project Leyden](https://openjdk.org/projects/leyden/)!
+- Use Compact Object Headers ([Project Lilliput](https://openjdk.org/projects/lilliput/))
+- Configure the [logging of GC](https://blog.gceasy.io/java-garbage-collection-best-practices/) in production!
+
+And so on and on and on. Because we have that solidified ecosystem we generally know _"what is right and what is wrong"_. And for the long time there was no such tool.
+
+But we thought that this is wrong. And we probably should have one. And this tool is called **Axelix** ([The source code](https://github.com/axelixlabs/axelix)).
+
+In 1.0.0, we do not support the detection of all the issues that I outlined above (most, but not all). And the above is just an example. There is a lot (really, _a lot_) of knowledge that we as a Java community have accumulated throughout these years that we're going to put inside Axelix, so it can serve you well.
+
+I hope, at that point, the motivation behind the tool is clear, and now, I want to answer a couple of questions that we already have received many times over during Milestones.
+
+### Q: Is it free?
+
+**Yes, it is**. We're going to follow the Open Core model. This is the Open Source software development model that underpins projects that we all love and care about:
+
+- Grafana
+- Keycloak
+- Vaadin
+
+And so on. It is [generally considered to be the most reliable model for the OSS development](https://opencoreventures.com/insights/someone-has-to-pay-for-the-domino/), and that is why industry leaders choose, and that is why we choose it.
+
+### Q: Is the project ready for use and deploy?
+
+**Yes**, it is ready for use free of charge. We have processed the feedback from literally tens of teams that have installed Axelix milestone releases and shared their insights with us.
+
+### Q: Is it safe to deploy in production?
+
+It is designed for production, so the answer is yes. But since this is the first 1.0.0 GA release, the general recommendation is to first install it on development environments, and then for production.
+
+That said, we do have teams that deployed Axelix in production already to get insights about their `@Transactional` methods behavior and properties resolution.
+
+**Bottom Line:** The core stays Open Source always, and it always will be free of charge, and it already provides value for the teams.
+
+## Where Are We Headed?
+
+The team behind Axelix has many years of experience writing and optimizing Spring Boot applications. We have a lot of work to do ahead of us, and we still have a lot of things to incorporate into Axelix.
+
+For those who want to know how the project is installed & configured, please, visit our [website](https://axelix.io) and also our [documentation](https://axelix.io/docs). In case of any questions or difficulties, you can always reach out to the team at: hello@axelix.io We, the maintainers, are happy to answer your questions and assist you during the installation.
+
+We're also going to stay committed to Open Source, and committed to our values, which are making sure that your Java applications are as secure, performant and efficient as they can be.
+
+Thank you all. Mikhail.
