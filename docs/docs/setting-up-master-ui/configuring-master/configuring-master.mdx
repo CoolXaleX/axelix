@@ -371,7 +371,7 @@ A minimal run, suitable for a first look:
 
 ```bash
 docker run --rm -p 8080:8080 \
-  -e JAVA_OTHER_ARGS="\
+  -e JAVA_TOOL_OPTIONS="\
     -Daxelix.master.auth.jwt.algorithm=HMAC512 \
     -Daxelix.master.auth.jwt.signing-key=replace-with-a-long-random-secret \
     -Daxelix.master.auth.options.super-admin.credentials.password=replace-me" \
@@ -380,8 +380,8 @@ docker run --rm -p 8080:8080 \
 
 A few notes about this command:
 
-- `JAVA_OTHER_ARGS` is the standard hook the image reserves for `-D` system properties, the entrypoint splices it into
-  the `java` command.
+- `JAVA_TOOL_OPTIONS` is a standard JVM environment variable the JVM applies automatically to the `java` command, so it
+  is the hook for passing `-D` system properties into the container.
 - The image runs as the non-root user `axelix` and uses an Ahead-of-Time class loading cache built at image-build time,
   so startup is faster than a plain JAR launch.
 - The default database is still SQLite at the working directory (`/application/axelix.db`). The file lives inside the
@@ -421,7 +421,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      JAVA_OTHER_ARGS: >-
+      JAVA_TOOL_OPTIONS: >-
         -Daxelix.master.database.url=jdbc:postgresql://postgres:5432/axelix
         -Daxelix.master.database.username=${AXELIX_DB_USERNAME}
         -Daxelix.master.database.password=${AXELIX_DB_PASSWORD}

@@ -24,8 +24,9 @@ happens when you use `axelix-spring-boot-X-starter` (i.e. Axelix starter) and th
 
 If `MeterRegistry` is registered, Axelix will contribute the following meters to the registry:
 
-- `axelix_transaction_duration` — `Timer` tagged by `class`, `method`, and `status=success|error`.
+- `axelix_transaction_duration` — `Timer` tagged by `class` and `method`.
 - `axelix_transaction_queries` — `Counter` tagged by `class` and `method`.
+- `axelix_transaction_external_calls` — `Counter` tagged by `class` and `method`.
 - `axelix_cache_requests` — `Counter` tagged by `cache` and `result=hit|miss`.
 - `axelix_cache_enabled` — `Gauge` tagged by `cache`, reporting `1` for enabled and `0` for disabled caches.
 

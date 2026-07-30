@@ -14,12 +14,14 @@ with Master, and tell Master where to find the instance.
 
 A few facts worth pinning down before you copy any of the snippets below.
 
-- **Two starter modules**, one per Spring Boot major version. Pick the one that matches the Boot version your
+- **Three starter modules**, one per Spring Boot major version. Pick the one that matches the Boot version your
   application already uses:
     - `com.axelixlabs:axelix-spring-boot-2-starter` — Spring Boot 2.x (built and tested against `2.7.18`, Spring Cloud
       `2021.0.9`, minimum JDK 11).
     - `com.axelixlabs:axelix-spring-boot-3-starter` — Spring Boot 3.x (built and tested against `3.0.13`, Spring Cloud
       `2022.0.4`, minimum JDK 17).
+    - `com.axelixlabs:axelix-spring-boot-4-starter` — Spring Boot 4.x (built and tested against `4.0.6`, Spring Cloud
+      `2025.1.0`, minimum JDK 17).
 - **What the starter contributes**: a set of Axelix-specific actuator endpoints (`axelix-metadata`, `axelix-beans`,
   `axelix-loggers`, …), a JWT-based authorization filter that gates them, and an optional self-registration component
   that announces this instance to Master.
@@ -48,6 +50,43 @@ build.
 :::
 
 <Tabs groupId="spring-boot-major">
+  <TabItem value="sb4" label="Spring Boot 4.x">
+
+<Tabs groupId="build-tool">
+  <TabItem value="gradle-kotlin" label="Gradle (Kotlin DSL)">
+
+```kotlin title="build.gradle.kts"
+dependencies {
+    implementation("com.axelixlabs:axelix-spring-boot-4-starter:1.0.0-M1")
+}
+```
+
+  </TabItem>
+  <TabItem value="gradle-groovy" label="Gradle (Groovy)">
+
+```groovy title="build.gradle"
+dependencies {
+    implementation 'com.axelixlabs:axelix-spring-boot-4-starter:1.0.0-M1'
+}
+```
+
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+
+```xml title="pom.xml"
+<dependencies>
+  <dependency>
+    <groupId>com.axelixlabs</groupId>
+    <artifactId>axelix-spring-boot-4-starter</artifactId>
+    <version>1.0.0-M1</version>
+  </dependency>
+</dependencies>
+```
+
+  </TabItem>
+</Tabs>
+
+  </TabItem>
   <TabItem value="sb3" label="Spring Boot 3.x">
 
 <Tabs groupId="build-tool">
@@ -185,8 +224,9 @@ it. The starter registers these meters:
 <div className={styles.MetricsTable}>
 | Meter | Type | Tags | Meaning |
 |-------|------|------|---------|
-| `axelix_transaction_duration` | `Timer` | `class`, `method`, `status` | Duration of each monitored `@Transactional` execution. The timer also publishes `0.5`, `0.95`, and `0.99` percentiles. |
+| `axelix_transaction_duration` | `Timer` | `class`, `method` | Duration of each monitored `@Transactional` execution. The timer also publishes `0.5`, `0.95`, and `0.99` percentiles. |
 | `axelix_transaction_queries` | `Counter` | `class`, `method` | Total number of SQL queries executed inside monitored transactions. |
+| `axelix_transaction_external_calls` | `Counter` | `class`, `method` | Total number of external calls (e.g. `RestTemplate`) made inside monitored transactions. |
 | `axelix_cache_requests` | `Counter` | `cache`, `result` | Total number of cache lookups recorded by Axelix-enhanced caches. |
 | `axelix_cache_enabled` | `Gauge` | `cache` | Current runtime state of each enhanced cache: `1` when enabled, `0` when disabled. |
 </div>
@@ -195,9 +235,6 @@ These meters complement the UI-facing actuator endpoints rather than replace the
 `axelix-metrics` and `axelix-caches`. Transaction monitoring data is not served by a dedicated actuator endpoint —
 it travels to Master as part of the instance's registration metadata exposed through `axelix-metadata` (see
 [Transaction monitoring](#transaction-monitoring)).
-
-The Spring Boot 2 starter does not publish these extra Axelix meters into Micrometer yet. The `axelix-metrics`
-actuator endpoint still works for the Axelix UI.
 
 ## Share the JWT signing key with Master
 
@@ -442,7 +479,7 @@ axelix.sbs.transaction.monitoring.enabled=false
 
 | Property                                     | Default | Description                                                                                                                                                     |
 |----------------------------------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `axelix.sbs.transaction.monitoring.enabled`  | `true`  | Master switch for transaction monitoring. Set to `false` to make the whole transaction monitoring auto-configuration back off. Behaves identically on the Spring Boot 2 and Spring Boot 3 starters. |
+| `axelix.sbs.transaction.monitoring.enabled`  | `true`  | Master switch for transaction monitoring. Set to `false` to make the whole transaction monitoring auto-configuration back off. Behaves identically on the Spring Boot 2, 3, and 4 starters. |
 
 </div>
 

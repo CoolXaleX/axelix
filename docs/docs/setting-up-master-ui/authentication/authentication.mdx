@@ -102,7 +102,7 @@ username already belongs to a non-OIDC account, Master rejects the sign-in rathe
 | `axelix.master.auth.options.oauth2.client-secret`       | *(unset)* <span className="Required">required</span> | Client secret registered with the OIDC provider. Required whenever `oauth2.enabled=true`.                                                                                  |
 | `axelix.master.auth.options.oauth2.base-url`            | *(unset)* <span className="Required">required</span> | Public base URL of this Master instance. Used to build the OAuth2 callback redirect URI. Required whenever `oauth2.enabled=true`.                                          |
 | `axelix.master.auth.options.oauth2.scopes`              | `openid`                                             | Space-separated scopes requested during the authorization code flow. `openid` is appended automatically if missing.                                                        |
-| `axelix.master.auth.options.oauth2.role-attribute-path` | *(unset)*                                            | JMESPath expression evaluated against the ID token claims (and, if needed, the userinfo response) to resolve an Axelix role. If unset, every OIDC user becomes a `VIEWER`. |
+| `axelix.master.auth.options.oauth2.role-attribute-path` | *(unset)*                                            | JMESPath expression evaluated against the userinfo response to resolve an Axelix role. If unset, every OIDC user becomes a `VIEWER`. |
 
 </div>
 
@@ -197,7 +197,7 @@ to the handler matching the scheme.
   to a browser sign-in.
 - **`Bearer`** — `BearerMcpAuthenticationHandler` treats the credential as an OIDC access token. It runs the token
   through `JmesPathOidcRoleExtractor` (same path as the browser OIDC flow) to derive a role, then issues a synthetic
-  `PasswordlessUser` named `MCP_AGENT` carrying that role. Only available when
+  `PasswordlessUser` named `AI_AGENT` carrying that role. Only available when
   `axelix.master.auth.options.oauth2.enabled=true`.
 
 Once the user is identified, the filter performs the same authority check as the web filter — per-tool authority

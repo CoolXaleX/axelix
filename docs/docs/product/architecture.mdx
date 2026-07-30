@@ -32,9 +32,10 @@ the same data is served to a browser and to an AI agent from a single process.
   2](../setting-up-spring-boot-service/configuring-axelix-starter/configuring-axelix-starter.mdx#add-the-dependency),
   [Spring Boot
   3](../setting-up-spring-boot-service/configuring-axelix-starter/configuring-axelix-starter.mdx#add-the-dependency),
-  and Spring Boot 4 (Spring Boot 4 is still in development — stay tuned for news) — pick the one that matches your
-  application. The starter exposes the endpoints Master needs (beans, environment, caches, scheduled tasks, and the
-  rest) and can optionally self-register with Master on startup.
+  and [Spring Boot
+  4](../setting-up-spring-boot-service/configuring-axelix-starter/configuring-axelix-starter.mdx#add-the-dependency) —
+  pick the one that matches your application. The starter exposes the endpoints Master needs (beans, environment,
+  caches, scheduled tasks, and the rest) and can optionally self-register with Master on startup.
 
 ## Communication
 
@@ -102,7 +103,7 @@ arrange for the shared database (e.g. either the same mounted sqlite file or the
     │                                                                │
 ┌───┴──────────────────────┐                       ┌─────────────────┴─────┐
 │ Spring Boot Services     │                       │ Spring Boot Services  │
-│ (Spring Boot 2 - 3)      │                       │ (Spring Boot 2 - 3)   │
+│ (Spring Boot 2 - 4)      │                       │ (Spring Boot 2 - 4)   │
 └──────────────────────────┘                       └───────────────────────┘
 ```
 
