@@ -51,7 +51,7 @@ export const K8sSnippet = ({ refEl }: IProps) => {
                 </span>
                 <span className={styles.Line}>
                     {"    "}
-                    <span className={styles.Ar}>--version</span> <span className={styles.St}>1.0.0-m1</span>{" "}
+                    <span className={styles.Ar}>--version</span> <span className={styles.St}>1.0.0</span>{" "}
                     <span className={styles.Nl}>\</span>
                 </span>
                 <span className={styles.Line}>

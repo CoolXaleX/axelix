@@ -29,7 +29,7 @@ export const PluginMini = ({ activeSnippetRef }: IProps) => {
     const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
     const timers = useRef<Array<ReturnType<typeof setTimeout> | null>>([null, null, null]);
 
-    const axelixActualVersion = `1.0.0-M1`;
+    const axelixActualVersion = `1.0.0`;
 
     const blocks: { label: string; code: string }[] = [
         {
