@@ -382,7 +382,7 @@ ghcr.io/axelixlabs/axelix:1.0.0-M1
 
 ```bash
 docker run --rm -p 8080:8080 \
-  -e JAVA_OTHER_ARGS="\
+  -e JAVA_TOOL_OPTIONS="\
     -Daxelix.master.auth.jwt.algorithm=HMAC512 \
     -Daxelix.master.auth.jwt.signing-key=replace-with-a-long-random-secret \
     -Daxelix.master.auth.options.super-admin.credentials.password=replace-me" \
@@ -391,8 +391,8 @@ docker run --rm -p 8080:8080 \
 
 Несколько примечаний об этой команде:
 
-- `JAVA_OTHER_ARGS` — стандартный хук, который образ резервирует для `-D` системных свойств. Точка входа  встраивает его
-  в команду `java`.
+- `JAVA_TOOL_OPTIONS` — стандартная переменная окружения JVM, которую JVM автоматически применяет к команде `java`,
+  поэтому именно она служит хуком для передачи `-D` системных свойств в контейнер.
 - Образ запускается от имени non-root пользователя `axelix` и использует Ahead-of-Time кэш загрузки классов, собранный
   во время сборки образа, поэтому старт быстрее, чем у обычного запуска JAR.
 - БД по умолчанию по-прежнему SQLite в рабочем каталоге (`/application/axelix.db`). Файл лежит внутри writable-слоя
@@ -433,7 +433,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      JAVA_OTHER_ARGS: >-
+      JAVA_TOOL_OPTIONS: >-
         -Daxelix.master.database.url=jdbc:postgresql://postgres:5432/axelix
         -Daxelix.master.database.username=${AXELIX_DB_USERNAME}
         -Daxelix.master.database.password=${AXELIX_DB_PASSWORD}

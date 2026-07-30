@@ -15,12 +15,14 @@ Context Protocol), который предоставляет те же данн�
 
 Несколько фактов, которые стоит запомнить, прежде чем вы скопируете любой из приведённых ниже фрагментов.
 
-- **Два модуля стартера**, по одному для каждой мажорной версии Spring Boot. Выберите тот, который соответствует версии
+- **Три модуля стартера**, по одному для каждой мажорной версии Spring Boot. Выберите тот, который соответствует версии
   Boot, которую уже использует ваш сервис:
     - `com.axelixlabs:axelix-spring-boot-2-starter` — Spring Boot 2.x (собран и протестирован с использованием `2.7.18`,
       Spring Cloud `2021.0.9`, минимальная версия JDK 11).
     - `com.axelixlabs:axelix-spring-boot-3-starter` — Spring Boot 3.x (собран и протестирован с использованием `3.0.13`,
       Spring Cloud `2022.0.4`, минимальная версия JDK 17).
+    - `com.axelixlabs:axelix-spring-boot-4-starter` — Spring Boot 4.x (собран и протестирован с использованием `4.0.6`,
+      Spring Cloud `2025.1.0`, минимальная версия JDK 17).
 - **Что добавляет стартер**: набор Axelix-специфичных actuator-эндпоинтов (`axelix-metadata`, `axelix-beans`,
   `axelix-loggers`, …), JWT-фильтр авторизации, который ограничивает доступ к ним, и опциональный компонент
   саморегистрации, который объявляет сервис в Master.
@@ -51,6 +53,43 @@ Central](https://central.sonatype.com/namespace/com.axelixlabs) на актуа�
 :::
 
 <Tabs groupId="spring-boot-major">
+  <TabItem value="sb4" label="Spring Boot 4.x">
+
+<Tabs groupId="build-tool">
+  <TabItem value="gradle-kotlin" label="Gradle (Kotlin DSL)">
+
+```kotlin title="build.gradle.kts"
+dependencies {
+    implementation("com.axelixlabs:axelix-spring-boot-4-starter:1.0.0-M1")
+}
+```
+
+  </TabItem>
+  <TabItem value="gradle-groovy" label="Gradle (Groovy)">
+
+```groovy title="build.gradle"
+dependencies {
+    implementation 'com.axelixlabs:axelix-spring-boot-4-starter:1.0.0-M1'
+}
+```
+
+  </TabItem>
+  <TabItem value="maven" label="Maven">
+
+```xml title="pom.xml"
+<dependencies>
+  <dependency>
+    <groupId>com.axelixlabs</groupId>
+    <artifactId>axelix-spring-boot-4-starter</artifactId>
+    <version>1.0.0-M1</version>
+  </dependency>
+</dependencies>
+```
+
+  </TabItem>
+</Tabs>
+
+  </TabItem>
   <TabItem value="sb3" label="Spring Boot 3.x">
 
 <Tabs groupId="build-tool">
@@ -191,8 +230,9 @@ Actuator-эндпоинт `axelix-metrics` нужен для пользоват�
 <div className={styles.MetricsTable}>
 | Метрика | Тип | Теги | Значение |
 |--------|-----|------|----------|
-| `axelix_transaction_duration` | `Timer` | `class`, `method`, `status` | Длительность каждого мониторируемого выполнения `@Transactional`. Таймер также публикует перцентили `0.5`, `0.95` и `0.99`. |
+| `axelix_transaction_duration` | `Timer` | `class`, `method` | Длительность каждого мониторируемого выполнения `@Transactional`. Таймер также публикует перцентили `0.5`, `0.95` и `0.99`. |
 | `axelix_transaction_queries` | `Counter` | `class`, `method` | Общее количество SQL-запросов, выполненных внутри мониторируемых транзакций. |
+| `axelix_transaction_external_calls` | `Counter` | `class`, `method` | Общее количество внешних вызовов (например, `RestTemplate`), сделанных внутри мониторируемых транзакций. |
 | `axelix_cache_requests` | `Counter` | `cache`, `result` | Общее количество обращений к кэшу, записанных Axelix-enhanced кэшами. |
 | `axelix_cache_enabled` | `Gauge` | `cache` | Текущее runtime-состояние каждого enhanced-кэша: `1`, когда кэш включён, и `0`, когда выключен. |
 </div>

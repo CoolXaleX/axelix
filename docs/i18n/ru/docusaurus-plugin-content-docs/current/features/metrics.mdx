@@ -22,8 +22,9 @@ Axelix***
 Помимо метрик, которые уже экспортирует само приложение, Axelix Spring Boot Starter может добавлять и собственные метрики Micrometer. Это происходит,
  если в приложении уже есть бин `MeterRegistry`.
 
-- `axelix_transaction_duration` — `Timer` с тегами `class`, `method` и `status=success|error`.
+- `axelix_transaction_duration` — `Timer` с тегами `class` и `method`.
 - `axelix_transaction_queries` — `Counter` с тегами `class` и `method`.
+- `axelix_transaction_external_calls` — `Counter` с тегами `class` и `method`.
 - `axelix_cache_requests` — `Counter` с тегами `cache` и `result=hit|miss`.
 - `axelix_cache_enabled` — `Gauge` с тегом `cache`, который возвращает `1` для включённых кэшей и `0` для выключенных.
 

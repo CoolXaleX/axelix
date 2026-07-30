@@ -110,7 +110,7 @@ Master реализует стандартный поток авторизаци
 | `axelix.master.auth.options.oauth2.client-secret`       | *(не задано)* <span className="Required">обязательное</span> | Секретный ключ клиента, зарегистрированный у провайдера OIDC. Требуется при `oauth2.enabled=true`.                                                                                                              |
 | `axelix.master.auth.options.oauth2.base-url`            | *(не задано)* <span className="Required">обязательное</span> | Публичный базовый URL-адрес этого сервиса Master. Используется для создания URI обратного вызова OAuth2. Требуется при `oauth2.enabled=true`.                                                                   |
 | `axelix.master.auth.options.oauth2.scopes`              | `openid`                                                     | Разделённые пробелами области действия, запрашиваемые при использовании кода авторизации. `openid` добавляется автоматически, если отсутствует.                                                                 |
-| `axelix.master.auth.options.oauth2.role-attribute-path` | *(не задано)*                                                | Необязательно. Выражение JMESPath, применяемое к утверждениям токена ID (и, при необходимости, к ответу userinfo) для определения роли в Axelix. Если не указано, каждый пользователь OIDC становится `VIEWER`. |
+| `axelix.master.auth.options.oauth2.role-attribute-path` | *(не задано)*                                                | Необязательно. Выражение JMESPath, применяемое к ответу userinfo для определения роли в Axelix. Если не указано, каждый пользователь OIDC становится `VIEWER`.                                                  |
 </div>
 
 ## Сеанс: cookie и JWT
@@ -209,7 +209,7 @@ Master использует фиксированный набор ролей и 
   и локальные учётные записи, Сопоставление ролей идентично входу через браузер.
 - **`Bearer`** — `BearerMcpAuthenticationHandler` обрабатывает учётные данные как токен доступа OIDC. Он прогоняет токен
   через `JmesPathOidcRoleExtractor` (по тому же пути, что и при входе через браузер), чтобы определить роль, а затем
-  выдаёт синтетический `PasswordlessUser` с именем `MCP_AGENT` с этой ролью. Доступно только когда
+  выдаёт синтетический `PasswordlessUser` с именем `AI_AGENT` с этой ролью. Доступно только когда
   `axelix.master.auth.options.oauth2.enabled=true`.
 
 После идентификации пользователя фильтр выполняет ту же проверку полномочий, что и веб-фильтр — требования к полномочиям
