@@ -16,6 +16,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 "use client";
+import { useAxelixVersion } from "@/hooks/useAxelixVersion";
 import { EInstallConfigurationVariant, EInstallMethod, EInstallOpenSelect, ESpringBootVariant } from "@/models";
 import { installSpringBootArtifact } from "@/utils";
 
@@ -46,6 +47,7 @@ export const Installer = () => {
     const activeSnippetRef = useRef<HTMLElement>(null);
 
     const [openSelect, setOpenSelect] = useState<EInstallOpenSelect>(EInstallOpenSelect.NULL);
+    const axelixVersionData = useAxelixVersion();
 
     const selectRef = useRef<HTMLDivElement>(null);
 
@@ -63,6 +65,7 @@ export const Installer = () => {
         return () => document.removeEventListener("click", onClick);
     }, []);
 
+    // TODO: In the future, split this component into smaller components
     return (
         <>
             <div className={styles.InstallerWrapper}>
@@ -88,10 +91,10 @@ export const Installer = () => {
                             )}
 
                             {installStep === 1 && installMethod === EInstallMethod.DOCKER && (
-                                <DockerSnippet refEl={activeSnippetRef} />
+                                <DockerSnippet refEl={activeSnippetRef} axelixVersionData={axelixVersionData} />
                             )}
                             {installStep === 1 && installMethod === EInstallMethod.COMPOSE && (
-                                <ComposeSnippet refEl={activeSnippetRef} />
+                                <ComposeSnippet refEl={activeSnippetRef} axelixVersionData={axelixVersionData} />
                             )}
                             {installStep === 1 && installMethod === EInstallMethod.K8S && (
                                 <K8sSnippet refEl={activeSnippetRef} />

@@ -15,30 +15,11 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-import { Capabilities, Enterprise, FAQ, Hero, HowExactly, Install, ReferenceApp, Reveal } from "@/components";
+"use client";
+import { useAxelixVersion } from "@/hooks/useAxelixVersion";
 
-export default function Page() {
-    return (
-        <>
-            <Reveal>
-                <Hero />
-            </Reveal>
-            <Reveal>
-                <ReferenceApp />
-            </Reveal>
-            <HowExactly />
-            <Reveal>
-                <Capabilities />
-            </Reveal>
-            <Reveal>
-                <Install />
-            </Reveal>
-            <Reveal>
-                <Enterprise />
-            </Reveal>
-            <Reveal>
-                <FAQ />
-            </Reveal>
-        </>
-    );
-}
+export const FooterVersion = () => {
+    const { version } = useAxelixVersion();
+
+    return <span>v{version ?? "1.0.0"}</span>;
+};
