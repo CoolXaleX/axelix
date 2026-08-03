@@ -15,14 +15,28 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.master.api.external.response.settings;
+package com.axelixlabs.axelix.master.service;
 
-import java.util.List;
+import org.jspecify.annotations.NonNull;
+
+import org.springframework.core.io.Resource;
+
+import com.axelixlabs.axelix.master.exception.StateExportException;
 
 /**
- * Response containing the list of available authentication providers and their settings.
+ * Interface for customizing or processing heap dump resources.
  *
- * @since 06.03.2026
  * @author Nikita Kirillov
  */
-public record AxelixSettings(List<AuthenticationOption> authenticationOptions, boolean isMcpServerEnabled) {}
+public interface HeapDumpCustomizer {
+
+    /**
+     * Customizes the provided original heap dump resource.
+     *
+     * @param originalHeapDump the raw heap dump
+     * @return the processed heap dump resource
+     * @throws StateExportException if heap dump customization failed
+     */
+    @NonNull
+    Resource customize(Resource originalHeapDump) throws StateExportException;
+}

@@ -17,6 +17,8 @@
  */
 package com.axelixlabs.axelix.master.api.external.endpoint;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -37,6 +39,7 @@ import com.axelixlabs.axelix.master.api.external.ExternalApiRestController;
 import com.axelixlabs.axelix.master.api.external.swagger.DefaultApiResponse;
 import com.axelixlabs.axelix.master.api.external.swagger.InstanceIdParameter;
 import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.service.HeapDumpCustomizer;
 import com.axelixlabs.axelix.master.service.transport.EndpointInvoker;
 
 /**
@@ -48,10 +51,13 @@ import com.axelixlabs.axelix.master.service.transport.EndpointInvoker;
 @ExternalApiRestController
 public class HeapDumpApi {
 
+    private final List<HeapDumpCustomizer> heapDumpCustomizers;
+
     private final EndpointInvoker endpointInvoker;
 
-    public HeapDumpApi(EndpointInvoker endpointInvoker) {
+    public HeapDumpApi(EndpointInvoker endpointInvoker, List<HeapDumpCustomizer> heapDumpCustomizers) {
         this.endpointInvoker = endpointInvoker;
+        this.heapDumpCustomizers = heapDumpCustomizers;
     }
 
     @DefaultApiResponse(
@@ -76,6 +82,10 @@ public class HeapDumpApi {
 
         Resource resource = endpointInvoker.invoke(
                 InstanceId.of(instanceId), ActuatorEndpoints.GET_HEAP_DUMP, NoHttpPayload.INSTANCE);
+
+        for (HeapDumpCustomizer heapDumpCustomizer : heapDumpCustomizers) {
+            resource = heapDumpCustomizer.customize(resource);
+        }
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
