@@ -3,6 +3,15 @@
     align-items: center;
     justify-content: flex-end;
     column-gap: 20px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.Value {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .IconPlaceholder {

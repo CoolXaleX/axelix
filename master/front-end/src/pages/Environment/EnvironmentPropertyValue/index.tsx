@@ -39,7 +39,9 @@ export const EnvironmentPropertyValue = ({ property }: IProps) => {
     return (
         <>
             <div className={styles.MainWrapper}>
-                {value}
+                <span className={styles.Value} title={value}>
+                    {value}
+                </span>
                 <Tooltip title={t("Environments.primaryProperty")}>
                     <CrownIcon className={`${styles.PrimaryIcon} ${!isPrimary ? styles.IconPlaceholder : ""}`} />
                 </Tooltip>
