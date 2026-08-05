@@ -36,6 +36,7 @@ import org.springframework.data.relational.core.mapping.Table;
  * @param password     Hash of the user's password, which may be {@code null}.
  * @param roles        Names of the roles granted to this user (e.g. {@code ADMIN}, {@code EDITOR}, {@code VIEWER}).
  * @param userOrigin   Origin of the user account.
+ * @param status       Status that controls whether the user can log in.
  * @param lastLoginAt  Timestamp of the most recent successful login. {@code null} until the user logs in for the first time.
  *
  * @author Sergey Cherkasov
@@ -50,6 +51,7 @@ public record UserEntity(
         @Nullable String password,
         Roles roles,
         UserOrigin userOrigin,
+        UserStatus status,
         @Nullable Instant lastLoginAt) {
 
     public record Roles(Set<String> values) {
@@ -63,6 +65,6 @@ public record UserEntity(
         return "User[id=" + id + ", username=[REDACTED], firstName=[REDACTED]"
                 + ", lastName=[REDACTED], email=[REDACTED]"
                 + ", password=[REDACTED], roles=" + roles + ", userOrigin=" + userOrigin
-                + ", lastLoginAt=" + lastLoginAt + ']';
+                + ", status=" + status + ", lastLoginAt=" + lastLoginAt + ']';
     }
 }

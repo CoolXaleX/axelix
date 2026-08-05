@@ -6,7 +6,7 @@
             http://www.liquibase.org/xml/ns/dbchangelog
             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-  <changeSet id="1.1-001-1-postgres-add-first-name-to-users" author="Axelix Team">
+  <changeSet id="1.1-001-1-sqlite-add-first-name-to-users" author="Axelix Team">
     <preConditions onFail="MARK_RAN" onError="HALT">
       <not>
         <columnExists tableName="users" columnName="first_name"/>
@@ -18,7 +18,7 @@
     </addColumn>
   </changeSet>
 
-  <changeSet id="1.1-001-2-postgres-add-last-name-to-users" author="Axelix Team">
+  <changeSet id="1.1-001-2-sqlite-add-last-name-to-users" author="Axelix Team">
     <preConditions onFail="MARK_RAN" onError="HALT">
       <not>
         <columnExists tableName="users" columnName="last_name"/>
@@ -27,6 +27,20 @@
 
     <addColumn tableName="users">
       <column name="last_name" type="TEXT"/>
+    </addColumn>
+  </changeSet>
+
+  <changeSet id="1.1-001-3-sqlite-add-status-to-users" author="Axelix Team">
+    <preConditions onFail="MARK_RAN" onError="HALT">
+      <not>
+        <columnExists tableName="users" columnName="status"/>
+      </not>
+    </preConditions>
+
+    <addColumn tableName="users">
+      <column name="status" type="TEXT" defaultValue="ACTIVE">
+        <constraints nullable="false" checkConstraint="status IN ('ACTIVE', 'SUSPENDED')"/>
+      </column>
     </addColumn>
   </changeSet>
 </databaseChangeLog>

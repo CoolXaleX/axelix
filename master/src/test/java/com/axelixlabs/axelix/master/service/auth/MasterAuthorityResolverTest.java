@@ -64,6 +64,7 @@ public class MasterAuthorityResolverTest {
                 // USERS_MANAGEMENT
                 Arguments.of("/users-management/create", HttpMethod.POST, DefaultAuthority.USERS_MANAGEMENT),
                 Arguments.of("/users-management/delete", HttpMethod.DELETE, DefaultAuthority.USERS_MANAGEMENT),
+                Arguments.of("/users-management/status", HttpMethod.PUT, DefaultAuthority.USERS_MANAGEMENT),
                 Arguments.of("/users-management/update", HttpMethod.PUT, DefaultAuthority.USERS_MANAGEMENT),
 
                 // USERS_VIEW

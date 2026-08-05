@@ -68,6 +68,11 @@ public final class ApiPaths {
          * Endpoint to update a managed user.
          */
         public static final String USERS_UPDATE = "/users-management/update";
+
+        /**
+         * Endpoint to change the status of a managed user.
+         */
+        public static final String USERS_STATUS = "/users-management/status";
     }
 
     public static final class OAuth2Api {

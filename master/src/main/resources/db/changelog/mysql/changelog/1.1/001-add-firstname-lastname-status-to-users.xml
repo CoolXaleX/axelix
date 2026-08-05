@@ -29,4 +29,25 @@
       <column name="last_name" type="VARCHAR(255)"/>
     </addColumn>
   </changeSet>
+
+  <changeSet id="1.1-001-3-mysql-add-status-to-users" author="Axelix Team">
+    <preConditions onFail="MARK_RAN" onError="HALT">
+      <not>
+        <columnExists tableName="users" columnName="status"/>
+      </not>
+    </preConditions>
+
+    <addColumn tableName="users">
+      <column name="status" type="TEXT">
+        <constraints checkConstraint="status IN ('ACTIVE', 'SUSPENDED')"/>
+      </column>
+    </addColumn>
+
+    <update tableName="users">
+      <column name="status" value="ACTIVE"/>
+      <where>status IS NULL</where>
+    </update>
+
+    <addNotNullConstraint tableName="users" columnName="status" columnDataType="TEXT"/>
+  </changeSet>
 </databaseChangeLog>

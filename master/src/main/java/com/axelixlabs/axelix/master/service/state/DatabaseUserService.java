@@ -37,6 +37,7 @@ import com.axelixlabs.axelix.common.auth.core.DefaultRole;
 import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.SuperAdminConfigurationProperties;
 import com.axelixlabs.axelix.master.domain.UserEntity;
 import com.axelixlabs.axelix.master.domain.UserOrigin;
+import com.axelixlabs.axelix.master.domain.UserStatus;
 import com.axelixlabs.axelix.master.exception.auth.EmailAlreadyExistsException;
 import com.axelixlabs.axelix.master.exception.auth.UserInvalidValueException;
 import com.axelixlabs.axelix.master.exception.auth.UserRoleNotFoundException;
@@ -88,6 +89,7 @@ public class DatabaseUserService implements UserService {
                 passwordEncoder.encode(requireNonBlankTrimmed(password)),
                 new UserEntity.Roles(Set.of(validateAndNormalizeRole(role))),
                 UserOrigin.LOCAL,
+                UserStatus.ACTIVE,
                 null);
 
         if (isUsernameReservedForSuperAdmin(userEntity.username())
@@ -120,6 +122,7 @@ public class DatabaseUserService implements UserService {
                 null,
                 new UserEntity.Roles(Set.of(validateAndNormalizeRole(role))),
                 UserOrigin.OIDC,
+                UserStatus.ACTIVE,
                 Instant.now()); // the assumption is that the user is created during the initial login
 
         if (isUsernameReservedForSuperAdmin(userEntity.username())) {
@@ -152,6 +155,16 @@ public class DatabaseUserService implements UserService {
     @Override
     public void updateLastLoginAt(String username) {
         userRepository.updateLastLoginAt(username, Instant.now());
+    }
+
+    @Override
+    public boolean updateStatus(String id, UserStatus status) {
+        if (!userRepository.existsById(id)) {
+            return false;
+        }
+
+        userRepository.updateStatus(id, status);
+        return true;
     }
 
     @Override

@@ -28,6 +28,7 @@ import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import com.axelixlabs.axelix.master.domain.UserEntity;
+import com.axelixlabs.axelix.master.domain.UserStatus;
 
 /**
  * Repository for {@link UserEntity} aggregate.
@@ -43,6 +44,10 @@ public interface UserRepository extends ListCrudRepository<UserEntity, String> {
     @Modifying
     @Query("UPDATE users SET last_login_at = :lastLoginAt WHERE username = :username")
     void updateLastLoginAt(@Param("username") String username, @Param("lastLoginAt") Instant lastLoginAt);
+
+    @Modifying
+    @Query("UPDATE users SET status = :status WHERE id = :id")
+    void updateStatus(@Param("id") String id, @Param("status") UserStatus status);
 
     @Modifying
     @Query("""

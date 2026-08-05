@@ -30,7 +30,9 @@ import com.axelixlabs.axelix.common.auth.core.DefaultUser;
 import com.axelixlabs.axelix.common.auth.core.Role;
 import com.axelixlabs.axelix.common.auth.core.User;
 import com.axelixlabs.axelix.master.domain.UserEntity;
+import com.axelixlabs.axelix.master.domain.UserStatus;
 import com.axelixlabs.axelix.master.exception.auth.UserRoleNotFoundException;
+import com.axelixlabs.axelix.master.exception.auth.UserSuspendedException;
 import com.axelixlabs.axelix.master.service.state.UserService;
 
 /**
@@ -55,6 +57,10 @@ public class DatabaseUserAuthenticator implements UserAuthenticator {
         UserEntity user = userService.findUserByUsername(username).orElse(null);
 
         if (user != null && user.password() != null && passwordEncoder.matches(password, user.password())) {
+            if (user.status() == UserStatus.SUSPENDED) {
+                throw new UserSuspendedException();
+            }
+
             userService.updateLastLoginAt(user.username());
             return new DefaultUser(user.username(), user.password(), extractRoles(user.roles()));
         }

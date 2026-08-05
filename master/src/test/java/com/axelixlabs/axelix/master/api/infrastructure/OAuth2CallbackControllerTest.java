@@ -46,6 +46,7 @@ import com.axelixlabs.axelix.common.auth.exception.InvalidJwtTokenException;
 import com.axelixlabs.axelix.common.auth.service.JwtDecoderService;
 import com.axelixlabs.axelix.master.domain.UserEntity;
 import com.axelixlabs.axelix.master.domain.UserOrigin;
+import com.axelixlabs.axelix.master.domain.UserStatus;
 import com.axelixlabs.axelix.master.exception.auth.OidcMetadataUnavailableException;
 import com.axelixlabs.axelix.master.exception.auth.OidcTokenExchangeException;
 import com.axelixlabs.axelix.master.repository.UserRepository;
@@ -186,6 +187,7 @@ class OAuth2CallbackControllerTest {
         assertThat(userEntity.password()).isNull();
         assertThat(userEntity.roles().values()).hasSize(1).containsOnly("EDITOR");
         assertThat(userEntity.userOrigin()).isEqualTo(UserOrigin.OIDC);
+        assertThat(userEntity.status()).isEqualTo(UserStatus.ACTIVE);
         assertThat(userEntity.lastLoginAt()).isNotNull().isBetween(beforeLogin, afterLogin);
     }
 
@@ -218,6 +220,33 @@ class OAuth2CallbackControllerTest {
         assertThat(updated.roles().values()).containsOnly(DefaultRole.EDITOR.getName());
         assertThat(updated.userOrigin()).isEqualTo(UserOrigin.OIDC);
         assertThat(updated.lastLoginAt()).isNotNull().isBetween(beforeLogin, afterLogin);
+    }
+
+    @Test
+    void shouldReturnForbiddenForSuspendedOidcUserWithoutUpdatingIt() {
+        // given.
+        String username = "test-user";
+        userService.createFromOidc(username, "Original", "Name", "original@gmail.com", DefaultRole.VIEWER.getName());
+        UserEntity created = userRepository.findByUsername(username).orElseThrow();
+        userService.updateStatus(created.id(), UserStatus.SUSPENDED);
+        UserEntity suspended = userRepository.findById(created.id()).orElseThrow();
+
+        // and.
+        String userInfoJson = "{\"email\": \"updated@gmail.com\"}";
+        when(oidcClient.exchangeCodeForTokens(CODE)).thenReturn(tokens);
+        when(oidcClient.validateIdTokenAndExtractUsername(ID_TOKEN)).thenReturn(username);
+        when(oidcClient.validateAccessTokenAndExtractUserInfo(ACCESS_TOKEN)).thenReturn(userInfoJson);
+        when(oidcRoleExtractor.extractRole(userInfoJson)).thenReturn(DefaultRole.EDITOR);
+
+        // when.
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                "http://localhost:" + port + "/api/external/oauth2/callback?code=" + CODE, String.class);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getBody()).contains("USER_SUSPENDED");
+        assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE)).isNullOrEmpty();
+        assertThat(userRepository.findById(created.id()).orElseThrow()).isEqualTo(suspended);
     }
 
     @Test

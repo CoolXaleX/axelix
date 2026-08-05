@@ -34,6 +34,7 @@ import com.axelixlabs.axelix.master.domain.UserEntity;
  * @param email       Email address of the user, which may be {@code null}.
  * @param roles       The roles granted to this user.
  * @param userOrigin  Origin of the user account.
+ * @param status      Status that controls whether the user can log in.
  * @param lastLoginAt Timestamp of the most recent successful login. {@code null} if the user has never logged in.
  *
  * @author Sergey Cherkasov
@@ -46,6 +47,7 @@ public record UserResponse(
         @Nullable String email,
         Set<String> roles,
         String userOrigin,
+        String status,
         @Nullable Instant lastLoginAt) {
 
     public static UserResponse from(UserEntity user) {
@@ -57,6 +59,7 @@ public record UserResponse(
                 user.email(),
                 user.roles().values(),
                 user.userOrigin().getDisplayName(),
+                user.status().name(),
                 user.lastLoginAt());
     }
 }

@@ -46,6 +46,7 @@ import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.CookieProp
 import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.JwtProperties;
 import com.axelixlabs.axelix.master.domain.UserEntity;
 import com.axelixlabs.axelix.master.domain.UserOrigin;
+import com.axelixlabs.axelix.master.domain.UserStatus;
 import com.axelixlabs.axelix.master.repository.UserRepository;
 import com.axelixlabs.axelix.master.service.state.UserService;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
@@ -188,6 +189,46 @@ class UserApiTest {
     }
 
     @Test
+    void shouldReturnForbiddenForSuspendedDatabaseUser() {
+        // given.
+        userService.createLocal("db-user", null, null, "db-user@example.com", "db-password", "VIEWER");
+        UserEntity user = userRepository.findByUsername("db-user").orElseThrow();
+        userService.updateStatus(user.id(), UserStatus.SUSPENDED);
+        LoginRequest loginRequest = new LoginRequest("db-user", "db-password");
+
+        // when.
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/api/external/users/login", HttpMethod.POST, defaultEntity(loginRequest), String.class);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getBody()).contains("USER_SUSPENDED");
+        assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE)).isNullOrEmpty();
+        assertThat(userRepository.findById(user.id()).orElseThrow().lastLoginAt())
+                .isNull();
+    }
+
+    @Test
+    void shouldAuthenticateReactivatedDatabaseUser() {
+        // given.
+        userService.createLocal("db-user", null, null, "db-user@example.com", "db-password", "VIEWER");
+        UserEntity user = userRepository.findByUsername("db-user").orElseThrow();
+        userService.updateStatus(user.id(), UserStatus.SUSPENDED);
+        userService.updateStatus(user.id(), UserStatus.ACTIVE);
+        LoginRequest loginRequest = new LoginRequest("db-user", "db-password");
+
+        // when.
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/api/external/users/login", HttpMethod.POST, defaultEntity(loginRequest), String.class);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE)).hasSize(2);
+        assertThat(userRepository.findById(user.id()).orElseThrow().lastLoginAt())
+                .isNotNull();
+    }
+
+    @Test
     void shouldClearCookieOnLogout() {
         String token = jwtEncoderService.generateToken(new PasswordlessUser("someUser", Set.of()));
 
@@ -233,8 +274,16 @@ class UserApiTest {
     void shouldReturnAllManagedUsers() {
         // given.
         UserEntity alice = insertUser(
-                "alice", "Alice", "Smith", "alice@example.com", "aliceSecret", Set.of("ADMIN"), UserOrigin.LOCAL);
-        UserEntity bob = insertUser("bob", "Bob", null, "bob@example.com", null, Set.of("VIEWER"), UserOrigin.OIDC);
+                "alice",
+                "Alice",
+                "Smith",
+                "alice@example.com",
+                "aliceSecret",
+                Set.of("ADMIN"),
+                UserOrigin.LOCAL,
+                UserStatus.ACTIVE);
+        UserEntity bob = insertUser(
+                "bob", "Bob", null, "bob@example.com", null, Set.of("VIEWER"), UserOrigin.OIDC, UserStatus.SUSPENDED);
 
         // language=json
         String expectedFeed = """
@@ -247,6 +296,7 @@ class UserApiTest {
                     "email": "alice@example.com",
                     "roles": ["ADMIN"],
                     "userOrigin": "LOCAL",
+                    "status": "ACTIVE",
                     "lastLoginAt": null
                   },
                   {
@@ -257,6 +307,7 @@ class UserApiTest {
                     "email": "bob@example.com",
                     "roles": ["VIEWER"],
                     "userOrigin": "OAUTH2/OIDC",
+                    "status": "SUSPENDED",
                     "lastLoginAt": null
                   }
                 ]
@@ -277,7 +328,14 @@ class UserApiTest {
     void shouldReturnUserByHisId() {
         // given.
         UserEntity alice = insertUser(
-                "alice", "Alice", "Smith", "alice@example.com", "aliceSecret", Set.of("ADMIN"), UserOrigin.LOCAL);
+                "alice",
+                "Alice",
+                "Smith",
+                "alice@example.com",
+                "aliceSecret",
+                Set.of("ADMIN"),
+                UserOrigin.LOCAL,
+                UserStatus.SUSPENDED);
 
         // language=json
         String expectedUser = """
@@ -289,6 +347,7 @@ class UserApiTest {
                   "email": "alice@example.com",
                   "roles": ["ADMIN"],
                   "userOrigin": "LOCAL",
+                  "status": "SUSPENDED",
                   "lastLoginAt": null
                 }
                 """.formatted(alice.id());
@@ -346,7 +405,8 @@ class UserApiTest {
             String email,
             String password,
             Set<String> roles,
-            UserOrigin provider) {
+            UserOrigin provider,
+            UserStatus status) {
         UserEntity entity = new UserEntity(
                 UUID.randomUUID().toString(),
                 username,
@@ -356,6 +416,7 @@ class UserApiTest {
                 password == null ? null : passwordEncoder.encode(password),
                 new UserEntity.Roles(roles),
                 provider,
+                status,
                 null);
         return jdbcAggregateTemplate.insert(entity);
     }

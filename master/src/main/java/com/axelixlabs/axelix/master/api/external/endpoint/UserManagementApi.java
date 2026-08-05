@@ -34,6 +34,7 @@ import com.axelixlabs.axelix.master.api.external.ApiPaths;
 import com.axelixlabs.axelix.master.api.external.ExternalApiRestController;
 import com.axelixlabs.axelix.master.api.external.request.user.UserCreateRequest;
 import com.axelixlabs.axelix.master.api.external.request.user.UserDeleteRequest;
+import com.axelixlabs.axelix.master.api.external.request.user.UserStatusUpdateRequest;
 import com.axelixlabs.axelix.master.api.external.request.user.UserUpdateRequest;
 import com.axelixlabs.axelix.master.api.external.swagger.DefaultApiResponse;
 import com.axelixlabs.axelix.master.autoconfiguration.auth.SecurityAutoConfiguration;
@@ -117,5 +118,22 @@ public class UserManagementApi {
                 | DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
+    }
+
+    @DefaultApiResponse(summary = "Change a user's status")
+    @ApiResponse(description = "No Content", responseCode = "204")
+    @ApiResponse(description = "Bad Request", responseCode = "400")
+    @ApiResponse(description = "Not Found", responseCode = "404")
+    @PutMapping(path = ApiPaths.UsersManagementApi.USERS_STATUS)
+    public ResponseEntity<Void> updateUserStatus(@RequestBody UserStatusUpdateRequest request) {
+        if (request.id() == null || request.id().isBlank() || request.status() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        if (!userService.updateStatus(request.id(), request.status())) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.noContent().build();
     }
 }

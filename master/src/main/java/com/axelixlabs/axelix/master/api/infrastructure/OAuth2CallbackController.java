@@ -40,6 +40,8 @@ import com.axelixlabs.axelix.master.api.external.ApiPaths;
 import com.axelixlabs.axelix.master.api.external.ExternalApiRestController;
 import com.axelixlabs.axelix.master.domain.UserEntity;
 import com.axelixlabs.axelix.master.domain.UserOrigin;
+import com.axelixlabs.axelix.master.domain.UserStatus;
+import com.axelixlabs.axelix.master.exception.auth.UserSuspendedException;
 import com.axelixlabs.axelix.master.service.auth.CookieService;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcClient;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcRoleExtractor;
@@ -134,6 +136,11 @@ public class OAuth2CallbackController {
                 throw new BadRequestException("OIDC user with username '" + user.getUsername()
                         + "' conflicts with an existing non-OIDC account");
             }
+
+            if (entity.status() == UserStatus.SUSPENDED) {
+                throw new UserSuspendedException();
+            }
+
             userService.updateUserPatch(
                     entity.id(),
                     entity.username(),

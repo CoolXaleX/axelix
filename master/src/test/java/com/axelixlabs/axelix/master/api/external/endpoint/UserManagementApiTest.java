@@ -38,6 +38,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.axelixlabs.axelix.master.domain.UserEntity;
 import com.axelixlabs.axelix.master.domain.UserOrigin;
+import com.axelixlabs.axelix.master.domain.UserStatus;
 import com.axelixlabs.axelix.master.repository.UserRepository;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.master.utils.auth.ProtectedEndpointTests;
@@ -61,6 +62,7 @@ public class UserManagementApiTest {
 
     private static final String USERS_CREATE_PATH = "/api/external/users-management/create";
     private static final String USERS_DELETE_PATH = "/api/external/users-management/delete";
+    private static final String USERS_STATUS_PATH = "/api/external/users-management/status";
     private static final String USERS_UPDATE_PATH = "/api/external/users-management/update";
 
     @Autowired
@@ -114,6 +116,7 @@ public class UserManagementApiTest {
         assertThat(saved.email()).isEqualTo("newUser@example.com");
         assertThat(saved.roles().values()).containsExactly("EDITOR");
         assertThat(saved.userOrigin()).isEqualTo(UserOrigin.LOCAL);
+        assertThat(saved.status()).isEqualTo(UserStatus.ACTIVE);
         assertThat(saved.lastLoginAt()).isNull();
         assertThat(saved.password()).isNotEqualTo("plainPassword"); // Hash password
         assertThat(passwordEncoder.matches("plainPassword", saved.password())).isTrue();
@@ -520,6 +523,90 @@ public class UserManagementApiTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
+    @Test
+    void shouldChangeOnlyUserStatus() {
+        // given.
+        UserEntity user = insertUser("u", "u@example.com", "p", Set.of("VIEWER"), UserOrigin.LOCAL);
+        String request = """
+                {
+                  "id": "%s",
+                  "status": "SUSPENDED"
+                }
+                """.formatted(user.id());
+
+        // when.
+        ResponseEntity<Void> response = restTemplate
+                .withRole(SUPER_ADMIN)
+                .exchange(USERS_STATUS_PATH, HttpMethod.PUT, defaultEntity(request), Void.class);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        UserEntity updated = userRepository.findById(user.id()).orElseThrow();
+        assertThat(updated.status()).isEqualTo(UserStatus.SUSPENDED);
+        assertThat(updated).usingRecursiveComparison().ignoringFields("status").isEqualTo(user);
+    }
+
+    @Test
+    void shouldAllowIdempotentStatusChange() {
+        // given.
+        UserEntity user = insertUser("u", "u@example.com", "p", Set.of("VIEWER"), UserOrigin.LOCAL);
+        String request = """
+                {
+                  "id": "%s",
+                  "status": "ACTIVE"
+                }
+                """.formatted(user.id());
+
+        // when.
+        ResponseEntity<Void> response = restTemplate
+                .withRole(SUPER_ADMIN)
+                .exchange(USERS_STATUS_PATH, HttpMethod.PUT, defaultEntity(request), Void.class);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(userRepository.findById(user.id()).orElseThrow().status()).isEqualTo(UserStatus.ACTIVE);
+    }
+
+    @Test
+    void shouldReturnBadRequest_WhenStatusIsUnknown() {
+        // given.
+        UserEntity user = insertUser("u", "u@example.com", "p", Set.of("VIEWER"), UserOrigin.LOCAL);
+        String request = """
+                {
+                  "id": "%s",
+                  "status": "UNKNOWN"
+                }
+                """.formatted(user.id());
+
+        // when.
+        ResponseEntity<Void> response = restTemplate
+                .withRole(SUPER_ADMIN)
+                .exchange(USERS_STATUS_PATH, HttpMethod.PUT, defaultEntity(request), Void.class);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(userRepository.findById(user.id()).orElseThrow().status()).isEqualTo(UserStatus.ACTIVE);
+    }
+
+    @Test
+    void shouldReturnNotFound_WhenChangingStatusOfUnknownUser() {
+        // given.
+        String request = """
+                {
+                  "id": "unknown-id",
+                  "status": "SUSPENDED"
+                }
+                """;
+
+        // when.
+        ResponseEntity<Void> response = restTemplate
+                .withRole(SUPER_ADMIN)
+                .exchange(USERS_STATUS_PATH, HttpMethod.PUT, defaultEntity(request), Void.class);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
     @ProtectedEndpointTests(
             method = POST,
             path = USERS_CREATE_PATH,
@@ -562,6 +649,19 @@ public class UserManagementApiTest {
                     """)
     void negativeAuthTestsOnUpdateUser() {}
 
+    @ProtectedEndpointTests(
+            method = PUT,
+            path = USERS_STATUS_PATH,
+            requiredAuthority = USERS_MANAGEMENT,
+            // language=json
+            jsonBody = """
+                    {
+                      "id": "some-id",
+                      "status": "SUSPENDED"
+                    }
+                    """)
+    void negativeAuthTestsOnUpdateUserStatus() {}
+
     private HttpEntity<String> defaultEntity(String body) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -579,6 +679,7 @@ public class UserManagementApiTest {
                 password == null ? null : passwordEncoder.encode(password),
                 new UserEntity.Roles(roles),
                 provider,
+                UserStatus.ACTIVE,
                 null);
         return jdbcAggregateTemplate.insert(entity);
     }

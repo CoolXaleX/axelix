@@ -31,6 +31,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.SuperAdminConfigurationProperties;
 import com.axelixlabs.axelix.master.domain.UserEntity;
 import com.axelixlabs.axelix.master.domain.UserOrigin;
+import com.axelixlabs.axelix.master.domain.UserStatus;
 import com.axelixlabs.axelix.master.exception.auth.EmailAlreadyExistsException;
 import com.axelixlabs.axelix.master.exception.auth.UserInvalidValueException;
 import com.axelixlabs.axelix.master.exception.auth.UserRoleNotFoundException;
@@ -87,6 +88,7 @@ class DatabaseUserServiceTest {
         assertThat(saved.email()).isEqualTo("alice@example.com");
         assertThat(saved.roles().values()).containsExactly("ADMIN");
         assertThat(saved.userOrigin()).isEqualTo(UserOrigin.LOCAL);
+        assertThat(saved.status()).isEqualTo(UserStatus.ACTIVE);
         assertThat(saved.password()).isNotEqualTo("plainPass"); // Hash password
         assertThat(passwordEncoder.matches("plainPass", saved.password())).isTrue();
         assertThat(saved.lastLoginAt()).isNull();
@@ -104,6 +106,7 @@ class DatabaseUserServiceTest {
         assertThat(saved.email()).isNull();
         assertThat(saved.password()).isNull();
         assertThat(saved.userOrigin()).isEqualTo(UserOrigin.OIDC);
+        assertThat(saved.status()).isEqualTo(UserStatus.ACTIVE);
     }
 
     @Test
@@ -291,6 +294,47 @@ class DatabaseUserServiceTest {
         // then.
         UserEntity updated = userRepository.findByUsername("alice").orElseThrow();
         assertThat(updated.lastLoginAt()).isNotNull();
+    }
+
+    @Test
+    void updateStatus_shouldUpdateOnlyStatus() {
+        // given.
+        userService.createLocal("alice", "Alice", "Smith", "a@example.com", "p", "VIEWER");
+        UserEntity existing = userRepository.findByUsername("alice").orElseThrow();
+
+        // when.
+        boolean updated = userService.updateStatus(existing.id(), UserStatus.SUSPENDED);
+
+        // then.
+        assertThat(updated).isTrue();
+        UserEntity saved = userRepository.findById(existing.id()).orElseThrow();
+        assertThat(saved.status()).isEqualTo(UserStatus.SUSPENDED);
+        assertThat(saved).usingRecursiveComparison().ignoringFields("status").isEqualTo(existing);
+    }
+
+    @Test
+    void updateStatus_shouldBeIdempotent() {
+        // given.
+        userService.createLocal("alice", null, null, "a@example.com", "p", "VIEWER");
+        UserEntity existing = userRepository.findByUsername("alice").orElseThrow();
+
+        // when.
+        boolean updated = userService.updateStatus(existing.id(), UserStatus.ACTIVE);
+
+        // then.
+        assertThat(updated).isTrue();
+        assertThat(userRepository.findById(existing.id()).orElseThrow().status())
+                .isEqualTo(UserStatus.ACTIVE);
+    }
+
+    @Test
+    void updateStatus_shouldReportUnknownUser() {
+        // when.
+        boolean updated = userService.updateStatus("non-existent-id", UserStatus.SUSPENDED);
+
+        // then.
+        assertThat(updated).isFalse();
+        assertThat(userRepository.findAll()).isEmpty();
     }
 
     @Test

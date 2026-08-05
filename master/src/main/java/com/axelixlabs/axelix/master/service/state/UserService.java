@@ -27,6 +27,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.axelixlabs.axelix.master.domain.UserEntity;
 import com.axelixlabs.axelix.master.domain.UserOrigin;
+import com.axelixlabs.axelix.master.domain.UserStatus;
 import com.axelixlabs.axelix.master.exception.auth.EmailAlreadyExistsException;
 import com.axelixlabs.axelix.master.exception.auth.UserInvalidValueException;
 import com.axelixlabs.axelix.master.exception.auth.UserRoleNotFoundException;
@@ -124,6 +125,15 @@ public interface UserService {
      * @param username Login username of the user who just authenticated.
      */
     void updateLastLoginAt(String username);
+
+    /**
+     * Changes the status of a persisted user without modifying other user data.
+     *
+     * @param id Unique identifier of the user.
+     * @param status New status of the user.
+     * @return {@code true} if the user exists, otherwise {@code false}.
+     */
+    boolean updateStatus(String id, UserStatus status);
 
     /**
      * Applies a partial update to the user with the given id within a single transaction.
