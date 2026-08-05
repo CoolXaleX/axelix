@@ -23,6 +23,8 @@ import org.jspecify.annotations.Nullable;
  * Request payload to create a new managed user via the Users Management API.
  *
  * @param username   Login name of the user to create.
+ * @param firstName  The user's first name.
+ * @param lastName   The user's last name.
  * @param email      The user email address, which may be {@code null}.
  * @param password   Plain-text password.
  * @param role       Name of the role to grant to the user.
@@ -30,11 +32,17 @@ import org.jspecify.annotations.Nullable;
  * @author Sergey Cherkasov
  * @author Mikhail Polivakha
  */
-public record UserCreateRequest(String username, @Nullable String email, String password, String role) {
+public record UserCreateRequest(
+        String username,
+        String firstName,
+        String lastName,
+        @Nullable String email,
+        String password,
+        String role) {
 
     @Override
     public String toString() {
-        return "UserCreateRequest[username=[%s], email=[REDACTED], password=[REDACTED], role=%s]"
-                .formatted(username, role);
+        return "UserCreateRequest[username=[%s], firstName=[REDACTED], lastName=[REDACTED],"
+                + " email=[REDACTED], password=[REDACTED], role=%s]".formatted(username, role);
     }
 }

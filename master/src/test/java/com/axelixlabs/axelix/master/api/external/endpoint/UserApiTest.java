@@ -154,7 +154,7 @@ class UserApiTest {
 
     @Test
     void shouldAuthenticateUserFromDatabase() {
-        userService.createLocal("db-user", "db-user@example.com", "db-password", "VIEWER");
+        userService.createLocal("db-user", null, null, "db-user@example.com", "db-password", "VIEWER");
         UserEntity user = userRepository.findByUsername("db-user").orElseThrow();
 
         LoginRequest loginRequest = new LoginRequest("db-user", "db-password");
@@ -173,7 +173,8 @@ class UserApiTest {
 
     @Test
     void shouldNotAuthenticateUserFromDatabaseWithInvalidCredentials() {
-        userService.createLocal("db-user", "db-user@example.com", "db-password", DefaultRole.VIEWER.getName());
+        userService.createLocal(
+                "db-user", null, null, "db-user@example.com", "db-password", DefaultRole.VIEWER.getName());
 
         LoginRequest loginRequest = new LoginRequest("db-user", "wrong-password");
 
@@ -230,8 +231,10 @@ class UserApiTest {
 
     @Test
     void shouldReturnAllManagedUsers() {
-        UserEntity alice = insertUser("alice", "alice@example.com", "aliceSecret", Set.of("ADMIN"), UserOrigin.LOCAL);
-        UserEntity bob = insertUser("bob", "bob@example.com", null, Set.of("VIEWER"), UserOrigin.OIDC);
+        // given.
+        UserEntity alice = insertUser(
+                "alice", "Alice", "Smith", "alice@example.com", "aliceSecret", Set.of("ADMIN"), UserOrigin.LOCAL);
+        UserEntity bob = insertUser("bob", "Bob", null, "bob@example.com", null, Set.of("VIEWER"), UserOrigin.OIDC);
 
         // language=json
         String expectedFeed = """
@@ -239,6 +242,8 @@ class UserApiTest {
                   {
                     "id": "%s",
                     "username": "alice",
+                    "firstName": "Alice",
+                    "lastName": "Smith",
                     "email": "alice@example.com",
                     "roles": ["ADMIN"],
                     "userOrigin": "LOCAL",
@@ -247,6 +252,8 @@ class UserApiTest {
                   {
                     "id": "%s",
                     "username": "bob",
+                    "firstName": "Bob",
+                    "lastName": null,
                     "email": "bob@example.com",
                     "roles": ["VIEWER"],
                     "userOrigin": "OAUTH2/OIDC",
@@ -269,13 +276,16 @@ class UserApiTest {
     @Test
     void shouldReturnUserByHisId() {
         // given.
-        UserEntity alice = insertUser("alice", "alice@example.com", "aliceSecret", Set.of("ADMIN"), UserOrigin.LOCAL);
+        UserEntity alice = insertUser(
+                "alice", "Alice", "Smith", "alice@example.com", "aliceSecret", Set.of("ADMIN"), UserOrigin.LOCAL);
 
         // language=json
         String expectedUser = """
                 {
                   "id": "%s",
                   "username": "alice",
+                  "firstName": "Alice",
+                  "lastName": "Smith",
                   "email": "alice@example.com",
                   "roles": ["ADMIN"],
                   "userOrigin": "LOCAL",
@@ -330,10 +340,18 @@ class UserApiTest {
     }
 
     private UserEntity insertUser(
-            String username, String email, String password, Set<String> roles, UserOrigin provider) {
+            String username,
+            String firstName,
+            String lastName,
+            String email,
+            String password,
+            Set<String> roles,
+            UserOrigin provider) {
         UserEntity entity = new UserEntity(
                 UUID.randomUUID().toString(),
                 username,
+                firstName,
+                lastName,
                 email,
                 password == null ? null : passwordEncoder.encode(password),
                 new UserEntity.Roles(roles),

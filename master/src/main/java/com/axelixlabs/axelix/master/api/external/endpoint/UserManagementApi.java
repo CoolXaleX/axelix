@@ -68,7 +68,13 @@ public class UserManagementApi {
     public ResponseEntity<Void> createUser(@RequestBody UserCreateRequest request) {
         try {
 
-            userService.createLocal(request.username(), request.email(), request.password(), request.role());
+            userService.createLocal(
+                    request.username(),
+                    request.firstName(),
+                    request.lastName(),
+                    request.email(),
+                    request.password(),
+                    request.role());
             return ResponseEntity.status(HttpStatus.CREATED).build();
 
         } catch (UserInvalidValueException
@@ -94,7 +100,14 @@ public class UserManagementApi {
     public ResponseEntity<Void> updateUser(@RequestBody UserUpdateRequest request) {
         try {
             userService.updateUserPatch(
-                    request.id(), request.username(), request.email(), request.password(), request.roles());
+                    request.id(),
+                    request.username(),
+                    request.firstName(),
+                    request.lastName(),
+                    request.email(),
+                    request.password(),
+                    request.roles(),
+                    null);
 
             return ResponseEntity.noContent().build();
 

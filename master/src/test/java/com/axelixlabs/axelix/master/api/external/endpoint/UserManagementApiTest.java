@@ -82,10 +82,13 @@ public class UserManagementApiTest {
 
     @Test
     void shouldCreateUser() {
+        // given.
         // language=json
         String request = """
                 {
                   "username": "newUser",
+                  "firstName": "New",
+                  "lastName": "User",
                   "email": "newUser@example.com",
                   "password": "plainPassword",
                   "role": "EDITOR"
@@ -106,6 +109,8 @@ public class UserManagementApiTest {
         UserEntity saved = users.getFirst();
         assertThat(saved.id()).isNotBlank();
         assertThat(saved.username()).isEqualTo("newUser");
+        assertThat(saved.firstName()).isEqualTo("New");
+        assertThat(saved.lastName()).isEqualTo("User");
         assertThat(saved.email()).isEqualTo("newUser@example.com");
         assertThat(saved.roles().values()).containsExactly("EDITOR");
         assertThat(saved.userOrigin()).isEqualTo(UserOrigin.LOCAL);
@@ -283,6 +288,8 @@ public class UserManagementApiTest {
                 {
                   "id": "%s",
                   "username": "newName",
+                  "firstName": "New",
+                  "lastName": "Name",
                   "email": "new@example.com",
                   "roles": ["ADMIN", "EDITOR"],
                   "password": "newPass"
@@ -299,6 +306,8 @@ public class UserManagementApiTest {
 
         UserEntity updated = userRepository.findById(user.id()).orElseThrow();
         assertThat(updated.username()).isEqualTo("newName");
+        assertThat(updated.firstName()).isEqualTo("New");
+        assertThat(updated.lastName()).isEqualTo("Name");
         assertThat(updated.email()).isEqualTo("new@example.com");
         assertThat(updated.roles().values()).containsExactlyInAnyOrder("ADMIN", "EDITOR");
         assertThat(passwordEncoder.matches("newPass", updated.password())).isTrue();
@@ -564,6 +573,8 @@ public class UserManagementApiTest {
         UserEntity entity = new UserEntity(
                 UUID.randomUUID().toString(),
                 username,
+                null,
+                null,
                 email,
                 password == null ? null : passwordEncoder.encode(password),
                 new UserEntity.Roles(roles),

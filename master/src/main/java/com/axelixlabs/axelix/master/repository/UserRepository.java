@@ -49,6 +49,8 @@ public interface UserRepository extends ListCrudRepository<UserEntity, String> {
         UPDATE users
         SET
                 username = :username,
+                first_name = :firstName,
+                last_name = :lastName,
                 email = :email,
                 password = COALESCE(:password, password),
                 roles = :roles,
@@ -58,6 +60,8 @@ public interface UserRepository extends ListCrudRepository<UserEntity, String> {
     void updateUserPatch(
             @Param("id") String id,
             @Param("username") String username,
+            @Param("firstName") @Nullable String firstName,
+            @Param("lastName") @Nullable String lastName,
             @Param("email") @Nullable String email,
             @Param("password") @Nullable String password,
             @Param("roles") UserEntity.Roles roles,

@@ -118,9 +118,17 @@ class OAuth2CallbackControllerTest {
     void happyPath() {
         // given.
         String username = "test-user";
+        String firstName = "John";
+        String lastName = "Doe";
         String email = "example@gmail.com";
         // language=json
-        String userInfoJson = "{\"email\": \"%s\"}".formatted(email);
+        String userInfoJson = """
+                {
+                  "given_name": "%s",
+                  "family_name": "%s",
+                  "email": "%s"
+                }
+                """.formatted(firstName, lastName, email);
 
         // and.
         when(oidcClient.exchangeCodeForTokens(CODE)).thenReturn(tokens);
@@ -172,6 +180,8 @@ class OAuth2CallbackControllerTest {
         UserEntity userEntity = userRepository.findByUsername(username).get();
         assertThat(userEntity.id()).isNotNull();
         assertThat(userEntity.username()).isEqualTo(username);
+        assertThat(userEntity.firstName()).isEqualTo(firstName);
+        assertThat(userEntity.lastName()).isEqualTo(lastName);
         assertThat(userEntity.email()).isEqualTo(email);
         assertThat(userEntity.password()).isNull();
         assertThat(userEntity.roles().values()).hasSize(1).containsOnly("EDITOR");
@@ -184,7 +194,7 @@ class OAuth2CallbackControllerTest {
         // given.
         String username = "test-user";
         String updatedEmail = "updated@gmail.com";
-        userService.createFromOidc(username, "original@gmail.com", DefaultRole.VIEWER.getName());
+        userService.createFromOidc(username, "Original", "Name", "original@gmail.com", DefaultRole.VIEWER.getName());
 
         // and.
         String userInfoJson = "{\"email\": \"%s\"}".formatted(updatedEmail);
@@ -202,6 +212,8 @@ class OAuth2CallbackControllerTest {
         // then.
         UserEntity updated = userRepository.findByUsername(username).orElseThrow();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FOUND);
+        assertThat(updated.firstName()).isEqualTo("Original");
+        assertThat(updated.lastName()).isEqualTo("Name");
         assertThat(updated.email()).isEqualTo(updatedEmail);
         assertThat(updated.roles().values()).containsOnly(DefaultRole.EDITOR.getName());
         assertThat(updated.userOrigin()).isEqualTo(UserOrigin.OIDC);
@@ -212,7 +224,7 @@ class OAuth2CallbackControllerTest {
     void shouldReturn400WhenOidcUserConflictsWithExistingLocalAccount() {
         // given.
         String username = "test-user";
-        userService.createLocal(username, null, "test-password", "ADMIN");
+        userService.createLocal(username, null, null, null, "test-password", "ADMIN");
 
         // and.
         String userInfoJson = "someJson";

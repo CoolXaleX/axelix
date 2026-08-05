@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -122,11 +123,11 @@ public class OAuth2CallbackController {
                 .build();
     }
 
-    // Always update role & email
+    // Always update role & email. Update names only when the provider supplies them.
     private void upsertUserUpdateLastLoginAt(User user, String userInfoJson, Role role) {
         UserEntity entity = userService.findUserByUsername(user.getUsername()).orElse(null);
 
-        String email = extractEmail(userInfoJson);
+        OidcStandardClaims claims = extractStandardClaims(userInfoJson);
 
         if (entity != null) {
             if (entity.userOrigin() != UserOrigin.OIDC) {
@@ -134,19 +135,40 @@ public class OAuth2CallbackController {
                         + "' conflicts with an existing non-OIDC account");
             }
             userService.updateUserPatch(
-                    entity.id(), entity.username(), email, null, Set.of(role.getName()), Instant.now());
+                    entity.id(),
+                    entity.username(),
+                    claims.firstName() == null ? entity.firstName() : claims.firstName(),
+                    claims.lastName() == null ? entity.lastName() : claims.lastName(),
+                    claims.email(),
+                    null,
+                    Set.of(role.getName()),
+                    Instant.now());
         } else {
-            userService.createFromOidc(user.getUsername(), email, role.getName());
+            userService.createFromOidc(
+                    user.getUsername(), claims.firstName(), claims.lastName(), claims.email(), role.getName());
+        }
+    }
+
+    private OidcStandardClaims extractStandardClaims(String userInfoJson) {
+        try {
+            JsonNode userInfo = objectMapper.readTree(userInfoJson);
+            return new OidcStandardClaims(
+                    textClaim(userInfo, "given_name"),
+                    textClaim(userInfo, "family_name"),
+                    textClaim(userInfo, "email"));
+        } catch (Exception e) {
+            return new OidcStandardClaims(null, null, null);
         }
     }
 
     @Nullable
-    private String extractEmail(String userInfoJson) {
-        try {
-            String email = objectMapper.readTree(userInfoJson).get("email").asString(null);
-            return (email == null || email.isBlank()) ? null : email;
-        } catch (Exception e) {
-            return null;
-        }
+    private String textClaim(JsonNode userInfo, String claimName) {
+        String value = userInfo.path(claimName).asString(null);
+        return value == null || value.isBlank() ? null : value;
     }
+
+    private record OidcStandardClaims(
+            @Nullable String firstName,
+            @Nullable String lastName,
+            @Nullable String email) {}
 }

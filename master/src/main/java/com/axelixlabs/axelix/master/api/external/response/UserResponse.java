@@ -29,6 +29,8 @@ import com.axelixlabs.axelix.master.domain.UserEntity;
  *
  * @param id          Unique identifier of the user.
  * @param username    Login name of the user.
+ * @param firstName   First name of the user, which may be {@code null}.
+ * @param lastName    Last name of the user, which may be {@code null}.
  * @param email       Email address of the user, which may be {@code null}.
  * @param roles       The roles granted to this user.
  * @param userOrigin  Origin of the user account.
@@ -39,6 +41,8 @@ import com.axelixlabs.axelix.master.domain.UserEntity;
 public record UserResponse(
         String id,
         String username,
+        @Nullable String firstName,
+        @Nullable String lastName,
         @Nullable String email,
         Set<String> roles,
         String userOrigin,
@@ -48,6 +52,8 @@ public record UserResponse(
         return new UserResponse(
                 user.id(),
                 user.username(),
+                user.firstName(),
+                user.lastName(),
                 user.email(),
                 user.roles().values(),
                 user.userOrigin().getDisplayName(),

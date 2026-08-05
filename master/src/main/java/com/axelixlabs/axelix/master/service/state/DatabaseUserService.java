@@ -19,6 +19,7 @@ package com.axelixlabs.axelix.master.service.state;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -69,13 +70,21 @@ public class DatabaseUserService implements UserService {
     }
 
     @Override
-    public void createLocal(String username, @Nullable String email, String password, String role)
+    public void createLocal(
+            String username,
+            @Nullable String firstName,
+            @Nullable String lastName,
+            @Nullable String email,
+            String password,
+            String role)
             throws UserRoleNotFoundException, UserInvalidValueException {
 
         UserEntity userEntity = new UserEntity(
                 UUID.randomUUID().toString(),
                 requireNonBlankTrimmed(username),
-                email == null ? null : requireNonBlankTrimmed(email),
+                normalizeOptional(firstName),
+                normalizeOptional(lastName),
+                normalizeOptional(email),
                 passwordEncoder.encode(requireNonBlankTrimmed(password)),
                 new UserEntity.Roles(Set.of(validateAndNormalizeRole(role))),
                 UserOrigin.LOCAL,
@@ -95,12 +104,19 @@ public class DatabaseUserService implements UserService {
     }
 
     @Override
-    public void createFromOidc(String username, @Nullable String email, String role) {
+    public void createFromOidc(
+            String username,
+            @Nullable String firstName,
+            @Nullable String lastName,
+            @Nullable String email,
+            String role) {
 
         UserEntity userEntity = new UserEntity(
                 UUID.randomUUID().toString(),
                 requireNonBlankTrimmed(username),
-                email == null ? null : requireNonBlankTrimmed(email),
+                normalizeOptional(firstName),
+                normalizeOptional(lastName),
+                normalizeOptional(email),
                 null,
                 new UserEntity.Roles(Set.of(validateAndNormalizeRole(role))),
                 UserOrigin.OIDC,
@@ -143,6 +159,8 @@ public class DatabaseUserService implements UserService {
     public void updateUserPatch(
             String id,
             String username,
+            @Nullable String firstName,
+            @Nullable String lastName,
             @Nullable String email,
             @Nullable String password,
             Set<String> roles,
@@ -157,18 +175,17 @@ public class DatabaseUserService implements UserService {
                 roles.stream().map(this::validateAndNormalizeRole).collect(Collectors.toSet());
 
         String normalizedUsername = requireNonBlankTrimmed(username);
-        String normalizedEmail = email == null ? null : requireNonBlankTrimmed(email);
+        String normalizedFirstName = normalizeOptional(firstName);
+        String normalizedLastName = normalizeOptional(lastName);
+        String normalizedEmail = normalizeOptional(email);
 
-        Optional<UserEntity> userWithSameUsername = userRepository.findByUsername(normalizedUsername);
         if (isUsernameReservedForSuperAdmin(normalizedUsername)
-                || (userWithSameUsername.isPresent()
-                        && !userWithSameUsername.get().id().equals(id))) {
+                || userWithSuchUsernameAlreadyExists(id, normalizedUsername)) {
             throw new UsernameAlreadyExistsException(normalizedUsername);
         }
 
         if (normalizedEmail != null) {
-            Optional<UserEntity> userWithSameEmail = userRepository.findByEmail(normalizedEmail);
-            if (userWithSameEmail.isPresent() && !userWithSameEmail.get().id().equals(id)) {
+            if (userWithSuchEmailAlreadyExists(id, normalizedEmail)) {
                 throw new EmailAlreadyExistsException(normalizedEmail);
             }
         }
@@ -176,10 +193,26 @@ public class DatabaseUserService implements UserService {
         userRepository.updateUserPatch(
                 id,
                 normalizedUsername,
+                normalizedFirstName,
+                normalizedLastName,
                 normalizedEmail,
                 password == null ? null : passwordEncoder.encode(requireNonBlankTrimmed(password)),
                 new UserEntity.Roles(validRoles),
                 lastLoginAt);
+    }
+
+    private boolean userWithSuchEmailAlreadyExists(String id, String normalizedEmail) {
+        return userRepository
+                .findByEmail(normalizedEmail)
+                .filter(it -> !Objects.equals(it.id(), id))
+                .isPresent();
+    }
+
+    private boolean userWithSuchUsernameAlreadyExists(String id, String normalizedUsername) {
+        return userRepository
+                .findByUsername(normalizedUsername)
+                .filter(it -> !Objects.equals(it.id(), id))
+                .isPresent();
     }
 
     private boolean isUsernameReservedForSuperAdmin(String username) {
@@ -192,6 +225,11 @@ public class DatabaseUserService implements UserService {
         }
 
         throw new UserInvalidValueException(value);
+    }
+
+    @Nullable
+    private String normalizeOptional(@Nullable String value) throws UserInvalidValueException {
+        return value == null ? null : requireNonBlankTrimmed(value);
     }
 
     private String validateAndNormalizeRole(@Nullable String role)

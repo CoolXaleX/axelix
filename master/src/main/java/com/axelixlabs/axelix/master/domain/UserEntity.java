@@ -30,6 +30,8 @@ import org.springframework.data.relational.core.mapping.Table;
  *
  * @param id           Unique identifier of the user (UUID generated in the service). Serves as the primary key.
  * @param username     Login name of the user.
+ * @param firstName    First name of the user, which may be {@code null}.
+ * @param lastName     Last name of the user, which may be {@code null}.
  * @param email        Email address of the user, which may be {@code null}.
  * @param password     Hash of the user's password, which may be {@code null}.
  * @param roles        Names of the roles granted to this user (e.g. {@code ADMIN}, {@code EDITOR}, {@code VIEWER}).
@@ -42,6 +44,8 @@ import org.springframework.data.relational.core.mapping.Table;
 public record UserEntity(
         @Id String id,
         String username,
+        @Nullable String firstName,
+        @Nullable String lastName,
         @Nullable String email,
         @Nullable String password,
         Roles roles,
@@ -56,7 +60,8 @@ public record UserEntity(
 
     @Override
     public String toString() {
-        return "User[id=" + id + ", username=[REDACTED], email=[REDACTED]"
+        return "User[id=" + id + ", username=[REDACTED], firstName=[REDACTED]"
+                + ", lastName=[REDACTED], email=[REDACTED]"
                 + ", password=[REDACTED], roles=" + roles + ", userOrigin=" + userOrigin
                 + ", lastLoginAt=" + lastLoginAt + ']';
     }

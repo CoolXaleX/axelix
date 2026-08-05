@@ -26,6 +26,8 @@ import org.jspecify.annotations.Nullable;
  *
  * @param id       Unique identifier of the user to update.
  * @param username New username. Must be unique when provided.
+ * @param firstName New first name.
+ * @param lastName New last name.
  * @param email    New email address. Must be unique when provided.
  * @param roles    New set of role names.
  * @param password Plain-text new password, or null, if it should not be changed.
@@ -35,13 +37,15 @@ import org.jspecify.annotations.Nullable;
 public record UserUpdateRequest(
         String id,
         String username,
+        String firstName,
+        String lastName,
         @Nullable String email,
         Set<String> roles,
         @Nullable String password) {
 
     @Override
     public String toString() {
-        return "UserUpdateRequest[id=%s, username=[REDACTED], email=[REDACTED], roles=%s, password=[REDACTED]]"
-                .formatted(id, roles);
+        return "UserUpdateRequest[id=%s, username=[REDACTED], firstName=[REDACTED],"
+                + " lastName=[REDACTED], email=[REDACTED], roles=%s, password=[REDACTED]]".formatted(id, roles);
     }
 }
