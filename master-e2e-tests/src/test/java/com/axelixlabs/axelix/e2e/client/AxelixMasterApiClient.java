@@ -20,6 +20,7 @@ package com.axelixlabs.axelix.e2e.client;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,6 +29,7 @@ import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.Response;
 import com.microsoft.playwright.options.Cookie;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.cookie.CookieFilter;
@@ -92,6 +94,10 @@ public class AxelixMasterApiClient {
     }
 
     public String getUserId(String username) {
+        return findUserId(username).orElseThrow(() -> new AssertionError("User '" + username + "' was not found"));
+    }
+
+    public Optional<String> findUserId(String username) {
         List<Map<String, Object>> users = requestSpec()
                 .get(EXTERNAL_API_BASE_PATH + "/users/feed")
                 .then()
@@ -103,8 +109,7 @@ public class AxelixMasterApiClient {
         return users.stream()
                 .filter(user -> username.equals(user.get("username")))
                 .map(user -> (String) user.get("id"))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("User '" + username + "' was not found"));
+                .findFirst();
     }
 
     public void updateUserStatus(String userId, String status) {
@@ -126,6 +131,28 @@ public class AxelixMasterApiClient {
                 .then()
                 .statusCode(403)
                 .body("errorCode", equalTo("USER_SUSPENDED"));
+    }
+
+    public void verifySuspendedUserCannotLoginViaOAuth2(String username, String password) {
+        try (Playwright playwright = Playwright.create();
+                Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true))) {
+
+            Page page = browser.newPage();
+            page.navigate(buildOAuth2LoginRequestUrl());
+            page.fill("#username", username);
+            page.fill("#password", password);
+
+            Response response = page.waitForResponse(
+                    candidate -> candidate.url().contains(EXTERNAL_API_BASE_PATH + "/oauth2/callback"),
+                    () -> page.click("#kc-login"));
+
+            if (response.status() != 403 || !response.text().contains("USER_SUSPENDED")) {
+                throw new AssertionError("Expected suspended OIDC login to return 403 USER_SUSPENDED, but got "
+                        + response.status() + ": " + response.text());
+            }
+        } catch (Exception e) {
+            throw new AssertionError("OAuth2/Playwright: " + e.getMessage(), e);
+        }
     }
 
     /**
