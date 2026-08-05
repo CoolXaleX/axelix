@@ -58,4 +58,19 @@ public class LocalAuthE2ETest {
         // then.
         client.login(username, PASSWORD);
     }
+
+    @Test
+    void shouldPreventSuspendedUserFromLoggingIn() {
+        // given.
+        String username = generateUniqueUsername();
+        client.registerLocalUser(username, generateUniqueEmail(), PASSWORD, "EDITOR");
+        String userId = client.getUserId(username);
+
+        // when.
+        client.updateUserStatus(userId, "SUSPENDED");
+
+        // then.
+        AxelixMasterApiClient userClient = new AxelixMasterApiClient(E2ETestConfig.masterBaseUrl());
+        userClient.verifySuspendedUserCannotLogin(username, PASSWORD);
+    }
 }

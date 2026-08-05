@@ -37,6 +37,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.jspecify.annotations.Nullable;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
 
 /**
  * REST API client for interacting with the Axelix Master during E2E testing.
@@ -88,6 +89,43 @@ public class AxelixMasterApiClient {
                 .post(EXTERNAL_API_BASE_PATH + "/users-management/create")
                 .then()
                 .statusCode(201);
+    }
+
+    public String getUserId(String username) {
+        List<Map<String, Object>> users = requestSpec()
+                .get(EXTERNAL_API_BASE_PATH + "/users/feed")
+                .then()
+                .statusCode(200)
+                .extract()
+                .jsonPath()
+                .getList("$");
+
+        return users.stream()
+                .filter(user -> username.equals(user.get("username")))
+                .map(user -> (String) user.get("id"))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("User '" + username + "' was not found"));
+    }
+
+    public void updateUserStatus(String userId, String status) {
+        requestSpec()
+                .body("""
+                        {"id": "%s", "status": "%s"}
+                        """.formatted(userId, status))
+                .put(EXTERNAL_API_BASE_PATH + "/users-management/status")
+                .then()
+                .statusCode(204);
+    }
+
+    public void verifySuspendedUserCannotLogin(String username, String password) {
+        requestSpec()
+                .body("""
+                        {"username": "%s", "password": "%s"}
+                        """.formatted(username, password))
+                .post(EXTERNAL_API_BASE_PATH + "/users/login")
+                .then()
+                .statusCode(403)
+                .body("errorCode", equalTo("USER_SUSPENDED"));
     }
 
     /**
