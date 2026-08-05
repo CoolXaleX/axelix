@@ -599,12 +599,13 @@ public class UserManagementApiTest {
                 """;
 
         // when.
-        ResponseEntity<Void> response = restTemplate
+        ResponseEntity<String> response = restTemplate
                 .withRole(SUPER_ADMIN)
-                .exchange(USERS_STATUS_PATH, HttpMethod.PUT, defaultEntity(request), Void.class);
+                .exchange(USERS_STATUS_PATH, HttpMethod.PUT, defaultEntity(request), String.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).contains("USER_NOT_FOUND");
     }
 
     @ProtectedEndpointTests(

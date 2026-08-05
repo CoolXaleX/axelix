@@ -34,6 +34,7 @@ import com.axelixlabs.axelix.master.domain.UserOrigin;
 import com.axelixlabs.axelix.master.domain.UserStatus;
 import com.axelixlabs.axelix.master.exception.auth.EmailAlreadyExistsException;
 import com.axelixlabs.axelix.master.exception.auth.UserInvalidValueException;
+import com.axelixlabs.axelix.master.exception.auth.UserNotFoundException;
 import com.axelixlabs.axelix.master.exception.auth.UserRoleNotFoundException;
 import com.axelixlabs.axelix.master.exception.auth.UsernameAlreadyExistsException;
 import com.axelixlabs.axelix.master.repository.UserRepository;
@@ -303,10 +304,9 @@ class DatabaseUserServiceTest {
         UserEntity existing = userRepository.findByUsername("alice").orElseThrow();
 
         // when.
-        boolean updated = userService.updateStatus(existing.id(), UserStatus.SUSPENDED);
+        userService.updateStatus(existing.id(), UserStatus.SUSPENDED);
 
         // then.
-        assertThat(updated).isTrue();
         UserEntity saved = userRepository.findById(existing.id()).orElseThrow();
         assertThat(saved.status()).isEqualTo(UserStatus.SUSPENDED);
         assertThat(saved).usingRecursiveComparison().ignoringFields("status").isEqualTo(existing);
@@ -319,10 +319,9 @@ class DatabaseUserServiceTest {
         UserEntity existing = userRepository.findByUsername("alice").orElseThrow();
 
         // when.
-        boolean updated = userService.updateStatus(existing.id(), UserStatus.ACTIVE);
+        userService.updateStatus(existing.id(), UserStatus.ACTIVE);
 
         // then.
-        assertThat(updated).isTrue();
         assertThat(userRepository.findById(existing.id()).orElseThrow().status())
                 .isEqualTo(UserStatus.ACTIVE);
     }
@@ -330,10 +329,9 @@ class DatabaseUserServiceTest {
     @Test
     void updateStatus_shouldReportUnknownUser() {
         // when.
-        boolean updated = userService.updateStatus("non-existent-id", UserStatus.SUSPENDED);
-
-        // then.
-        assertThat(updated).isFalse();
+        assertThatThrownBy(() -> userService.updateStatus("non-existent-id", UserStatus.SUSPENDED))
+                // then.
+                .isInstanceOf(UserNotFoundException.class);
         assertThat(userRepository.findAll()).isEmpty();
     }
 

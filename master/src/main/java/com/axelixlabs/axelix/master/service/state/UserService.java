@@ -30,6 +30,7 @@ import com.axelixlabs.axelix.master.domain.UserOrigin;
 import com.axelixlabs.axelix.master.domain.UserStatus;
 import com.axelixlabs.axelix.master.exception.auth.EmailAlreadyExistsException;
 import com.axelixlabs.axelix.master.exception.auth.UserInvalidValueException;
+import com.axelixlabs.axelix.master.exception.auth.UserNotFoundException;
 import com.axelixlabs.axelix.master.exception.auth.UserRoleNotFoundException;
 import com.axelixlabs.axelix.master.exception.auth.UsernameAlreadyExistsException;
 
@@ -131,9 +132,9 @@ public interface UserService {
      *
      * @param id Unique identifier of the user.
      * @param status New status of the user.
-     * @return {@code true} if the user exists, otherwise {@code false}.
+     * @throws UserNotFoundException if no user with the given id exists.
      */
-    boolean updateStatus(String id, UserStatus status);
+    void updateStatus(String id, UserStatus status);
 
     /**
      * Applies a partial update to the user with the given id within a single transaction.

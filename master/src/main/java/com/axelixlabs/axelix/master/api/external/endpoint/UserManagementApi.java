@@ -130,10 +130,7 @@ public class UserManagementApi {
             return ResponseEntity.badRequest().build();
         }
 
-        if (!userService.updateStatus(request.id(), request.status())) {
-            return ResponseEntity.notFound().build();
-        }
-
+        userService.updateStatus(request.id(), request.status());
         return ResponseEntity.noContent().build();
     }
 }

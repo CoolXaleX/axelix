@@ -40,6 +40,7 @@ import com.axelixlabs.axelix.master.domain.UserOrigin;
 import com.axelixlabs.axelix.master.domain.UserStatus;
 import com.axelixlabs.axelix.master.exception.auth.EmailAlreadyExistsException;
 import com.axelixlabs.axelix.master.exception.auth.UserInvalidValueException;
+import com.axelixlabs.axelix.master.exception.auth.UserNotFoundException;
 import com.axelixlabs.axelix.master.exception.auth.UserRoleNotFoundException;
 import com.axelixlabs.axelix.master.exception.auth.UsernameAlreadyExistsException;
 import com.axelixlabs.axelix.master.repository.UserRepository;
@@ -158,13 +159,12 @@ public class DatabaseUserService implements UserService {
     }
 
     @Override
-    public boolean updateStatus(String id, UserStatus status) {
+    public void updateStatus(String id, UserStatus status) {
         if (!userRepository.existsById(id)) {
-            return false;
+            throw new UserNotFoundException(id);
         }
 
         userRepository.updateStatus(id, status);
-        return true;
     }
 
     @Override
