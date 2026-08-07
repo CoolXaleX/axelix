@@ -132,14 +132,8 @@ public class OAuth2CallbackController {
         OidcUserMetadata metadata = extractStandardMetadata(userInfoJson);
 
         if (entity != null) {
-            if (entity.userOrigin() != UserOrigin.OIDC) {
-                throw new BadRequestException("OIDC user with username '" + user.getUsername()
-                        + "' conflicts with an existing non-OIDC account");
-            }
-
-            if (entity.status() == UserStatus.SUSPENDED) {
-                throw new UserSuspendedException();
-            }
+            checkUserOriginatedFromOIDC(user, entity);
+            checkUserIsSuspended(entity);
 
             userService.updateUserPatch(
                     entity.id(),
@@ -161,6 +155,19 @@ public class OAuth2CallbackController {
                     metadata.jobTitle(),
                     metadata.organizationalUnit(),
                     role.getName());
+        }
+    }
+
+    private static void checkUserIsSuspended(UserEntity entity) {
+        if (entity.status() == UserStatus.SUSPENDED) {
+            throw new UserSuspendedException();
+        }
+    }
+
+    private static void checkUserOriginatedFromOIDC(User user, UserEntity entity) {
+        if (entity.userOrigin() != UserOrigin.OIDC) {
+            throw new BadRequestException(
+                    "OIDC user with username '" + user.getUsername() + "' conflicts with an existing non-OIDC account");
         }
     }
 
