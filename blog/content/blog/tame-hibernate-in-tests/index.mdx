@@ -1,0 +1,246 @@
+---
+title: "Taming Hibernate in Tests"
+date: 2026-08-07
+authors: ["Mikhail Polivakha"]
+tags: ["Databases", "Testing"]
+heroImagePath: /posts/tame-hibernate-in-tests/preview.png
+description: "Can we actually verify Hibernate's behavior in tests? A practical framework for telling ORM-level problems from application-level ones, detecting N + 1, and using Hibernate's Statistics API to assert the exact DML your code issues."
+metaDescription: "Learn how to test and control Hibernate behavior in JUnit: catch In Memory Pagination, detect N + 1 at the application level, and use the Hibernate Statistics API to verify that repository.save() issues exactly one INSERT."
+---
+
+Hi everyone! This is Mikhail Polivakha, the technical lead of the [Open Source Axelix project](https://github.com/axelixlabs/axelix) (a project dedicated to helping you identify common problems in Java server-side applications, including while working with Hibernate).
+
+In this article, I want to address the question that I think is pretty common amongst the advanced Hibernate users:
+
+> "Is there a verify Hibernate behavior in tests (like Junit for example)?"
+
+Here it's really important not to hand you a "fish", but to teach you how to fish - that is, to give you a framework of what's worth keeping in mind when working with Hibernate.
+
+## Controlling Hibernate during tests. Overview.
+
+If I asked you: **guys, which problems in Hibernate annoy you the most?** You'd mention things like the sneaky N + 1, In Memory Pagination (when explicitly specifying `setMaxResult` or a `Pageable`), a Cartesian Product loaded into the application's memory, or, say, some baffling swarm of `SELECT`s followed by `UPDATE`s/`DELETE`s under the hood, and so on.
+
+Everything I listed above, and really all "problems" with Hibernate, can be split into 2 categories. Let's break them down.
+
+## 1. Problems at the ORM level
+
+There are situations that both we (the end users) and Hibernate identify as problems. For example, up until Hibernate 7.4, the query below would perform pagination entirely in memory. This is fairly well known:
+
+```java
+@Transactional
+@Query(
+    value = "SELECT o FROM Owner o JOIN FETCH o.pets",
+    countQuery = "SELECT COUNT(o) FROM Owner o")
+Page<Owner> findAllWithPets(Pageable pageable);
+```
+
+In version 7.4 Hibernate learned to do pagination within a sub-select. But nevertheless, if you, for example, work on Spring Boot 3, you have Hibernate 6, and in the case of queries like the one above there will be a warning in stdout:
+
+```
+HHH90003004: firstResult/maxResults specified with collection fetch; applying in memory
+```
+
+And it's there because Hibernate itself understands that its actions _may_ blow up your heap. There's even a property that we at Axelix recommend setting for new microservices that don't use 7.4 yet (and there are still many of those):
+
+```
+spring.jpa.properties.hibernate.query.fail_on_pagination_over_collection_fetch=true
+```
+
+If you set it, Hibernate will simply throw an exception where it would previously do In Memory Pagination.
+
+In short, what I want to say is that the problem above is understood by Hibernate as a real problem. It recognizes and admits it. That's one layer of problems.
+
+**But oddly enough, these are quite hard to track**. Hibernate rarely provides any means to hook into it (although there are some nuances; read below). For instance, at Axelix, to detect In Memory Pagination (if it happens), we simply [literally catch an `ILoggingEvent` and inspect the code within it](https://github.com/axelixlabs/axelix/blob/master/sbs/axelix-spring-boot-2-starter/src/main/java/com/axelixlabs/axelix/sbs/spring/core/persistence/hibernate/LogbackInMemoryPaginationAppender.java). Because there are no other acceptable ways (at least none that we're aware of)!
+
+## 2. Second. Problems at the application level
+
+There's a conceptually different layer of problems. N + 1, for example, belongs to it.
+
+Let's think for a second: _what is N + 1?_. Try right now, without looking anywhere, to clearly formulate the definition in your head. Done? Here's how I'd formulate it (informally):
+
+> It's a situation in which you iterate over a collection loaded by Hibernate, sequentially accessing some lazy field within each individual entity of the collection, thereby triggering "N" additional SELECT queries.
+
+That is, if you think about it a little, it becomes obvious that for Hibernate this is just Lazy Loading. The notion of N + 1 as a problem exists at the application level, not at the ORM level. **That is, the problem is not lazy loading itself, but the semantics of lazy loading** (what does _this particular_ lazy loading mean? Is it just lazy loading, or lazy loading within an N + 1?).
+
+In such a situation it's obviously pointless to rely on Hibernate, since the N + 1 phenomenon happens at the application level, and the ORM is completely unaware of it — it's not its area of responsibility. You can't get by without fairly strong tooling around Hibernate. **Can it be written, and if so, how?**
+
+If we're talking specifically about N + 1, then the answer is generally - yes, you can, and we did it at Axelix in Open Source. Let me tell you how exactly we did it. [The source code is open, take a look if you're interested](https://github.com/axelixlabs/axelix).
+
+### The General Approach to N + 1 Detection
+
+Hibernate doesn't know what N + 1 is, but it does know what a Lazy Loading association is, and that moment can already be caught. For example, here's how we do it in [`NPlusOneCollectionLoadListener`](https://github.com/axelixlabs/axelix/blob/master/sbs/axelix-spring-boot-2-starter/src/main/java/com/axelixlabs/axelix/sbs/spring/core/persistence/hibernate/NPlusOneCollectionLoadListener.java):
+
+```java
+    @Override
+    public void onInitializeCollection(InitializeCollectionEvent event) {
+        try {
+            PersistentCollection persistentCollection = event.getCollection();
+            EventSource eventSource = event.getSession();
+            CollectionPersister collectionPersister = eventSource
+                    .getPersistenceContextInternal()
+                    .getCollectionEntry(persistentCollection)
+                    .getLoadedPersister();
+
+            LazyLoadingTarget lazyLoadingTarget = parseLazyLoadingTarget(collectionPersister.getRole());
+
+            if (lazyLoadingTarget != null) {
+                transactionAccessor.recordLazyLoading(lazyLoadingTarget);
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    // The general "role" format is expected to look like this: com.example.Order.items
+    public static @Nullable LazyLoadingTarget parseLazyLoadingTarget(String role) {
+        try {
+            int separatorIndex = role.lastIndexOf(".");
+            Class<?> ownerEntityClass = Class.forName(role.substring(0, separatorIndex));
+            String propertyName = role.substring(separatorIndex + 1);
+            return new LazyLoadingTarget(ownerEntityClass, propertyName);
+        } catch (ClassNotFoundException | IndexOutOfBoundsException e) {
+            log.warn(
+                    "Unexpected propertyPath format '{}'. Axelix cannot recognize that, so lazy loading and potential N + 1 is not going to be tracked for this property",
+                    role);
+            return null; // it means that the role format is not the one that we expect
+        }
+    }
+```
+
+Here, through a series of manipulations, we can figure out which association was loaded lazily and on which collection. What do we then do with this information?
+
+Axelix, for example, currently makes the following decision: **If we noticed that within a transaction there were several lazy loadings of the same association, then we consider this to be an N + 1.**
+
+Is that always correct? Well, this is debatable, because, for instance, in this code example, if we assume that `Order.items` were loaded lazily — we, _seemingly_, don't have an N + 1:
+
+```java
+public void compareOrders(Long previousId, Long currentId) {
+    var previous = orderRepository.findById(previousId).orElseThrow();
+    var current = orderRepository.findById(currentId).orElseThrow();
+
+    // Two lazy accesses to Order.items, but there's no collection of orders here -
+    // we're just comparing two specific versions of the same order
+    if (previous.getItems().size() != current.getItems().size()) {
+        throw new IllegalStateException("The order contents have changed");
+    }
+}
+```
+
+Or do we? And what if I change this example to something like this:
+
+```java
+public void compareOrders(Long previousId, Long currentId) {
+    var orders = orderRepository.findAllById(List.of(previousId, currentId));
+
+    var previous = orders.get(0);
+    // Exactly the same comparison as above, but now within an iteration
+    // over a loaded collection of orders: at each step there's again a lazy
+    // access to Order.items on both previous and current
+    for (var current : orders) {
+        if (previous.getItems().size() != current.getItems().size()) {
+            throw new IllegalStateException("The order contents have changed");
+        }
+        previous = current;
+    }
+}
+```
+
+Does it look like N + 1 now? It does.
+
+So, in short, what I want to say is that here you need to clearly fix the definition of N + 1 at the application level. We at Axelix deliberately decided that this case is nonetheless worth treating as an N + 1, so, in the UI, it will be reported to you:
+
+![Axelix reporting an N + 1 in the UI](/posts/tame-hibernate-in-tests/n_plus_one.png)
+
+_P.S: Among other things, there's a small nuance here: N + 1, strictly speaking, can also happen **without an open transaction** when OSIV is enabled. That's a separate case which we're not considering for now, since it would complicate the picture._
+
+### Micro-Conclusion
+
+I'd like to draw a small micro-conclusion here. In general, detecting some complex phenomena that occur at the application level while working with Hibernate:
+
+- N + 1
+- Blocking calls inside transactions, and so on.
+
+This can be done. It just requires you to write a fairly large and non-trivial amount of tooling. Using N + 1 as an example, I hope you've roughly understood what such things will look like.
+
+## General Hibernate Problems
+
+As a separate section, I'd like to address general Hibernate problems. Quite often people have some conditional hot-path for saving or updating data. And devs simply want to make sure that
+**Hibernate doesn't "sabotage" the entire process undercover**. Sounds familiar, right?
+
+Here you need to take a step back and ask: **and what do we mean by "sabotage"?**
+
+Having talked with people, we'll discover that most often people want roughly the following: to have confidence that a person wrote `repository.save()`, and that it will execute specifically an `INSERT` into the table and nothing more.
+
+For example, having this piece of code:
+
+```java
+@Service
+public class OwnerService {
+
+    private final OwnerRepository ownerRepository;
+
+    public OwnerService(OwnerRepository ownerRepository) {
+        this.ownerRepository = ownerRepository;
+    }
+
+    @Transactional
+    public Owner registerOwner(String firstName, String lastName) {
+        var owner = new Owner(firstName, lastName);
+        return ownerRepository.save(owner);
+    }
+}
+```
+
+The person wants to be sure that there won't be any hidden `SELECT`s and so on there. I think some people recognized themselves. **Can this be done?**
+
+The answer: **generally yes, it can**. Hibernate has a Statistics API, which on the one hand isn't part of the JPA standard, and on the other hand can give us some details about query execution within a session. For example, for the code above you can write a test like this:
+
+```java
+// Requires hibernate.generate_statistics=true
+@SpringBootTest
+class OwnerServiceTest {
+
+    @Autowired
+    private OwnerService ownerService;
+
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
+
+    @Test
+    @Transactional
+    void registerOwner_issuesExactlyOneInsert() {
+        // given
+        Statistics statistics = entityManagerFactory
+                .unwrap(SessionFactory.class)
+                .getStatistics();
+        statistics.clear();
+
+        // when
+        ownerService.registerOwner("John", "Doe");
+
+        // then
+        assertThat(statistics.getEntityInsertCount()).isEqualTo(1);
+        assertThat(statistics.getEntityUpdateCount()).isZero();
+        assertThat(statistics.getEntityDeleteCount()).isZero();
+    }
+}
+```
+
+This API lets you verify that only one `INSERT` was executed within the method. It works based on the fact that in the test I opened a transaction (Spring Boot Test of course recognizes this and opens a transaction that will have to roll back at the end),
+thereby opening a Hibernate `Session` - this is the default behavior, so I think there are no surprises here.
+
+Since the Statistics API collects statistics at the `SessionFactory` level, not at the level of individual `Session`s, in each test we have to access the `SessionFactory` in order to first clear all its statistics.
+And only then can we make the checks we're interested in (Strictly speaking, some telemetry is also collected at the `Session` level, but it's rather scarce and in practice can help you little).
+
+Overall, the telemetry collected (the number of `INSERT`, `UPDATE`, `DELETE` statements, and so on) will be enough for you to make some basic checks.
+
+## Conclusions
+
+In practice, the answer to the question:
+
+> "Is there a verify Hibernate behavior in tests (like Junit for example)?"
+
+Strongly depends on what exactly you want to detect. Some tooling can be written — for example, Axelix can detect both In Memory Pagination, and N + 1, and a number of other problems. In some situations tests will help you a lot.
+In general, first of all it's better to ask yourself — **what problem exactly are we trying to solve here**. And only then build a solution: is it possible (considering what I wrote above) to write an effective test,
+is it possible to delegate this to external tooling, or maybe (the ideal case) the problem doesn't need to be solved in the first place.
+
+Best of luck to everyone!
