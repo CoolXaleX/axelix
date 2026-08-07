@@ -111,7 +111,7 @@ class DefaultOidcClientTest {
         String issuerUri = mockWebServer.url("").toString();
 
         OAuth2Properties oAuth2Properties =
-                new OAuth2Properties(issuerUri, CLIENT_ID, CLIENT_SECRET, issuerUri, null, null);
+                new OAuth2Properties(issuerUri, CLIENT_ID, CLIENT_SECRET, issuerUri, null, null, null, null);
 
         OidcMetadataProvider oidcMetadataProvider = mock(OidcMetadataProvider.class);
         when(oidcMetadataProvider.getTokenEndpoint()).thenReturn(issuerUri + "/token");
@@ -199,9 +199,10 @@ class DefaultOidcClientTest {
             setupJwksDispatcher();
             String token = buildIdToken(RSA_KEY_ID, rsaKey.toPrivateKey(), "preferred-user", null);
 
-            String result = oidcClient.validateIdTokenAndExtractUsername(token);
+            ValidatedOidcIdentity result = oidcClient.validateIdToken(token);
 
-            assertThat(result).isEqualTo("preferred-user");
+            assertThat(result.username()).isEqualTo("preferred-user");
+            assertThat(result.claims()).containsEntry("preferred_username", "preferred-user");
         }
 
         @Test
@@ -209,7 +210,7 @@ class DefaultOidcClientTest {
             setupJwksDispatcher();
             String token = buildIdToken(EC_KEY_ID, ecKey.toPrivateKey(), "ec-user", null);
 
-            String result = oidcClient.validateIdTokenAndExtractUsername(token);
+            String result = oidcClient.validateIdToken(token).username();
 
             assertThat(result).isEqualTo("ec-user");
         }
@@ -220,7 +221,7 @@ class DefaultOidcClientTest {
             String subject = UUID.randomUUID().toString();
             String token = buildIdToken(RSA_KEY_ID, rsaKey.toPrivateKey(), null, subject);
 
-            String result = oidcClient.validateIdTokenAndExtractUsername(token);
+            String result = oidcClient.validateIdToken(token).username();
 
             assertThat(result).isEqualTo(subject);
         }
@@ -230,8 +231,7 @@ class DefaultOidcClientTest {
             setupJwksDispatcher();
             String token = buildExpiredToken();
 
-            assertThatThrownBy(() -> oidcClient.validateIdTokenAndExtractUsername(token))
-                    .isInstanceOf(ExpiredJwtTokenException.class);
+            assertThatThrownBy(() -> oidcClient.validateIdToken(token)).isInstanceOf(ExpiredJwtTokenException.class);
         }
 
         @Test
@@ -242,8 +242,7 @@ class DefaultOidcClientTest {
             String token = buildIdToken(RSA_KEY_ID, differentRsaKey.toPrivateKey(), "user", null);
 
             // when/then.
-            assertThatThrownBy(() -> oidcClient.validateIdTokenAndExtractUsername(token))
-                    .isInstanceOf(InvalidJwtTokenException.class);
+            assertThatThrownBy(() -> oidcClient.validateIdToken(token)).isInstanceOf(InvalidJwtTokenException.class);
         }
 
         @Test
@@ -253,8 +252,7 @@ class DefaultOidcClientTest {
             String token = buildIdToken("unknown-key-id", rsaKey.toPrivateKey(), "user", null);
 
             // when/then.
-            assertThatThrownBy(() -> oidcClient.validateIdTokenAndExtractUsername(token))
-                    .isInstanceOf(JwtParsingException.class);
+            assertThatThrownBy(() -> oidcClient.validateIdToken(token)).isInstanceOf(JwtParsingException.class);
         }
 
         private void setupJwksDispatcher() {

@@ -43,9 +43,12 @@ import com.axelixlabs.axelix.master.domain.UserOrigin;
 import com.axelixlabs.axelix.master.domain.UserStatus;
 import com.axelixlabs.axelix.master.exception.auth.UserSuspendedException;
 import com.axelixlabs.axelix.master.service.auth.CookieService;
+import com.axelixlabs.axelix.master.service.auth.oauth.JmesPathOidcUserAttributesExtractor;
+import com.axelixlabs.axelix.master.service.auth.oauth.JmesPathOidcUserAttributesExtractor.OidcUserAttributes;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcClient;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcRoleExtractor;
 import com.axelixlabs.axelix.master.service.auth.oauth.Tokens;
+import com.axelixlabs.axelix.master.service.auth.oauth.ValidatedOidcIdentity;
 import com.axelixlabs.axelix.master.service.state.UserService;
 import com.axelixlabs.axelix.master.service.transport.BadRequestException;
 
@@ -73,6 +76,7 @@ public class OAuth2CallbackController {
     private final CookieService cookieService;
     private final JwtEncoderService jwtEncoderService;
     private final OidcRoleExtractor oidcRoleExtractor;
+    private final JmesPathOidcUserAttributesExtractor oidcUserAttributesExtractor;
     private final UserService userService;
     private final ObjectMapper objectMapper;
 
@@ -81,12 +85,14 @@ public class OAuth2CallbackController {
             CookieService cookieService,
             JwtEncoderService jwtEncoderService,
             OidcRoleExtractor oidcRoleExtractor,
+            JmesPathOidcUserAttributesExtractor oidcUserAttributesExtractor,
             UserService userService,
             ObjectMapper objectMapper) {
         this.oidcClient = oidcClient;
         this.cookieService = cookieService;
         this.jwtEncoderService = jwtEncoderService;
         this.oidcRoleExtractor = oidcRoleExtractor;
+        this.oidcUserAttributesExtractor = oidcUserAttributesExtractor;
         this.userService = userService;
         this.objectMapper = objectMapper;
     }
@@ -103,15 +109,16 @@ public class OAuth2CallbackController {
 
         Tokens tokens = oidcClient.exchangeCodeForTokens(code);
 
-        String username = oidcClient.validateIdTokenAndExtractUsername(tokens.idToken());
+        ValidatedOidcIdentity identity = oidcClient.validateIdToken(tokens.idToken());
+        OidcUserAttributes attributes = oidcUserAttributesExtractor.extract(identity.claims());
 
         String userInfoJson = oidcClient.validateAccessTokenAndExtractUserInfo(tokens.accessToken());
 
         Role role = oidcRoleExtractor.extractRole(userInfoJson);
 
-        User user = new PasswordlessUser(username, Set.of(role));
+        User user = new PasswordlessUser(identity.username(), Set.of(role));
 
-        upsertUserUpdateLastLoginAt(user, userInfoJson, role);
+        upsertUserUpdateLastLoginAt(user, userInfoJson, role, attributes);
 
         String ourToken = jwtEncoderService.generateToken(user);
 
@@ -126,7 +133,7 @@ public class OAuth2CallbackController {
     }
 
     // Always update role & email. Update names only when the provider supplies them.
-    private void upsertUserUpdateLastLoginAt(User user, String userInfoJson, Role role) {
+    private void upsertUserUpdateLastLoginAt(User user, String userInfoJson, Role role, OidcUserAttributes attributes) {
         UserEntity entity = userService.findUserByUsername(user.getUsername()).orElse(null);
 
         OidcStandardClaims claims = extractStandardClaims(userInfoJson);
@@ -147,12 +154,20 @@ public class OAuth2CallbackController {
                     claims.firstName() == null ? entity.firstName() : claims.firstName(),
                     claims.lastName() == null ? entity.lastName() : claims.lastName(),
                     claims.email(),
+                    entity.jobTitle(),
+                    entity.organizationalUnit(),
                     null,
                     Set.of(role.getName()),
                     Instant.now());
         } else {
             userService.createFromOidc(
-                    user.getUsername(), claims.firstName(), claims.lastName(), claims.email(), role.getName());
+                    user.getUsername(),
+                    claims.firstName(),
+                    claims.lastName(),
+                    claims.email(),
+                    attributes.jobTitle(),
+                    attributes.organizationalUnit(),
+                    role.getName());
         }
     }
 

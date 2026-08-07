@@ -60,6 +60,7 @@ import com.axelixlabs.axelix.master.service.auth.MasterAuthorityResolver;
 import com.axelixlabs.axelix.master.service.auth.encoder.SuperAdminPasswordEncoder;
 import com.axelixlabs.axelix.master.service.auth.oauth.DefaultOidcClient;
 import com.axelixlabs.axelix.master.service.auth.oauth.JmesPathOidcRoleExtractor;
+import com.axelixlabs.axelix.master.service.auth.oauth.JmesPathOidcUserAttributesExtractor;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcClient;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcMetadataProvider;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcRoleExtractor;
@@ -242,6 +243,12 @@ public class SecurityAutoConfiguration {
         @Bean
         public OidcRoleExtractor oidcRoleExtractor(OAuth2Properties oAuth2Properties) {
             return new JmesPathOidcRoleExtractor(oAuth2Properties.roleAttributePath());
+        }
+
+        @Bean
+        public JmesPathOidcUserAttributesExtractor oidcUserAttributesExtractor(OAuth2Properties oAuth2Properties) {
+            return new JmesPathOidcUserAttributesExtractor(
+                    oAuth2Properties.jobTitleAttributePath(), oAuth2Properties.organizationalUnitAttributePath());
         }
     }
 }

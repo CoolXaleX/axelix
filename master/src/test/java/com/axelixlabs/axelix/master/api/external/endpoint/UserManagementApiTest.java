@@ -92,6 +92,8 @@ public class UserManagementApiTest {
                   "firstName": "New",
                   "lastName": "User",
                   "email": "newUser@example.com",
+                  "jobTitle": "Software Engineer",
+                  "organizationalUnit": "Engineering",
                   "password": "plainPassword",
                   "role": "EDITOR"
                 }
@@ -114,12 +116,43 @@ public class UserManagementApiTest {
         assertThat(saved.firstName()).isEqualTo("New");
         assertThat(saved.lastName()).isEqualTo("User");
         assertThat(saved.email()).isEqualTo("newUser@example.com");
+        assertThat(saved.jobTitle()).isEqualTo("Software Engineer");
+        assertThat(saved.organizationalUnit()).isEqualTo("Engineering");
         assertThat(saved.roles().values()).containsExactly("EDITOR");
         assertThat(saved.userOrigin()).isEqualTo(UserOrigin.LOCAL);
         assertThat(saved.status()).isEqualTo(UserStatus.ACTIVE);
         assertThat(saved.lastLoginAt()).isNull();
         assertThat(saved.password()).isNotEqualTo("plainPassword"); // Hash password
         assertThat(passwordEncoder.matches("plainPassword", saved.password())).isTrue();
+    }
+
+    @Test
+    void shouldCreateUserWithNullJobTitleAndOrganizationalUnit() {
+        // given.
+        // language=json
+        String request = """
+                {
+                  "username": "newUser",
+                  "firstName": "New",
+                  "lastName": "User",
+                  "email": "newUser@example.com",
+                  "jobTitle": null,
+                  "organizationalUnit": null,
+                  "password": "plainPassword",
+                  "role": "EDITOR"
+                }
+                """;
+
+        // when.
+        ResponseEntity<Void> response = restTemplate
+                .withRole(SUPER_ADMIN)
+                .exchange(USERS_CREATE_PATH, HttpMethod.POST, defaultEntity(request), Void.class);
+
+        // then.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        UserEntity saved = userRepository.findByUsername("newUser").orElseThrow();
+        assertThat(saved.jobTitle()).isNull();
+        assertThat(saved.organizationalUnit()).isNull();
     }
 
     @Test
@@ -294,6 +327,8 @@ public class UserManagementApiTest {
                   "firstName": "New",
                   "lastName": "Name",
                   "email": "new@example.com",
+                  "jobTitle": "Engineering Manager",
+                  "organizationalUnit": "Engineering",
                   "roles": ["ADMIN", "EDITOR"],
                   "password": "newPass"
                 }
@@ -312,6 +347,8 @@ public class UserManagementApiTest {
         assertThat(updated.firstName()).isEqualTo("New");
         assertThat(updated.lastName()).isEqualTo("Name");
         assertThat(updated.email()).isEqualTo("new@example.com");
+        assertThat(updated.jobTitle()).isEqualTo("Engineering Manager");
+        assertThat(updated.organizationalUnit()).isEqualTo("Engineering");
         assertThat(updated.roles().values()).containsExactlyInAnyOrder("ADMIN", "EDITOR");
         assertThat(passwordEncoder.matches("newPass", updated.password())).isTrue();
     }
@@ -677,6 +714,8 @@ public class UserManagementApiTest {
                 null,
                 null,
                 email,
+                null,
+                null,
                 password == null ? null : passwordEncoder.encode(password),
                 new UserEntity.Roles(roles),
                 provider,

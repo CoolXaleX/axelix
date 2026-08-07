@@ -19,6 +19,7 @@ package com.axelixlabs.axelix.master.api.infrastructure;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.jspecify.annotations.NonNull;
@@ -53,6 +54,7 @@ import com.axelixlabs.axelix.master.repository.UserRepository;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcClient;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcRoleExtractor;
 import com.axelixlabs.axelix.master.service.auth.oauth.Tokens;
+import com.axelixlabs.axelix.master.service.auth.oauth.ValidatedOidcIdentity;
 import com.axelixlabs.axelix.master.service.state.UserService;
 
 import static com.axelixlabs.axelix.master.autoconfiguration.mcp.McpAutoConfiguration.MCP_CONFIGURATION_PROPERTIES_PREFIX;
@@ -75,7 +77,9 @@ import static org.mockito.Mockito.when;
             "axelix.master.auth.options.oauth2.client-id=test-client",
             "axelix.master.auth.options.oauth2.client-secret=test-secret",
             "axelix.master.auth.options.oauth2.base-url=http://localhost:3000",
-            "axelix.master.auth.options.oauth2.role-attribute-path=roles[0]"
+            "axelix.master.auth.options.oauth2.role-attribute-path=roles[0]",
+            "axelix.master.auth.options.oauth2.job-title-attribute-path=employment.jobTitle",
+            "axelix.master.auth.options.oauth2.organizational-unit-attribute-path=employment.organizationalUnit"
         })
 class OAuth2CallbackControllerTest {
 
@@ -122,6 +126,8 @@ class OAuth2CallbackControllerTest {
         String firstName = "John";
         String lastName = "Doe";
         String email = "example@gmail.com";
+        String jobTitle = "Software Engineer";
+        String organizationalUnit = "Engineering";
         // language=json
         String userInfoJson = """
                 {
@@ -133,7 +139,10 @@ class OAuth2CallbackControllerTest {
 
         // and.
         when(oidcClient.exchangeCodeForTokens(CODE)).thenReturn(tokens);
-        when(oidcClient.validateIdTokenAndExtractUsername(ID_TOKEN)).thenReturn(username);
+        when(oidcClient.validateIdToken(ID_TOKEN))
+                .thenReturn(new ValidatedOidcIdentity(
+                        username,
+                        Map.of("employment", Map.of("jobTitle", jobTitle, "organizationalUnit", organizationalUnit))));
         when(oidcClient.validateAccessTokenAndExtractUserInfo(ACCESS_TOKEN)).thenReturn(userInfoJson);
         when(oidcRoleExtractor.extractRole(userInfoJson)).thenReturn(DefaultRole.EDITOR);
         Instant beforeLogin = Instant.now();
@@ -184,6 +193,8 @@ class OAuth2CallbackControllerTest {
         assertThat(userEntity.firstName()).isEqualTo(firstName);
         assertThat(userEntity.lastName()).isEqualTo(lastName);
         assertThat(userEntity.email()).isEqualTo(email);
+        assertThat(userEntity.jobTitle()).isEqualTo(jobTitle);
+        assertThat(userEntity.organizationalUnit()).isEqualTo(organizationalUnit);
         assertThat(userEntity.password()).isNull();
         assertThat(userEntity.roles().values()).hasSize(1).containsOnly("EDITOR");
         assertThat(userEntity.userOrigin()).isEqualTo(UserOrigin.OIDC);
@@ -196,12 +207,13 @@ class OAuth2CallbackControllerTest {
         // given.
         String username = "test-user";
         String updatedEmail = "updated@gmail.com";
-        userService.createFromOidc(username, "Original", "Name", "original@gmail.com", DefaultRole.VIEWER.getName());
+        userService.createFromOidc(
+                username, "Original", "Name", "original@gmail.com", null, null, DefaultRole.VIEWER.getName());
 
         // and.
         String userInfoJson = "{\"email\": \"%s\"}".formatted(updatedEmail);
         when(oidcClient.exchangeCodeForTokens(CODE)).thenReturn(tokens);
-        when(oidcClient.validateIdTokenAndExtractUsername(ID_TOKEN)).thenReturn(username);
+        when(oidcClient.validateIdToken(ID_TOKEN)).thenReturn(new ValidatedOidcIdentity(username, Map.of()));
         when(oidcClient.validateAccessTokenAndExtractUserInfo(ACCESS_TOKEN)).thenReturn(userInfoJson);
         when(oidcRoleExtractor.extractRole(userInfoJson)).thenReturn(DefaultRole.EDITOR);
         Instant beforeLogin = Instant.now();
@@ -226,7 +238,8 @@ class OAuth2CallbackControllerTest {
     void shouldReturnForbiddenForSuspendedOidcUserWithoutUpdatingIt() {
         // given.
         String username = "test-user";
-        userService.createFromOidc(username, "Original", "Name", "original@gmail.com", DefaultRole.VIEWER.getName());
+        userService.createFromOidc(
+                username, "Original", "Name", "original@gmail.com", null, null, DefaultRole.VIEWER.getName());
         UserEntity created = userRepository.findByUsername(username).orElseThrow();
         userService.updateStatus(created.id(), UserStatus.SUSPENDED);
         UserEntity suspended = userRepository.findById(created.id()).orElseThrow();
@@ -234,7 +247,7 @@ class OAuth2CallbackControllerTest {
         // and.
         String userInfoJson = "{\"email\": \"updated@gmail.com\"}";
         when(oidcClient.exchangeCodeForTokens(CODE)).thenReturn(tokens);
-        when(oidcClient.validateIdTokenAndExtractUsername(ID_TOKEN)).thenReturn(username);
+        when(oidcClient.validateIdToken(ID_TOKEN)).thenReturn(new ValidatedOidcIdentity(username, Map.of()));
         when(oidcClient.validateAccessTokenAndExtractUserInfo(ACCESS_TOKEN)).thenReturn(userInfoJson);
         when(oidcRoleExtractor.extractRole(userInfoJson)).thenReturn(DefaultRole.EDITOR);
 
@@ -253,12 +266,12 @@ class OAuth2CallbackControllerTest {
     void shouldReturn400WhenOidcUserConflictsWithExistingLocalAccount() {
         // given.
         String username = "test-user";
-        userService.createLocal(username, null, null, null, "test-password", "ADMIN");
+        userService.createLocal(username, null, null, null, null, null, "test-password", "ADMIN");
 
         // and.
         String userInfoJson = "someJson";
         when(oidcClient.exchangeCodeForTokens(CODE)).thenReturn(tokens);
-        when(oidcClient.validateIdTokenAndExtractUsername(ID_TOKEN)).thenReturn(username);
+        when(oidcClient.validateIdToken(ID_TOKEN)).thenReturn(new ValidatedOidcIdentity(username, Map.of()));
         when(oidcClient.validateAccessTokenAndExtractUserInfo(ACCESS_TOKEN)).thenReturn(userInfoJson);
         when(oidcRoleExtractor.extractRole(userInfoJson)).thenReturn(DefaultRole.EDITOR);
 
@@ -299,8 +312,7 @@ class OAuth2CallbackControllerTest {
     @Test
     void shouldReturn401WhenIdTokenValidationFails() {
         when(oidcClient.exchangeCodeForTokens(CODE)).thenReturn(tokens);
-        when(oidcClient.validateIdTokenAndExtractUsername(ID_TOKEN))
-                .thenThrow(new InvalidJwtTokenException("invalid token"));
+        when(oidcClient.validateIdToken(ID_TOKEN)).thenThrow(new InvalidJwtTokenException("invalid token"));
 
         // when.
         ResponseEntity<Void> response = restTemplate.getForEntity(
@@ -313,6 +325,7 @@ class OAuth2CallbackControllerTest {
     @Test
     void shouldReturn502WhenUserInfoEndpointUnavailable() {
         when(oidcClient.exchangeCodeForTokens(CODE)).thenReturn(tokens);
+        when(oidcClient.validateIdToken(ID_TOKEN)).thenReturn(new ValidatedOidcIdentity("test-user", Map.of()));
         when(oidcClient.validateAccessTokenAndExtractUserInfo(ACCESS_TOKEN))
                 .thenThrow(new OidcMetadataUnavailableException("metadata unavailable"));
 

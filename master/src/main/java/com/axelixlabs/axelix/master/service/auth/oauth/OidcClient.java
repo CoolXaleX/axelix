@@ -42,7 +42,7 @@ public interface OidcClient {
     Tokens exchangeCodeForTokens(String code) throws OidcTokenExchangeException;
 
     /**
-     * Validates the given OIDC ID Token and extracts the username from its claims.
+     * Validates the given OIDC ID Token and extracts the identity data from its claims.
      *
      * <p>Needs additional validation of the {@code iss} (issuer) and {@code aud} (audience) claims
      * as required by OpenID Connect Core 1.0 Section 3.1.3.7 ID Token Validation (points 2 and 3).</p>
@@ -53,12 +53,12 @@ public interface OidcClient {
      *      OpenID Connect Core 1.0 - ID Token Validation</a>
      *
      * @param idToken the OIDC ID Token to validate and process
-     * @return the extracted username
+     * @return the extracted username and validated claims
      * @throws ExpiredJwtTokenException if the token has expired
      * @throws InvalidJwtTokenException if the token signature is invalid or tampered
      * @throws JwtProcessingException   if the token cannot be parsed
      */
-    String validateIdTokenAndExtractUsername(String idToken)
+    ValidatedOidcIdentity validateIdToken(String idToken)
             throws ExpiredJwtTokenException, InvalidJwtTokenException, JwtProcessingException;
 
     /**

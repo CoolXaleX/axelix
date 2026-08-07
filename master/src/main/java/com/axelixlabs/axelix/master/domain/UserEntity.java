@@ -33,6 +33,8 @@ import org.springframework.data.relational.core.mapping.Table;
  * @param firstName    First name of the user, which may be {@code null}.
  * @param lastName     Last name of the user, which may be {@code null}.
  * @param email        Email address of the user, which may be {@code null}.
+ * @param jobTitle     Job title of the user, which may be {@code null}.
+ * @param organizationalUnit Organizational unit of the user, which may be {@code null}.
  * @param password     Hash of the user's password, which may be {@code null}.
  * @param roles        Names of the roles granted to this user (e.g. {@code ADMIN}, {@code EDITOR}, {@code VIEWER}).
  * @param userOrigin   Origin of the user account.
@@ -48,6 +50,8 @@ public record UserEntity(
         @Nullable String firstName,
         @Nullable String lastName,
         @Nullable String email,
+        @Nullable String jobTitle,
+        @Nullable String organizationalUnit,
         @Nullable String password,
         Roles roles,
         UserOrigin userOrigin,
@@ -64,6 +68,7 @@ public record UserEntity(
     public String toString() {
         return "User[id=" + id + ", username=[REDACTED], firstName=[REDACTED]"
                 + ", lastName=[REDACTED], email=[REDACTED]"
+                + ", jobTitle=[REDACTED], organizationalUnit=[REDACTED]"
                 + ", password=[REDACTED], roles=" + roles + ", userOrigin=" + userOrigin
                 + ", status=" + status + ", lastLoginAt=" + lastLoginAt + ']';
     }

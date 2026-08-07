@@ -26,6 +26,8 @@ import org.jspecify.annotations.Nullable;
  * @param firstName  The user's first name.
  * @param lastName   The user's last name.
  * @param email      The user email address, which may be {@code null}.
+ * @param jobTitle   The user's job title, which may be {@code null}.
+ * @param organizationalUnit The user's organizational unit, which may be {@code null}.
  * @param password   Plain-text password.
  * @param role       Name of the role to grant to the user.
  *
@@ -37,12 +39,15 @@ public record UserCreateRequest(
         String firstName,
         String lastName,
         @Nullable String email,
+        @Nullable String jobTitle,
+        @Nullable String organizationalUnit,
         String password,
         String role) {
 
     @Override
     public String toString() {
         return "UserCreateRequest[username=[%s], firstName=[REDACTED], lastName=[REDACTED],"
-                + " email=[REDACTED], password=[REDACTED], role=%s]".formatted(username, role);
+                + " email=[REDACTED], jobTitle=[REDACTED], organizationalUnit=[REDACTED],"
+                + " password=[REDACTED], role=%s]".formatted(username, role);
     }
 }

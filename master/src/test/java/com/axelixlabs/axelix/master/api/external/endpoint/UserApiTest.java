@@ -155,7 +155,7 @@ class UserApiTest {
 
     @Test
     void shouldAuthenticateUserFromDatabase() {
-        userService.createLocal("db-user", null, null, "db-user@example.com", "db-password", "VIEWER");
+        userService.createLocal("db-user", null, null, "db-user@example.com", null, null, "db-password", "VIEWER");
         UserEntity user = userRepository.findByUsername("db-user").orElseThrow();
 
         LoginRequest loginRequest = new LoginRequest("db-user", "db-password");
@@ -175,7 +175,7 @@ class UserApiTest {
     @Test
     void shouldNotAuthenticateUserFromDatabaseWithInvalidCredentials() {
         userService.createLocal(
-                "db-user", null, null, "db-user@example.com", "db-password", DefaultRole.VIEWER.getName());
+                "db-user", null, null, "db-user@example.com", null, null, "db-password", DefaultRole.VIEWER.getName());
 
         LoginRequest loginRequest = new LoginRequest("db-user", "wrong-password");
 
@@ -191,7 +191,7 @@ class UserApiTest {
     @Test
     void shouldReturnForbiddenForSuspendedDatabaseUser() {
         // given.
-        userService.createLocal("db-user", null, null, "db-user@example.com", "db-password", "VIEWER");
+        userService.createLocal("db-user", null, null, "db-user@example.com", null, null, "db-password", "VIEWER");
         UserEntity user = userRepository.findByUsername("db-user").orElseThrow();
         userService.updateStatus(user.id(), UserStatus.SUSPENDED);
         LoginRequest loginRequest = new LoginRequest("db-user", "db-password");
@@ -211,7 +211,7 @@ class UserApiTest {
     @Test
     void shouldAuthenticateReactivatedDatabaseUser() {
         // given.
-        userService.createLocal("db-user", null, null, "db-user@example.com", "db-password", "VIEWER");
+        userService.createLocal("db-user", null, null, "db-user@example.com", null, null, "db-password", "VIEWER");
         UserEntity user = userRepository.findByUsername("db-user").orElseThrow();
         userService.updateStatus(user.id(), UserStatus.SUSPENDED);
         userService.updateStatus(user.id(), UserStatus.ACTIVE);
@@ -294,6 +294,8 @@ class UserApiTest {
                     "firstName": "Alice",
                     "lastName": "Smith",
                     "email": "alice@example.com",
+                    "jobTitle": null,
+                    "organizationalUnit": null,
                     "roles": ["ADMIN"],
                     "userOrigin": "LOCAL",
                     "status": "ACTIVE",
@@ -305,6 +307,8 @@ class UserApiTest {
                     "firstName": "Bob",
                     "lastName": null,
                     "email": "bob@example.com",
+                    "jobTitle": null,
+                    "organizationalUnit": null,
                     "roles": ["VIEWER"],
                     "userOrigin": "OAUTH2/OIDC",
                     "status": "SUSPENDED",
@@ -332,6 +336,8 @@ class UserApiTest {
                 "Alice",
                 "Smith",
                 "alice@example.com",
+                "Engineering Manager",
+                "Engineering",
                 "aliceSecret",
                 Set.of("ADMIN"),
                 UserOrigin.LOCAL,
@@ -345,6 +351,8 @@ class UserApiTest {
                   "firstName": "Alice",
                   "lastName": "Smith",
                   "email": "alice@example.com",
+                  "jobTitle": "Engineering Manager",
+                  "organizationalUnit": "Engineering",
                   "roles": ["ADMIN"],
                   "userOrigin": "LOCAL",
                   "status": "SUSPENDED",
@@ -407,12 +415,28 @@ class UserApiTest {
             Set<String> roles,
             UserOrigin provider,
             UserStatus status) {
+        return insertUser(username, firstName, lastName, email, null, null, password, roles, provider, status);
+    }
+
+    private UserEntity insertUser(
+            String username,
+            String firstName,
+            String lastName,
+            String email,
+            String jobTitle,
+            String organizationalUnit,
+            String password,
+            Set<String> roles,
+            UserOrigin provider,
+            UserStatus status) {
         UserEntity entity = new UserEntity(
                 UUID.randomUUID().toString(),
                 username,
                 firstName,
                 lastName,
                 email,
+                jobTitle,
+                organizationalUnit,
                 password == null ? null : passwordEncoder.encode(password),
                 new UserEntity.Roles(roles),
                 provider,

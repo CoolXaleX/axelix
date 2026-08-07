@@ -129,7 +129,7 @@ public class DefaultOidcClient implements OidcClient {
      * @see <a href="https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation"> OpenID Connect Core 1.0 - ID Token Validation</a>
      */
     @Override
-    public String validateIdTokenAndExtractUsername(String idToken)
+    public ValidatedOidcIdentity validateIdToken(String idToken)
             throws ExpiredJwtTokenException, InvalidJwtTokenException, JwtParsingException {
         try {
             String kid = extractPublicKeyId(idToken);
@@ -143,7 +143,7 @@ public class DefaultOidcClient implements OidcClient {
                     .parseSignedClaims(idToken)
                     .getPayload();
 
-            return extractUsername(claims);
+            return new ValidatedOidcIdentity(extractUsername(claims), claims);
 
         } catch (ExpiredJwtException e) {
             throw new ExpiredJwtTokenException("OAuth2Jwt token has expired", e);

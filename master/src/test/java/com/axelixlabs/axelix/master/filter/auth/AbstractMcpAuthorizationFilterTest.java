@@ -188,7 +188,7 @@ abstract class AbstractMcpAuthorizationFilterTest {
             String password = "test-password";
 
             userService.createLocal(
-                    username, null, null, "test-email@example.com", password, DefaultRole.VIEWER.getName());
+                    username, null, null, "test-email@example.com", null, null, password, DefaultRole.VIEWER.getName());
 
             // and.
             registerInstanceForBeansTool(activeInstanceId);
@@ -241,7 +241,14 @@ abstract class AbstractMcpAuthorizationFilterTest {
             String username = "viewer-user";
             String password = "viewer-password";
             userService.createLocal(
-                    username, null, null, username + "@example.com", password, DefaultRole.VIEWER.getName());
+                    username,
+                    null,
+                    null,
+                    username + "@example.com",
+                    null,
+                    null,
+                    password,
+                    DefaultRole.VIEWER.getName());
 
             HttpHeaders headers = commonMcpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, "Basic " + basicCredentials(username, password));
@@ -262,7 +269,14 @@ abstract class AbstractMcpAuthorizationFilterTest {
             String username = "viewer-user";
             String password = "viewer-password";
             userService.createLocal(
-                    username, null, null, username + "@example.com", password, DefaultRole.VIEWER.getName());
+                    username,
+                    null,
+                    null,
+                    username + "@example.com",
+                    null,
+                    null,
+                    password,
+                    DefaultRole.VIEWER.getName());
 
             HttpHeaders headers = commonMcpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, "Basic " + basicCredentials(username, password));

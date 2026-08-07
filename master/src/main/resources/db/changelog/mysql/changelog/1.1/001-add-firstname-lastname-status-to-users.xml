@@ -50,4 +50,28 @@
 
     <addNotNullConstraint tableName="users" columnName="status" columnDataType="TEXT"/>
   </changeSet>
+
+  <changeSet id="1.1-001-4-mysql-add-job-title-to-users" author="Axelix Team">
+    <preConditions onFail="MARK_RAN" onError="HALT">
+      <not>
+        <columnExists tableName="users" columnName="job_title"/>
+      </not>
+    </preConditions>
+
+    <addColumn tableName="users">
+      <column name="job_title" type="VARCHAR(255)"/>
+    </addColumn>
+  </changeSet>
+
+  <changeSet id="1.1-001-5-mysql-add-organizational-unit-to-users" author="Axelix Team">
+    <preConditions onFail="MARK_RAN" onError="HALT">
+      <not>
+        <columnExists tableName="users" columnName="organizational_unit"/>
+      </not>
+    </preConditions>
+
+    <addColumn tableName="users">
+      <column name="organizational_unit" type="VARCHAR(255)"/>
+    </addColumn>
+  </changeSet>
 </databaseChangeLog>

@@ -45,6 +45,11 @@ import static com.axelixlabs.axelix.master.autoconfiguration.auth.SecurityAutoCo
  *                          and then against the userinfo endpoint response if needed. The expression
  *                          should resolve to an Axelix role name like {@code admin} or {@code editor}
  *
+ * @param jobTitleAttributePath JMESPath expression evaluated against ID token claims to obtain the user's job title
+ *
+ * @param organizationalUnitAttributePath JMESPath expression evaluated against ID token claims to obtain the user's
+ *                                        organizational unit
+ *
  * @since 27.02.2026
  * @author Nikita Kirillov
  * @author Mikhail Polivakha
@@ -56,7 +61,9 @@ public record OAuth2Properties(
         String clientSecret,
         String baseUrl,
         String scopes,
-        @Nullable String roleAttributePath) {
+        @Nullable String roleAttributePath,
+        @Nullable String jobTitleAttributePath,
+        @Nullable String organizationalUnitAttributePath) {
 
     private static final String OPENID_SCOPE = "openid";
 
