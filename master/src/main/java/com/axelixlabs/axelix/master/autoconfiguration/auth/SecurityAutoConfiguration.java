@@ -59,11 +59,10 @@ import com.axelixlabs.axelix.master.service.auth.DefaultCookieService;
 import com.axelixlabs.axelix.master.service.auth.MasterAuthorityResolver;
 import com.axelixlabs.axelix.master.service.auth.encoder.SuperAdminPasswordEncoder;
 import com.axelixlabs.axelix.master.service.auth.oauth.DefaultOidcClient;
-import com.axelixlabs.axelix.master.service.auth.oauth.JmesPathOidcRoleExtractor;
-import com.axelixlabs.axelix.master.service.auth.oauth.JmesPathOidcUserAttributesExtractor;
+import com.axelixlabs.axelix.master.service.auth.oauth.JmesPathJsonInspector;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcClient;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcMetadataProvider;
-import com.axelixlabs.axelix.master.service.auth.oauth.OidcRoleExtractor;
+import com.axelixlabs.axelix.master.service.auth.oauth.UserInfoJsonAccessor;
 import com.axelixlabs.axelix.master.service.auth.provider.CompositeUserAuthenticator;
 import com.axelixlabs.axelix.master.service.auth.provider.DatabaseUserAuthenticator;
 import com.axelixlabs.axelix.master.service.auth.provider.SuperAdminUserAuthenticator;
@@ -212,8 +211,8 @@ public class SecurityAutoConfiguration {
         @Bean
         @ConditionalOnMcpServerEnabled
         public McpAuthenticationHandler bearerMcpAuthenticationHandler(
-                OidcClient oidcClient, OidcRoleExtractor oidcRoleExtractor) {
-            return new BearerMcpAuthenticationHandler(oidcClient, oidcRoleExtractor);
+                OidcClient oidcClient, UserInfoJsonAccessor userInfoJsonAccessor) {
+            return new BearerMcpAuthenticationHandler(oidcClient, userInfoJsonAccessor);
         }
 
         @Bean
@@ -241,14 +240,14 @@ public class SecurityAutoConfiguration {
         }
 
         @Bean
-        public OidcRoleExtractor oidcRoleExtractor(OAuth2Properties oAuth2Properties) {
-            return new JmesPathOidcRoleExtractor(oAuth2Properties.roleAttributePath());
+        public JmesPathJsonInspector jmesPathJsonInspector() {
+            return new JmesPathJsonInspector();
         }
 
         @Bean
-        public JmesPathOidcUserAttributesExtractor oidcUserAttributesExtractor(OAuth2Properties oAuth2Properties) {
-            return new JmesPathOidcUserAttributesExtractor(
-                    oAuth2Properties.jobTitleAttributePath(), oAuth2Properties.organizationalUnitAttributePath());
+        public UserInfoJsonAccessor userInfoJsonAccessor(
+                JmesPathJsonInspector jmesPathJsonInspector, OAuth2Properties oAuth2Properties) {
+            return new UserInfoJsonAccessor(jmesPathJsonInspector, oAuth2Properties);
         }
     }
 }

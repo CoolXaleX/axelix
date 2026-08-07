@@ -21,8 +21,6 @@ import java.time.Instant;
 import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
@@ -38,16 +36,15 @@ import com.axelixlabs.axelix.common.auth.core.User;
 import com.axelixlabs.axelix.common.auth.service.JwtEncoderService;
 import com.axelixlabs.axelix.master.api.external.ApiPaths;
 import com.axelixlabs.axelix.master.api.external.ExternalApiRestController;
+import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.OAuth2Properties;
 import com.axelixlabs.axelix.master.domain.UserEntity;
 import com.axelixlabs.axelix.master.domain.UserOrigin;
 import com.axelixlabs.axelix.master.domain.UserStatus;
 import com.axelixlabs.axelix.master.exception.auth.UserSuspendedException;
 import com.axelixlabs.axelix.master.service.auth.CookieService;
-import com.axelixlabs.axelix.master.service.auth.oauth.JmesPathOidcUserAttributesExtractor;
-import com.axelixlabs.axelix.master.service.auth.oauth.JmesPathOidcUserAttributesExtractor.OidcUserAttributes;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcClient;
-import com.axelixlabs.axelix.master.service.auth.oauth.OidcRoleExtractor;
 import com.axelixlabs.axelix.master.service.auth.oauth.Tokens;
+import com.axelixlabs.axelix.master.service.auth.oauth.UserInfoJsonAccessor;
 import com.axelixlabs.axelix.master.service.auth.oauth.ValidatedOidcIdentity;
 import com.axelixlabs.axelix.master.service.state.UserService;
 import com.axelixlabs.axelix.master.service.transport.BadRequestException;
@@ -75,26 +72,23 @@ public class OAuth2CallbackController {
     private final OidcClient oidcClient;
     private final CookieService cookieService;
     private final JwtEncoderService jwtEncoderService;
-    private final OidcRoleExtractor oidcRoleExtractor;
-    private final JmesPathOidcUserAttributesExtractor oidcUserAttributesExtractor;
+    private final OAuth2Properties oAuth2Properties;
     private final UserService userService;
-    private final ObjectMapper objectMapper;
+    private final UserInfoJsonAccessor userInfoJsonAccessor;
 
     public OAuth2CallbackController(
             OidcClient oidcClient,
             CookieService cookieService,
             JwtEncoderService jwtEncoderService,
-            OidcRoleExtractor oidcRoleExtractor,
-            JmesPathOidcUserAttributesExtractor oidcUserAttributesExtractor,
+            OAuth2Properties oAuth2Properties,
             UserService userService,
-            ObjectMapper objectMapper) {
+            UserInfoJsonAccessor userInfoJsonAccessor) {
         this.oidcClient = oidcClient;
         this.cookieService = cookieService;
         this.jwtEncoderService = jwtEncoderService;
-        this.oidcRoleExtractor = oidcRoleExtractor;
-        this.oidcUserAttributesExtractor = oidcUserAttributesExtractor;
+        this.oAuth2Properties = oAuth2Properties;
         this.userService = userService;
-        this.objectMapper = objectMapper;
+        this.userInfoJsonAccessor = userInfoJsonAccessor;
     }
 
     @GetMapping(path = ApiPaths.OAuth2Api.CALLBACK)
@@ -110,15 +104,14 @@ public class OAuth2CallbackController {
         Tokens tokens = oidcClient.exchangeCodeForTokens(code);
 
         ValidatedOidcIdentity identity = oidcClient.validateIdToken(tokens.idToken());
-        OidcUserAttributes attributes = oidcUserAttributesExtractor.extract(identity.claims());
 
         String userInfoJson = oidcClient.validateAccessTokenAndExtractUserInfo(tokens.accessToken());
 
-        Role role = oidcRoleExtractor.extractRole(userInfoJson);
+        Role role = userInfoJsonAccessor.extractRole(userInfoJson);
 
         User user = new PasswordlessUser(identity.username(), Set.of(role));
 
-        upsertUserUpdateLastLoginAt(user, userInfoJson, role, attributes);
+        upsertUserInfo(user, userInfoJson, role);
 
         String ourToken = jwtEncoderService.generateToken(user);
 
@@ -133,10 +126,10 @@ public class OAuth2CallbackController {
     }
 
     // Always update role & email. Update names only when the provider supplies them.
-    private void upsertUserUpdateLastLoginAt(User user, String userInfoJson, Role role, OidcUserAttributes attributes) {
+    private void upsertUserInfo(User user, String userInfoJson, Role role) {
         UserEntity entity = userService.findUserByUsername(user.getUsername()).orElse(null);
 
-        OidcStandardClaims claims = extractStandardClaims(userInfoJson);
+        OidcUserMetadata metadata = extractStandardMetadata(userInfoJson);
 
         if (entity != null) {
             if (entity.userOrigin() != UserOrigin.OIDC) {
@@ -151,46 +144,49 @@ public class OAuth2CallbackController {
             userService.updateUserPatch(
                     entity.id(),
                     entity.username(),
-                    claims.firstName() == null ? entity.firstName() : claims.firstName(),
-                    claims.lastName() == null ? entity.lastName() : claims.lastName(),
-                    claims.email(),
-                    entity.jobTitle(),
-                    entity.organizationalUnit(),
+                    metadata.firstName() == null ? entity.firstName() : metadata.firstName(),
+                    metadata.lastName() == null ? entity.lastName() : metadata.lastName(),
+                    metadata.email(),
+                    metadata.jobTitle() == null ? entity.jobTitle() : metadata.jobTitle(),
+                    metadata.organizationalUnit() == null ? entity.organizationalUnit() : metadata.organizationalUnit(),
                     null,
                     Set.of(role.getName()),
                     Instant.now());
         } else {
             userService.createFromOidc(
                     user.getUsername(),
-                    claims.firstName(),
-                    claims.lastName(),
-                    claims.email(),
-                    attributes.jobTitle(),
-                    attributes.organizationalUnit(),
+                    metadata.firstName(),
+                    metadata.lastName(),
+                    metadata.email(),
+                    metadata.jobTitle(),
+                    metadata.organizationalUnit(),
                     role.getName());
         }
     }
 
-    private OidcStandardClaims extractStandardClaims(String userInfoJson) {
+    private OidcUserMetadata extractStandardMetadata(String userInfoJson) {
         try {
-            JsonNode userInfo = objectMapper.readTree(userInfoJson);
-            return new OidcStandardClaims(
-                    textClaim(userInfo, "given_name"),
-                    textClaim(userInfo, "family_name"),
-                    textClaim(userInfo, "email"));
+
+            return new OidcUserMetadata(
+                    userInfoJsonAccessor.extractTextField(userInfoJson, "given_name"),
+                    userInfoJsonAccessor.extractTextField(userInfoJson, "family_name"),
+                    userInfoJsonAccessor.extractTextField(userInfoJson, "email"),
+                    extractTextField(userInfoJson, oAuth2Properties.jobTitleAttributePath()),
+                    extractTextField(userInfoJson, oAuth2Properties.organizationalUnitAttributePath()));
         } catch (Exception e) {
-            return new OidcStandardClaims(null, null, null);
+            return new OidcUserMetadata(null, null, null, null, null);
         }
     }
 
     @Nullable
-    private String textClaim(JsonNode userInfo, String claimName) {
-        String value = userInfo.path(claimName).asString(null);
-        return value == null || value.isBlank() ? null : value;
+    private String extractTextField(String userInfoJson, @Nullable String jmesPath) {
+        return jmesPath == null ? null : userInfoJsonAccessor.extractTextField(userInfoJson, jmesPath);
     }
 
-    private record OidcStandardClaims(
+    private record OidcUserMetadata(
             @Nullable String firstName,
             @Nullable String lastName,
-            @Nullable String email) {}
+            @Nullable String email,
+            @Nullable String jobTitle,
+            @Nullable String organizationalUnit) {}
 }

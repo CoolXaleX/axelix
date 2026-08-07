@@ -57,7 +57,7 @@ import com.axelixlabs.axelix.master.exception.auth.OidcTokenExchangeException;
 import com.axelixlabs.axelix.master.repository.InstanceRepository;
 import com.axelixlabs.axelix.master.repository.UserRepository;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcClient;
-import com.axelixlabs.axelix.master.service.auth.oauth.OidcRoleExtractor;
+import com.axelixlabs.axelix.master.service.auth.oauth.UserInfoJsonAccessor;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.service.state.UserService;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
@@ -305,7 +305,7 @@ abstract class AbstractMcpAuthorizationFilterTest {
         private OidcClient oidcClient;
 
         @MockitoBean
-        private OidcRoleExtractor oidcRoleExtractor;
+        private UserInfoJsonAccessor userInfoJsonAccessor;
 
         @Test
         void shouldAuthenticateAndProxyMcpToolCallEndToEnd() {
@@ -316,7 +316,7 @@ abstract class AbstractMcpAuthorizationFilterTest {
             // given.
             registerInstanceForBeansTool(activeInstanceId);
             when(oidcClient.validateAccessTokenAndExtractUserInfo(token)).thenReturn(userInfoJson);
-            when(oidcRoleExtractor.extractRole(userInfoJson)).thenReturn(DefaultRole.VIEWER);
+            when(userInfoJsonAccessor.extractRole(userInfoJson)).thenReturn(DefaultRole.VIEWER);
             HttpHeaders headers = bearerAuthHeaders(token);
             String mcpSessionId = initializeMcpSession(restTemplate, headers);
             headers.set(MCP_SESSION_ID_HEADER, mcpSessionId);
@@ -336,7 +336,7 @@ abstract class AbstractMcpAuthorizationFilterTest {
             String userInfoJson = "someJson";
 
             when(oidcClient.validateAccessTokenAndExtractUserInfo(token)).thenReturn(userInfoJson);
-            when(oidcRoleExtractor.extractRole(userInfoJson)).thenReturn(DefaultRole.VIEWER);
+            when(userInfoJsonAccessor.extractRole(userInfoJson)).thenReturn(DefaultRole.VIEWER);
             HttpHeaders headers = bearerAuthHeaders(token);
 
             // when.
@@ -396,7 +396,7 @@ abstract class AbstractMcpAuthorizationFilterTest {
             String userInfoJson = "someJson";
 
             when(oidcClient.validateAccessTokenAndExtractUserInfo(token)).thenReturn(userInfoJson);
-            when(oidcRoleExtractor.extractRole(userInfoJson)).thenReturn(DefaultRole.VIEWER);
+            when(userInfoJsonAccessor.extractRole(userInfoJson)).thenReturn(DefaultRole.VIEWER);
             HttpHeaders headers = bearerAuthHeaders(token);
 
             // when.

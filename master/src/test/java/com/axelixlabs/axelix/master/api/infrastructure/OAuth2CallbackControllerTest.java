@@ -52,8 +52,8 @@ import com.axelixlabs.axelix.master.exception.auth.OidcMetadataUnavailableExcept
 import com.axelixlabs.axelix.master.exception.auth.OidcTokenExchangeException;
 import com.axelixlabs.axelix.master.repository.UserRepository;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcClient;
-import com.axelixlabs.axelix.master.service.auth.oauth.OidcRoleExtractor;
 import com.axelixlabs.axelix.master.service.auth.oauth.Tokens;
+import com.axelixlabs.axelix.master.service.auth.oauth.UserInfoJsonAccessor;
 import com.axelixlabs.axelix.master.service.auth.oauth.ValidatedOidcIdentity;
 import com.axelixlabs.axelix.master.service.state.UserService;
 
@@ -97,7 +97,7 @@ class OAuth2CallbackControllerTest {
     private OidcClient oidcClient;
 
     @MockitoBean
-    private OidcRoleExtractor oidcRoleExtractor;
+    private UserInfoJsonAccessor userInfoJsonAccessor;
 
     @Autowired
     private JwtDecoderService jwtDecoderService;
@@ -128,6 +128,8 @@ class OAuth2CallbackControllerTest {
         String email = "example@gmail.com";
         String jobTitle = "Software Engineer";
         String organizationalUnit = "Engineering";
+        Map<String, Object> identityClaims =
+                Map.of("employment", Map.of("jobTitle", jobTitle, "organizationalUnit", organizationalUnit));
         // language=json
         String userInfoJson = """
                 {
@@ -139,12 +141,16 @@ class OAuth2CallbackControllerTest {
 
         // and.
         when(oidcClient.exchangeCodeForTokens(CODE)).thenReturn(tokens);
-        when(oidcClient.validateIdToken(ID_TOKEN))
-                .thenReturn(new ValidatedOidcIdentity(
-                        username,
-                        Map.of("employment", Map.of("jobTitle", jobTitle, "organizationalUnit", organizationalUnit))));
+        when(oidcClient.validateIdToken(ID_TOKEN)).thenReturn(new ValidatedOidcIdentity(username, identityClaims));
         when(oidcClient.validateAccessTokenAndExtractUserInfo(ACCESS_TOKEN)).thenReturn(userInfoJson);
-        when(oidcRoleExtractor.extractRole(userInfoJson)).thenReturn(DefaultRole.EDITOR);
+        when(userInfoJsonAccessor.extractRole(userInfoJson)).thenReturn(DefaultRole.EDITOR);
+        when(userInfoJsonAccessor.extractTextField(userInfoJson, "given_name")).thenReturn(firstName);
+        when(userInfoJsonAccessor.extractTextField(userInfoJson, "family_name")).thenReturn(lastName);
+        when(userInfoJsonAccessor.extractTextField(userInfoJson, "email")).thenReturn(email);
+        when(userInfoJsonAccessor.extractTextField(userInfoJson, "employment.jobTitle"))
+                .thenReturn(jobTitle);
+        when(userInfoJsonAccessor.extractTextField(userInfoJson, "employment.organizationalUnit"))
+                .thenReturn(organizationalUnit);
         Instant beforeLogin = Instant.now();
 
         // when.
@@ -215,7 +221,8 @@ class OAuth2CallbackControllerTest {
         when(oidcClient.exchangeCodeForTokens(CODE)).thenReturn(tokens);
         when(oidcClient.validateIdToken(ID_TOKEN)).thenReturn(new ValidatedOidcIdentity(username, Map.of()));
         when(oidcClient.validateAccessTokenAndExtractUserInfo(ACCESS_TOKEN)).thenReturn(userInfoJson);
-        when(oidcRoleExtractor.extractRole(userInfoJson)).thenReturn(DefaultRole.EDITOR);
+        when(userInfoJsonAccessor.extractRole(userInfoJson)).thenReturn(DefaultRole.EDITOR);
+        when(userInfoJsonAccessor.extractTextField(userInfoJson, "email")).thenReturn(updatedEmail);
         Instant beforeLogin = Instant.now();
 
         // when.
@@ -249,7 +256,7 @@ class OAuth2CallbackControllerTest {
         when(oidcClient.exchangeCodeForTokens(CODE)).thenReturn(tokens);
         when(oidcClient.validateIdToken(ID_TOKEN)).thenReturn(new ValidatedOidcIdentity(username, Map.of()));
         when(oidcClient.validateAccessTokenAndExtractUserInfo(ACCESS_TOKEN)).thenReturn(userInfoJson);
-        when(oidcRoleExtractor.extractRole(userInfoJson)).thenReturn(DefaultRole.EDITOR);
+        when(userInfoJsonAccessor.extractRole(userInfoJson)).thenReturn(DefaultRole.EDITOR);
 
         // when.
         ResponseEntity<String> response = restTemplate.getForEntity(
@@ -273,7 +280,7 @@ class OAuth2CallbackControllerTest {
         when(oidcClient.exchangeCodeForTokens(CODE)).thenReturn(tokens);
         when(oidcClient.validateIdToken(ID_TOKEN)).thenReturn(new ValidatedOidcIdentity(username, Map.of()));
         when(oidcClient.validateAccessTokenAndExtractUserInfo(ACCESS_TOKEN)).thenReturn(userInfoJson);
-        when(oidcRoleExtractor.extractRole(userInfoJson)).thenReturn(DefaultRole.EDITOR);
+        when(userInfoJsonAccessor.extractRole(userInfoJson)).thenReturn(DefaultRole.EDITOR);
 
         // when.
         ResponseEntity<Void> response = restTemplate.getForEntity(
