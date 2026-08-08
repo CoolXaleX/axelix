@@ -15,22 +15,17 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.master.filter;
+package com.axelixlabs.axelix.master.service.auth;
 
-import org.springframework.core.Ordered;
+import org.springframework.web.util.pattern.PathPattern;
+
+import com.axelixlabs.axelix.common.auth.core.Authority;
+import com.axelixlabs.axelix.common.domain.http.HttpMethod;
 
 /**
- * Class that holds ordering of the HTTP servlet filters.
+ * A special handle that binds the {@link Authority} with the specific API on the master side, identified by
+ * {@link HttpMethod} and {@link PathPattern}.
  *
  * @author Mikhail Polivakha
  */
-public final class FiltersOrder {
-
-    private FiltersOrder() {}
-
-    public static final int EXCEPTION_HANDLING_FILTER = Ordered.HIGHEST_PRECEDENCE + 5;
-    public static final int SPA_STATIC_RESOURCES_SERVING_FILTER = Ordered.HIGHEST_PRECEDENCE + 6;
-    public static final int COOKIE_BASED_JWT_AUTHORIZATION_FILTER = Ordered.HIGHEST_PRECEDENCE + 7;
-    public static final int HEART_BEAT_JWT_AUTHORIZATION_FILTER = Ordered.HIGHEST_PRECEDENCE + 8;
-    public static final int MCP_AUTHORIZATION_FILTER = Ordered.HIGHEST_PRECEDENCE + 9;
-}
+public record MasterAuthorityBinding(HttpMethod method, PathPattern pathPattern, Authority authority) {}

@@ -167,14 +167,6 @@ public class ScheduledTasksApiTest {
         }
         """;
 
-    private static final String SCHEDULED_TASK_TOGGLE_AUTH_JSON =
-            // language=json
-            """
-            {
-                "trigger" : "org.springframework.samples.petclinic.scheduled.SchedulerTestConfig.fixedRateTask"
-            }
-        """;
-
     private static final String activeInstanceId = UUID.randomUUID().toString();
 
     private static MockWebServer mockWebServer;
@@ -692,15 +684,13 @@ public class ScheduledTasksApiTest {
     @ProtectedEndpointTests(
             method = HttpMethod.POST,
             path = "/api/external/scheduled-tasks/00000000-0000-0000-0000-000000000001/enable",
-            requiredAuthority = DefaultAuthority.SCHEDULED_TASKS_MODIFY,
-            jsonBody = SCHEDULED_TASK_TOGGLE_AUTH_JSON)
+            requiredAuthority = DefaultAuthority.SCHEDULED_TASKS_MODIFY)
     void negativeAuthTestsOnEnableSingleScheduledTask() {}
 
     @ProtectedEndpointTests(
             method = HttpMethod.POST,
             path = "/api/external/scheduled-tasks/00000000-0000-0000-0000-000000000001/disable",
-            requiredAuthority = DefaultAuthority.SCHEDULED_TASKS_MODIFY,
-            jsonBody = SCHEDULED_TASK_TOGGLE_AUTH_JSON)
+            requiredAuthority = DefaultAuthority.SCHEDULED_TASKS_MODIFY)
     void negativeAuthTestsOnDisableSingleScheduledTask() {}
 
     private static Stream<Arguments> managementScheduledTask() {

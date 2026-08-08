@@ -645,59 +645,16 @@ public class UserManagementApiTest {
         assertThat(response.getBody()).contains("USER_NOT_FOUND");
     }
 
-    @ProtectedEndpointTests(
-            method = POST,
-            path = USERS_CREATE_PATH,
-            requiredAuthority = USERS_MANAGEMENT,
-            // language=json
-            jsonBody = """
-                    {
-                        "username": "x",
-                        "email": "x@example.com",
-                        "password": "p",
-                        "role":"VIEWER"
-                    }
-                    """)
+    @ProtectedEndpointTests(method = POST, path = USERS_CREATE_PATH, requiredAuthority = USERS_MANAGEMENT)
     void negativeAuthTestsOnCreateUser() {}
 
-    @ProtectedEndpointTests(
-            method = DELETE,
-            path = USERS_DELETE_PATH,
-            requiredAuthority = USERS_MANAGEMENT,
-            // language=json
-            jsonBody = """
-                    {
-                      "id": "some-id"
-                    }
-                    """)
+    @ProtectedEndpointTests(method = DELETE, path = USERS_DELETE_PATH, requiredAuthority = USERS_MANAGEMENT)
     void negativeAuthTestsOnDeleteUser() {}
 
-    @ProtectedEndpointTests(
-            method = PUT,
-            path = USERS_UPDATE_PATH,
-            requiredAuthority = USERS_MANAGEMENT,
-            // language=json
-            jsonBody = """
-                    {
-                      "id": "some-id",
-                      "username": "x",
-                      "password": null,
-                      "roles": ["VIEWER"]
-                    }
-                    """)
+    @ProtectedEndpointTests(method = PUT, path = USERS_UPDATE_PATH, requiredAuthority = USERS_MANAGEMENT)
     void negativeAuthTestsOnUpdateUser() {}
 
-    @ProtectedEndpointTests(
-            method = PUT,
-            path = USERS_STATUS_PATH,
-            requiredAuthority = USERS_MANAGEMENT,
-            // language=json
-            jsonBody = """
-                    {
-                      "id": "some-id",
-                      "status": "SUSPENDED"
-                    }
-                    """)
+    @ProtectedEndpointTests(method = PUT, path = USERS_STATUS_PATH, requiredAuthority = USERS_MANAGEMENT)
     void negativeAuthTestsOnUpdateUserStatus() {}
 
     private HttpEntity<String> defaultEntity(String body) {

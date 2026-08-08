@@ -15,27 +15,9 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.master.utils.auth;
+package com.axelixlabs.axelix.master.autoconfiguration.auth;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 
-/**
- * Builds {@link HttpEntity} instances for {@link ProtectedEndpointTests} metadata.
- *
- * @author Mikhail Polivakha
- */
-final class ProtectedEndpointRequestSupport {
-
-    private ProtectedEndpointRequestSupport() {}
-
-    static HttpEntity<?> httpEntity(ProtectedEndpointTests meta) {
-        if (meta.jsonBody().isEmpty()) {
-            return null;
-        }
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        return new HttpEntity<>(meta.jsonBody(), headers);
-    }
-}
+@AutoConfiguration
+public class AuthorityBindingsAutoConfiguration {}

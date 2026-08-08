@@ -40,7 +40,7 @@ import com.axelixlabs.axelix.master.api.external.ApiPaths;
 public class MasterAuthorityResolver implements AuthorityResolver {
 
     private static final PathPatternParser PATH_PATTERN_PARSER;
-    private static final List<RegisteredPattern> REGISTERED_PATTERNS;
+    private static final List<MasterAuthorityBinding> REGISTERED_PATTERNS;
 
     static {
         PATH_PATTERN_PARSER = new PathPatternParser();
@@ -84,9 +84,11 @@ public class MasterAuthorityResolver implements AuthorityResolver {
 
         PathContainer pathContainer = PathContainer.parsePath(relativeRequestPath);
 
-        for (RegisteredPattern registered : REGISTERED_PATTERNS) {
-            if (registered.method == httpMethod && registered.pathPattern.matches(pathContainer)) {
-                return Optional.of(registered.authority);
+        for (MasterAuthorityBinding registered : REGISTERED_PATTERNS) {
+            // TODO: I am not sure that this one will perform good. We may try to introduce some sort of the cache here,
+            // IDK
+            if (registered.method() == httpMethod && registered.pathPattern().matches(pathContainer)) {
+                return Optional.of(registered.authority());
             }
         }
 
@@ -95,8 +97,6 @@ public class MasterAuthorityResolver implements AuthorityResolver {
 
     private static void put(String apiPathPattern, HttpMethod method, Authority authority) {
         PathPattern pathPattern = PATH_PATTERN_PARSER.parse(apiPathPattern);
-        REGISTERED_PATTERNS.add(new RegisteredPattern(method, pathPattern, authority));
+        REGISTERED_PATTERNS.add(new MasterAuthorityBinding(method, pathPattern, authority));
     }
-
-    private record RegisteredPattern(HttpMethod method, PathPattern pathPattern, Authority authority) {}
 }

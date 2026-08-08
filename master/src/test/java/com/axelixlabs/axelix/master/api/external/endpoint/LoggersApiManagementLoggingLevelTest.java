@@ -61,8 +61,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class LoggersApiManagementLoggingLevelTest {
 
-    private static final String LOG_LEVEL_GROUP_AUTH_JSON = "{\"configuredLevel\":\"INFO\"}";
-
     private static final String activeInstanceId = UUID.randomUUID().toString();
     private static final String siblingInstanceId = UUID.randomUUID().toString();
     private static final String failingInstanceId = UUID.randomUUID().toString();
@@ -337,17 +335,10 @@ public class LoggersApiManagementLoggingLevelTest {
 
     @ProtectedEndpointTests(
             method = HttpMethod.POST,
-            path = "/api/external/loggers/00000000-0000-0000-0000-000000000001/group/groupName",
-            jsonBody = LOG_LEVEL_GROUP_AUTH_JSON)
+            path = "/api/external/loggers/00000000-0000-0000-0000-000000000001/group/groupName")
     void negativeAuthTestsOnGroupName() {}
 
-    @ProtectedEndpointTests(method = HttpMethod.POST, path = "/api/external/loggers/logger", jsonBody = """
-                    {
-                      "instanceIds": ["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000001"],
-                      "loggerName": "logger.name",
-                      "configuredLevel": "DEBUG"
-                    }
-                    """)
+    @ProtectedEndpointTests(method = HttpMethod.POST, path = "/api/external/loggers/logger")
     void negativeAuthTestsOnLoggerName() {}
 
     @ProtectedEndpointTests(

@@ -407,8 +407,7 @@ class StateExportApiTest {
 
     @ProtectedEndpointTests(
             method = HttpMethod.POST,
-            path = "/api/external/export-state/00000000-0000-0000-0000-000000000001",
-            jsonBody = HTTP_REQUEST_BODY)
+            path = "/api/external/export-state/00000000-0000-0000-0000-000000000001")
     void negativeAuthTests() {}
 
     @Test

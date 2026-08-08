@@ -30,11 +30,6 @@ public final class ApiPaths {
 
     private ApiPaths() {}
 
-    public static final class SettingsApi {
-
-        public static final String SETTINGS = "/settings";
-    }
-
     public static final class UsersApi {
 
         public static final String LOGIN = "/users/login";

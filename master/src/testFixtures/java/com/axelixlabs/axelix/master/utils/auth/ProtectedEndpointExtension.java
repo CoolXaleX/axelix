@@ -18,11 +18,22 @@
 package com.axelixlabs.axelix.master.utils.auth;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestTemplateInvocationContext;
 import org.junit.jupiter.api.extension.TestTemplateInvocationContextProvider;
+
+import com.axelixlabs.axelix.common.auth.core.Authority;
+import com.axelixlabs.axelix.common.auth.core.DefaultAuthority;
+import com.axelixlabs.axelix.master.utils.InvalidAuthScenario;
 
 /**
  * A specific extension for Junit 6 to provide {@link TestTemplateInvocationContext} instances for the given
@@ -44,22 +55,56 @@ public class ProtectedEndpointExtension implements TestTemplateInvocationContext
             ExtensionContext context) {
         Method requiredTestMethod = context.getRequiredTestMethod();
 
-        ProtectedEndpointTests annotation = requiredTestMethod.getAnnotation(ProtectedEndpointTests.class);
+        var annotation = requiredTestMethod.getAnnotation(ProtectedEndpointTests.class);
 
-        Stream<BadAuthorityEndpointInvocationContext> first;
+        List<TestTemplateInvocationContext> base = new ArrayList<>();
+        base.add(getBadTokenInvocationContext(annotation));
 
-        if (annotation.requiredAuthority().length > 0) {
-            first = Stream.of(
-                    new BadAuthorityEndpointInvocationContext(annotation.requiredAuthority()[0]));
-        } else {
-            first = Stream.of();
+        TestTemplateInvocationContext badAuthorityContext = addBadAuthorityInvocationContext(annotation);
+
+        if (badAuthorityContext != null) {
+            base.add(badAuthorityContext);
         }
 
-        return Stream.concat(
-                // authorization negative cases
-                first,
+        return base.stream();
+    }
 
-                // authentication negative cases
-                Stream.of(new BadTokenProtectedEndpointInvocationContext()));
+    private @NonNull TestTemplateInvocationContext getBadTokenInvocationContext(ProtectedEndpointTests annotation) {
+        return new TestTemplateInvocationContext() {
+
+            @Override
+            public List<Extension> getAdditionalExtensions() {
+                return Arrays.stream(InvalidAuthScenario.values())
+                        .map(it -> (Extension) new BadTokenTestExecutionCallback(
+                                it, annotation.path(), annotation.method().name()))
+                        .toList();
+            }
+        };
+    }
+
+    private @Nullable TestTemplateInvocationContext addBadAuthorityInvocationContext(
+            ProtectedEndpointTests annotation) {
+        DefaultAuthority[] authorities = annotation.requiredAuthority();
+
+        if (authorities != null && authorities.length > 0) {
+            List<Authority> authoritiesToBeDenied = EnumSet.complementOf(EnumSet.of(authorities[0])).stream()
+                    .map(it -> (Authority) it)
+                    .toList();
+
+            return new TestTemplateInvocationContext() {
+
+                @Override
+                public List<Extension> getAdditionalExtensions() {
+                    return authoritiesToBeDenied.stream()
+                            .map(authority -> (Extension) new BadAuthorityTestExecutionCallback(
+                                    authority,
+                                    annotation.path(),
+                                    annotation.method().name()))
+                            .toList();
+                }
+            };
+        } else {
+            return null;
+        }
     }
 }

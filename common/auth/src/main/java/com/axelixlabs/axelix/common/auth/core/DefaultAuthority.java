@@ -69,7 +69,6 @@ public enum DefaultAuthority implements Authority {
     /**
      * Grants the right to manage users.
      * <p>Allows creating, updating, and deleting managed users at runtime.</p>
-     * <p>Reserved for the {@code DefaultRole.SUPER_ADMIN} role.</p>
      */
     USERS_MANAGEMENT;
 
