@@ -24,6 +24,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import tools.jackson.databind.json.JsonMapper;
+
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -40,17 +42,11 @@ import com.axelixlabs.axelix.master.api.error.handle.ApiExceptionTranslator;
 public class ExceptionHandlingFilter extends OncePerRequestFilter {
 
     private final ApiExceptionTranslator apiExceptionTranslator;
+    private final JsonMapper jsonMapper;
 
-    private static final String ERROR_RESPONSE_TEMPLATE =
-            // langauge=json
-            """
-        {
-            "errorCode" : "%s"
-        }
-        """;
-
-    public ExceptionHandlingFilter(ApiExceptionTranslator apiExceptionTranslator) {
+    public ExceptionHandlingFilter(ApiExceptionTranslator apiExceptionTranslator, JsonMapper jsonMapper) {
         this.apiExceptionTranslator = apiExceptionTranslator;
+        this.jsonMapper = jsonMapper;
     }
 
     @Override
@@ -83,7 +79,7 @@ public class ExceptionHandlingFilter extends OncePerRequestFilter {
 
     private void handleApiError(HttpServletResponse response, ApiError apiError) throws IOException {
         response.setStatus(apiError.statusCode());
-        response.getWriter().write(ERROR_RESPONSE_TEMPLATE.formatted(apiError.errorCode()));
+        response.getWriter().write(jsonMapper.writeValueAsString(apiError.errorBody()));
         response.getWriter().flush();
     }
 }

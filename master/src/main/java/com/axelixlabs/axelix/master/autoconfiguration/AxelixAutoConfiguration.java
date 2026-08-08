@@ -17,6 +17,8 @@
  */
 package com.axelixlabs.axelix.master.autoconfiguration;
 
+import tools.jackson.databind.json.JsonMapper;
+
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -42,8 +44,9 @@ public class AxelixAutoConfiguration {
     }
 
     @Bean
-    public ExceptionHandlingFilter exceptionHandlingFilter(ApiExceptionTranslator apiExceptionTranslator) {
-        return new ExceptionHandlingFilter(apiExceptionTranslator);
+    public ExceptionHandlingFilter exceptionHandlingFilter(
+            ApiExceptionTranslator apiExceptionTranslator, JsonMapper jsonMapper) {
+        return new ExceptionHandlingFilter(apiExceptionTranslator, jsonMapper);
     }
 
     @Bean

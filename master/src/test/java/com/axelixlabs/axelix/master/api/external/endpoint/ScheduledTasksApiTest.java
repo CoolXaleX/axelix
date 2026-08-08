@@ -431,7 +431,8 @@ public class ScheduledTasksApiTest {
         // and.
         String expectedResponse = """
             {
-                "errorCode" : "%s"
+                "errorCode" : "%s",
+                "attributes" : {}
             }
             """.formatted(ApiErrorCodes.INVALID_CRON_EXPRESSION.getErrorCode());
 

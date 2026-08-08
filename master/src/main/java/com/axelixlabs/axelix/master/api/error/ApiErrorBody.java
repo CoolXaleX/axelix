@@ -17,20 +17,22 @@
  */
 package com.axelixlabs.axelix.master.api.error;
 
+import java.util.Map;
+
 /**
- * Interface for an error to be sent from the master backend to the front-end app.
+ * The body of the {@link ApiError} as it is going to be sent over the wire.
  *
  * @author Mikhail Polivakha
  */
-public interface ApiError {
+public interface ApiErrorBody {
 
     /**
      * @return Code of the error. Guaranteed to be not null.
      */
-    ApiErrorBody errorBody();
+    String errorCode();
 
     /**
-     * @return the HTTP status code to return.
+     * @return arbitrary attributes to add into the response body
      */
-    int statusCode();
+    Map<String, Object> attributes();
 }

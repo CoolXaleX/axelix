@@ -17,9 +17,16 @@
  */
 package com.axelixlabs.axelix.master.api.error;
 
+import java.util.Map;
+
 /**
  * Simple implementation of the {@link ApiError} with no additional information.
  *
  * @author Mikhail Polivakha
  */
-public record SimpleApiError(String errorCode, int statusCode) implements ApiError {}
+public record SimpleApiError(ApiErrorBody errorBody, int statusCode) implements ApiError {
+
+    public SimpleApiError(String errorCode, int statusCode) {
+        this(new DefaultApiErrorBody(errorCode, Map.of()), statusCode);
+    }
+}
