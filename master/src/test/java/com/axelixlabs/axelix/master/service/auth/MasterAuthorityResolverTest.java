@@ -19,44 +19,48 @@ package com.axelixlabs.axelix.master.service.auth;
 
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+
 import com.axelixlabs.axelix.common.auth.core.DefaultAuthority;
 import com.axelixlabs.axelix.common.auth.service.AuthorityResolver;
 import com.axelixlabs.axelix.common.domain.http.HttpMethod;
+import com.axelixlabs.axelix.master.autoconfiguration.auth.AuthorityBindingsAutoConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link MasterAuthorityResolver}.
+ * Integration tests for {@link MasterAuthorityResolver}.
  *
  * @author Mikhail Polivakha
  * @author Sergey Cherkasov
  */
-public class MasterAuthorityResolverTest {
+class MasterAuthorityResolverTest {
 
-    private AuthorityResolver subject;
-
-    @BeforeEach
-    void setUp() {
-        subject = new MasterAuthorityResolver();
-    }
+    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+            .withConfiguration(AutoConfigurations.of(AuthorityBindingsAutoConfiguration.class))
+            .withBean(MasterAuthorityResolver.class);
 
     @ParameterizedTest
     @MethodSource("mappedEndpoints")
     void shouldResolveMappedAuthority(String path, HttpMethod httpMethod, DefaultAuthority authority) {
         // when/then.
-        assertThat(subject.resolve(path, httpMethod)).contains(authority);
+        contextRunner.run(
+                context -> assertThat(context.getBean(AuthorityResolver.class).resolve(path, httpMethod))
+                        .contains(authority));
     }
 
     @ParameterizedTest
     @MethodSource("unmappedEndpoints")
     void shouldReturnEmptyWhenEndpointIsNotMapped(String path, HttpMethod httpMethod) {
         // when/then.
-        assertThat(subject.resolve(path, httpMethod)).isEmpty();
+        contextRunner.run(
+                context -> assertThat(context.getBean(AuthorityResolver.class).resolve(path, httpMethod))
+                        .isEmpty());
     }
 
     private static Stream<Arguments> mappedEndpoints() {

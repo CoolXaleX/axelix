@@ -56,6 +56,7 @@ import com.axelixlabs.axelix.master.mcp.auth.handler.BearerMcpAuthenticationHand
 import com.axelixlabs.axelix.master.mcp.auth.handler.McpAuthenticationHandler;
 import com.axelixlabs.axelix.master.service.auth.CookieService;
 import com.axelixlabs.axelix.master.service.auth.DefaultCookieService;
+import com.axelixlabs.axelix.master.service.auth.MasterAuthorityBinding;
 import com.axelixlabs.axelix.master.service.auth.MasterAuthorityResolver;
 import com.axelixlabs.axelix.master.service.auth.encoder.SuperAdminPasswordEncoder;
 import com.axelixlabs.axelix.master.service.auth.oauth.DefaultOidcClient;
@@ -85,8 +86,8 @@ public class SecurityAutoConfiguration {
     public static final String LOCAL_LOGIN_PROPERTIES_PREFIX = "axelix.master.auth.options.local";
 
     @Bean
-    public MasterAuthorityResolver masterAuthorityResolver() {
-        return new MasterAuthorityResolver();
+    public MasterAuthorityResolver masterAuthorityResolver(List<MasterAuthorityBinding> authorityBindings) {
+        return new MasterAuthorityResolver(authorityBindings);
     }
 
     @Bean

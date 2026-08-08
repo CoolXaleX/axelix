@@ -17,66 +17,28 @@
  */
 package com.axelixlabs.axelix.master.service.auth;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.server.PathContainer;
-import org.springframework.web.util.pattern.PathPattern;
-import org.springframework.web.util.pattern.PathPatternParser;
 
 import com.axelixlabs.axelix.common.auth.core.Authority;
-import com.axelixlabs.axelix.common.auth.core.DefaultAuthority;
 import com.axelixlabs.axelix.common.auth.service.AuthorityResolver;
 import com.axelixlabs.axelix.common.domain.http.HttpMethod;
-import com.axelixlabs.axelix.master.api.external.ApiPaths;
 
 /**
- * Implementation of {@link AuthorityResolver} that is supposed to handle master endpoints.
+ * Implementation of {@link AuthorityResolver} that is supposed to resolve the {@link Authority}
+ * for Axelix Master endpoints.
  *
  * @author Mikhail Polivakha
  * @author Sergey Cherkasov
  */
 public class MasterAuthorityResolver implements AuthorityResolver {
 
-    private static final PathPatternParser PATH_PATTERN_PARSER;
-    private static final List<MasterAuthorityBinding> REGISTERED_PATTERNS;
+    private final List<MasterAuthorityBinding> bindings;
 
-    static {
-        PATH_PATTERN_PARSER = new PathPatternParser();
-        REGISTERED_PATTERNS = new ArrayList<>();
-
-        // Users -> USERS_MANAGEMENT
-        put(ApiPaths.UsersManagementApi.USERS_CREATE, HttpMethod.POST, DefaultAuthority.USERS_MANAGEMENT);
-        put(ApiPaths.UsersManagementApi.USERS_DELETE, HttpMethod.DELETE, DefaultAuthority.USERS_MANAGEMENT);
-        put(ApiPaths.UsersManagementApi.USERS_STATUS, HttpMethod.PUT, DefaultAuthority.USERS_MANAGEMENT);
-        put(ApiPaths.UsersManagementApi.USERS_UPDATE, HttpMethod.PUT, DefaultAuthority.USERS_MANAGEMENT);
-
-        // Users -> USERS_VIEW
-        put(ApiPaths.UsersApi.USERS_FEED, HttpMethod.GET, DefaultAuthority.USERS_VIEW);
-
-        // Caches
-        put(ApiPaths.CachesApi.DISABLE_CACHE, HttpMethod.POST, DefaultAuthority.CACHES_TOGGLE);
-        put(ApiPaths.CachesApi.ENABLE_CACHE, HttpMethod.POST, DefaultAuthority.CACHES_TOGGLE);
-        put(ApiPaths.CachesApi.DISABLE_CACHE_MANAGER, HttpMethod.POST, DefaultAuthority.CACHES_TOGGLE);
-        put(ApiPaths.CachesApi.ENABLE_CACHE_MANAGER, HttpMethod.POST, DefaultAuthority.CACHES_TOGGLE);
-        put(ApiPaths.CachesApi.CACHE_NAME, HttpMethod.DELETE, DefaultAuthority.CACHES_CLEAR);
-        put(ApiPaths.CachesApi.INSTANCE_ID, HttpMethod.DELETE, DefaultAuthority.CACHES_CLEAR);
-
-        // Garbage Collector
-        put(ApiPaths.GcLogFileApi.DISABLE_GC_LOGGING, HttpMethod.POST, DefaultAuthority.GARBAGE_COLLECTOR);
-        put(ApiPaths.GcLogFileApi.ENABLE_GC_LOGGING, HttpMethod.POST, DefaultAuthority.GARBAGE_COLLECTOR);
-        put(ApiPaths.GcLogFileApi.TRIGGER_GC, HttpMethod.POST, DefaultAuthority.GARBAGE_COLLECTOR);
-
-        // ScheduledTasks
-        put(ApiPaths.ScheduledTasksApi.DISABLE_TASK, HttpMethod.POST, DefaultAuthority.SCHEDULED_TASKS_MODIFY);
-        put(ApiPaths.ScheduledTasksApi.ENABLE_TASK, HttpMethod.POST, DefaultAuthority.SCHEDULED_TASKS_MODIFY);
-        put(ApiPaths.ScheduledTasksApi.EXECUTE, HttpMethod.POST, DefaultAuthority.SCHEDULED_TASKS_MODIFY);
-        put(
-                ApiPaths.ScheduledTasksApi.MODIFY_CRON_EXPRESSION,
-                HttpMethod.POST,
-                DefaultAuthority.SCHEDULED_TASKS_MODIFY);
-        put(ApiPaths.ScheduledTasksApi.MODIFY_INTERVAL, HttpMethod.POST, DefaultAuthority.SCHEDULED_TASKS_MODIFY);
+    public MasterAuthorityResolver(List<MasterAuthorityBinding> bindings) {
+        this.bindings = bindings;
     }
 
     @Override
@@ -84,19 +46,14 @@ public class MasterAuthorityResolver implements AuthorityResolver {
 
         PathContainer pathContainer = PathContainer.parsePath(relativeRequestPath);
 
-        for (MasterAuthorityBinding registered : REGISTERED_PATTERNS) {
-            // TODO: I am not sure that this one will perform good. We may try to introduce some sort of the cache here,
-            // IDK
-            if (registered.method() == httpMethod && registered.pathPattern().matches(pathContainer)) {
-                return Optional.of(registered.authority());
+        for (MasterAuthorityBinding binding : bindings) {
+            // TODO: I am not sure that this one will perform good.
+            //  We may try to introduce some sort of the cache here. Does it even make sense?
+            if (binding.method() == httpMethod && binding.pathPattern().matches(pathContainer)) {
+                return Optional.of(binding.authority());
             }
         }
 
         return Optional.empty();
-    }
-
-    private static void put(String apiPathPattern, HttpMethod method, Authority authority) {
-        PathPattern pathPattern = PATH_PATTERN_PARSER.parse(apiPathPattern);
-        REGISTERED_PATTERNS.add(new MasterAuthorityBinding(method, pathPattern, authority));
     }
 }

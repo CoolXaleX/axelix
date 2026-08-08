@@ -107,6 +107,7 @@ class SecurityAutoConfigurationTest {
                 .withConfiguration(AutoConfigurations.of(
                         ConfigurationPropertiesAutoConfiguration.class,
                         SecurityAutoConfiguration.class,
+                        AuthorityBindingsAutoConfiguration.class,
                         SecurityAutoConfiguration.JwtAutoConfiguration.class,
                         SecurityAutoConfiguration.CookieAutoConfiguration.class));
     }
@@ -150,6 +151,7 @@ class SecurityAutoConfigurationTest {
                     .withConfiguration(AutoConfigurations.of(
                             ConfigurationPropertiesAutoConfiguration.class,
                             SecurityAutoConfiguration.class,
+                            AuthorityBindingsAutoConfiguration.class,
                             SecurityAutoConfiguration.JwtAutoConfiguration.class));
 
             // when.
@@ -171,6 +173,7 @@ class SecurityAutoConfigurationTest {
                     .withConfiguration(AutoConfigurations.of(
                             ConfigurationPropertiesAutoConfiguration.class,
                             SecurityAutoConfiguration.class,
+                            AuthorityBindingsAutoConfiguration.class,
                             SecurityAutoConfiguration.JwtAutoConfiguration.class));
 
             // when.
@@ -194,6 +197,7 @@ class SecurityAutoConfigurationTest {
                     .withConfiguration(AutoConfigurations.of(
                             ConfigurationPropertiesAutoConfiguration.class,
                             SecurityAutoConfiguration.class,
+                            AuthorityBindingsAutoConfiguration.class,
                             SecurityAutoConfiguration.JwtAutoConfiguration.class));
 
             // when.
@@ -221,6 +225,7 @@ class SecurityAutoConfigurationTest {
                     .withConfiguration(AutoConfigurations.of(
                             ConfigurationPropertiesAutoConfiguration.class,
                             SecurityAutoConfiguration.class,
+                            AuthorityBindingsAutoConfiguration.class,
                             SecurityAutoConfiguration.JwtAutoConfiguration.class));
 
             // when.
@@ -243,6 +248,7 @@ class SecurityAutoConfigurationTest {
                     .withConfiguration(AutoConfigurations.of(
                             ConfigurationPropertiesAutoConfiguration.class,
                             SecurityAutoConfiguration.class,
+                            AuthorityBindingsAutoConfiguration.class,
                             SecurityAutoConfiguration.JwtAutoConfiguration.class));
 
             // when.
@@ -294,6 +300,7 @@ class SecurityAutoConfigurationTest {
                     .withConfiguration(AutoConfigurations.of(
                             ConfigurationPropertiesAutoConfiguration.class,
                             SecurityAutoConfiguration.class,
+                            AuthorityBindingsAutoConfiguration.class,
                             SecurityAutoConfiguration.JwtAutoConfiguration.class,
                             SecurityAutoConfiguration.CookieAutoConfiguration.class));
 

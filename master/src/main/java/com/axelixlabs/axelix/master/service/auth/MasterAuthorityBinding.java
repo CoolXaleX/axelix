@@ -18,6 +18,7 @@
 package com.axelixlabs.axelix.master.service.auth;
 
 import org.springframework.web.util.pattern.PathPattern;
+import org.springframework.web.util.pattern.PathPatternParser;
 
 import com.axelixlabs.axelix.common.auth.core.Authority;
 import com.axelixlabs.axelix.common.domain.http.HttpMethod;
@@ -28,4 +29,18 @@ import com.axelixlabs.axelix.common.domain.http.HttpMethod;
  *
  * @author Mikhail Polivakha
  */
-public record MasterAuthorityBinding(HttpMethod method, PathPattern pathPattern, Authority authority) {}
+public record MasterAuthorityBinding(HttpMethod method, PathPattern pathPattern, Authority authority) {
+
+    private static final PathPatternParser PATH_PATTERN_PARSER = new PathPatternParser();
+
+    /**
+     * Builds a binding from a raw path pattern, parsing it into a {@link PathPattern}.
+     *
+     * @param method      the HTTP method the binding applies to
+     * @param pathPattern the relative path pattern (e.g. {@code /users-management/create})
+     * @param authority   the authority required to access the endpoint
+     */
+    public static MasterAuthorityBinding of(HttpMethod method, String pathPattern, Authority authority) {
+        return new MasterAuthorityBinding(method, PATH_PATTERN_PARSER.parse(pathPattern), authority);
+    }
+}
