@@ -30,6 +30,7 @@ import com.axelixlabs.axelix.common.auth.service.JwtDecoderService;
 import com.axelixlabs.axelix.common.auth.service.JwtEncoderService;
 import com.axelixlabs.axelix.sbs.spring.core.auth.AuthorityResolver;
 import com.axelixlabs.axelix.sbs.spring.core.auth.WebIdentityAccessManager;
+import com.axelixlabs.axelix.sbs.spring.core.config.DirectAccessProperties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -61,6 +62,38 @@ class JwtAuthAutoConfigurationTest {
             assertThat(context).hasSingleBean(WebIdentityAccessManager.class);
             assertThat(context).hasSingleBean(FilterRegistrationBean.class);
             assertThat(context).hasSingleBean(SecurityContextExecutor.class);
+            assertThat(context).hasSingleBean(DirectAccessProperties.class);
+            DirectAccessProperties directAccessProperties = context.getBean(DirectAccessProperties.class);
+            assertThat(directAccessProperties.getDiagnostics().isEnabled()).isFalse();
+            assertThat(directAccessProperties.getDiagnostics().getEndpoints())
+                    .containsExactlyInAnyOrder(
+                            "axelix-metadata", "axelix-details", "axelix-metrics", "axelix-conditions", "axelix-feign");
+            assertThat(directAccessProperties.getControl().isEnabled()).isFalse();
+            assertThat(directAccessProperties.getControl().getEndpoints()).containsExactly("axelix-scheduled-tasks");
+        });
+    }
+
+    @Test
+    void shouldBindDirectAccessModesWithoutDisablingJwtInfrastructure() {
+        // given.
+        ApplicationContextRunner configuredContextRunner = contextRunner.withPropertyValues(
+                "axelix.sbs.auth.direct-access.diagnostics.enabled=true",
+                "axelix.sbs.auth.direct-access.diagnostics.endpoints=axelix-metadata,axelix-details",
+                "axelix.sbs.auth.direct-access.control.enabled=true",
+                "axelix.sbs.auth.direct-access.control.endpoints=axelix-scheduled-tasks");
+
+        // when.
+        configuredContextRunner.run(context -> {
+            DirectAccessProperties properties = context.getBean(DirectAccessProperties.class);
+
+            // then.
+            assertThat(properties.getDiagnostics().isEnabled()).isTrue();
+            assertThat(properties.getDiagnostics().getEndpoints()).containsExactly("axelix-metadata", "axelix-details");
+            assertThat(properties.getControl().isEnabled()).isTrue();
+            assertThat(properties.getControl().getEndpoints()).containsExactly("axelix-scheduled-tasks");
+            assertThat(context).hasSingleBean(JwtDecoderService.class);
+            assertThat(context).hasSingleBean(JwtEncoderService.class);
+            assertThat(context).hasSingleBean(FilterRegistrationBean.class);
         });
     }
 

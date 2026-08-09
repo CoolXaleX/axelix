@@ -414,6 +414,36 @@ Every starter property lives under the `axelix.sbs.*` namespace.
 | `axelix.sbs.auth.jwt.duration`    | `5m`                                                 | Validity of the self-registration token the starter issues itself. Tokens are rotated automatically before expiry.           |
 </div>
 
+#### Direct access without JWT (Spring Boot 3 starter only)
+
+:::danger
+Direct access bypasses Axelix JWT authorization. Enable it only on a management port or network protected by another
+trusted security boundary. Never expose direct control operations to an untrusted network.
+:::
+
+The two modes below are independent and disabled by default. They do not disable JWT beans, heartbeat, or
+self-registration. Diagnostics mode bypasses JWT only for GET/HEAD; control mode bypasses JWT only for
+POST/PUT/PATCH/DELETE. The endpoint ID must also be present in that mode's allowlist.
+
+<div className={styles.SharedTable}>
+| Property                                              | Default                                                                            | Description                                                                                                                   |
+|-------------------------------------------------------|------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| `axelix.sbs.auth.direct-access.diagnostics.enabled`   | `false`                                                                            | Allow direct read-only diagnostic requests for allowlisted endpoint IDs.                                                      |
+| `axelix.sbs.auth.direct-access.diagnostics.endpoints` | `axelix-metadata, axelix-details, axelix-metrics, axelix-conditions, axelix-feign` | Diagnostic allowlist. Sensitive environment, configuration, thread-dump, heap-dump, and GC-log endpoints are excluded.       |
+| `axelix.sbs.auth.direct-access.control.enabled`       | `false`                                                                            | Allow direct state-changing requests for allowlisted endpoint IDs.                                                            |
+| `axelix.sbs.auth.direct-access.control.endpoints`     | `axelix-scheduled-tasks`                                                           | Control allowlist. Cache, GC, logger, and other state-changing endpoints are excluded unless explicitly added.               |
+</div>
+
+For direct insights and scheduled-task execution without JWT:
+
+```properties
+axelix.sbs.auth.direct-access.diagnostics.enabled=true
+axelix.sbs.auth.direct-access.control.enabled=true
+```
+
+Replace either `endpoints` value with a comma-separated list to customize its scope. Adding sensitive diagnostics may
+expose application data; adding control endpoints allows unauthenticated callers to change live application state.
+
 ### Self-registration
 
 Self-registration is **off by default** (`axelix.sbs.discovery.self-registration=false`) — leave it that way when Master can find the

@@ -40,6 +40,7 @@ import com.axelixlabs.axelix.sbs.spring.core.auth.JwtAuthorizationFilter;
 import com.axelixlabs.axelix.sbs.spring.core.auth.ManagedServiceWebIdentityAccessManager;
 import com.axelixlabs.axelix.sbs.spring.core.auth.WebIdentityAccessManager;
 import com.axelixlabs.axelix.sbs.spring.core.config.AuthProperties;
+import com.axelixlabs.axelix.sbs.spring.core.config.DirectAccessProperties;
 
 /**
  * {@link AutoConfiguration} for JWT-based authentication support.
@@ -56,6 +57,12 @@ public class JwtAuthAutoConfiguration {
     @ConfigurationProperties(prefix = AuthProperties.CONFIG_PROPS_PREFIX)
     public AuthProperties authProperties() {
         return new AuthProperties();
+    }
+
+    @Bean
+    @ConfigurationProperties(prefix = DirectAccessProperties.CONFIG_PROPS_PREFIX)
+    public DirectAccessProperties directAccessProperties() {
+        return new DirectAccessProperties();
     }
 
     @Bean
@@ -95,10 +102,14 @@ public class JwtAuthAutoConfiguration {
     public FilterRegistrationBean<JwtAuthorizationFilter> jwtAuthorizationFilterRegistration(
             WebIdentityAccessManager webIdentityAccessManager,
             SecurityContextExecutor securityContextExecutor,
-            WebEndpointProperties webEndpointProperties) {
+            WebEndpointProperties webEndpointProperties,
+            DirectAccessProperties directAccessProperties) {
 
         var jwtAuthorizationFilter = new JwtAuthorizationFilter(
-                webIdentityAccessManager, securityContextExecutor, webEndpointProperties.getBasePath());
+                webIdentityAccessManager,
+                securityContextExecutor,
+                webEndpointProperties.getBasePath(),
+                directAccessProperties);
         var registration = new FilterRegistrationBean<>(jwtAuthorizationFilter);
         registration.setName("jwtAuthorizationFilter");
         return registration;

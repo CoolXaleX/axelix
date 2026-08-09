@@ -423,6 +423,37 @@ axelix.sbs.endpoints.config.sanitized-properties[2]=jwt.signing-key
 
 </div>
 
+#### Прямой доступ без JWT (только starter для Spring Boot 3)
+
+:::danger
+Прямой доступ обходит JWT-авторизацию Axelix. Включайте его только на management-порту или в сети, защищённой другим
+доверенным периметром. Никогда не открывайте управляющие операции в недоверенную сеть.
+:::
+
+Два режима ниже независимы и по умолчанию выключены. Они не отключают JWT beans, heartbeat или саморегистрацию.
+Diagnostics-режим обходит JWT только для GET/HEAD, control-режим — только для POST/PUT/PATCH/DELETE. ID endpoint также
+должен присутствовать в allowlist соответствующего режима.
+
+<div className={styles.SharedTable}>
+| Свойство                                              | По умолчанию                                                                       | Описание                                                                                                                      |
+|-------------------------------------------------------|------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| `axelix.sbs.auth.direct-access.diagnostics.enabled`   | `false`                                                                            | Разрешить прямые read-only диагностические запросы к endpoint из allowlist.                                                  |
+| `axelix.sbs.auth.direct-access.diagnostics.endpoints` | `axelix-metadata, axelix-details, axelix-metrics, axelix-conditions, axelix-feign` | Диагностический allowlist. Чувствительные environment, configprops, thread-dump, heap-dump и GC-log endpoint исключены.       |
+| `axelix.sbs.auth.direct-access.control.enabled`       | `false`                                                                            | Разрешить прямые изменяющие запросы к endpoint из allowlist.                                                                  |
+| `axelix.sbs.auth.direct-access.control.endpoints`     | `axelix-scheduled-tasks`                                                           | Управляющий allowlist. Caches, GC, loggers и другие изменяющие endpoint исключены, пока не добавлены явно.                    |
+</div>
+
+Для прямого получения insights и запуска scheduled tasks без JWT:
+
+```properties
+axelix.sbs.auth.direct-access.diagnostics.enabled=true
+axelix.sbs.auth.direct-access.control.enabled=true
+```
+
+Чтобы изменить область доступа, замените значение `endpoints` списком ID через запятую. Добавление чувствительной
+диагностики может раскрыть данные приложения; добавление управляющих endpoint позволяет неаутентифицированным клиентам
+изменять состояние работающего приложения.
+
 ### Саморегистрация
 
 Саморегистрация **выключена по умолчанию** (`axelix.sbs.discovery.self-registration=false`) — оставьте всё как есть, если Master

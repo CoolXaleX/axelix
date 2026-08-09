@@ -37,6 +37,7 @@ import com.axelixlabs.axelix.common.auth.service.DefaultJwtEncoderService;
 import com.axelixlabs.axelix.common.auth.service.JwtDecoderService;
 import com.axelixlabs.axelix.common.auth.service.JwtEncoderService;
 import com.axelixlabs.axelix.sbs.spring.core.config.AuthProperties;
+import com.axelixlabs.axelix.sbs.spring.core.config.DirectAccessProperties;
 
 /**
  * JwtAuth test configuration.
@@ -50,6 +51,12 @@ public class JwtAuthTestConfiguration {
     @ConfigurationProperties(prefix = AuthProperties.CONFIG_PROPS_PREFIX)
     public AuthProperties authProperties() {
         return new AuthProperties();
+    }
+
+    @Bean
+    @ConfigurationProperties(prefix = DirectAccessProperties.CONFIG_PROPS_PREFIX)
+    public DirectAccessProperties directAccessProperties() {
+        return new DirectAccessProperties();
     }
 
     @Bean
@@ -93,10 +100,14 @@ public class JwtAuthTestConfiguration {
     public FilterRegistrationBean<JwtAuthorizationFilter> jwtAuthorizationFilterRegistration(
             WebIdentityAccessManager webIdentityAccessManager,
             SecurityContextExecutor securityContextExecutor,
-            WebEndpointProperties webEndpointProperties) {
+            WebEndpointProperties webEndpointProperties,
+            DirectAccessProperties directAccessProperties) {
 
         var registration = new FilterRegistrationBean<>(new JwtAuthorizationFilter(
-                webIdentityAccessManager, securityContextExecutor, webEndpointProperties.getBasePath()));
+                webIdentityAccessManager,
+                securityContextExecutor,
+                webEndpointProperties.getBasePath(),
+                directAccessProperties));
         registration.setName("jwtAuthorizationFilter");
         return registration;
     }

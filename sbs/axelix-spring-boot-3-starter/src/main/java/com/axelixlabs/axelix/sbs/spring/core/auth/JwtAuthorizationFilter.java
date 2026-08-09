@@ -40,6 +40,7 @@ import com.axelixlabs.axelix.common.auth.exception.ExpiredJwtTokenException;
 import com.axelixlabs.axelix.common.auth.exception.InvalidJwtTokenException;
 import com.axelixlabs.axelix.common.auth.exception.JwtParsingException;
 import com.axelixlabs.axelix.common.domain.http.HttpMethod;
+import com.axelixlabs.axelix.sbs.spring.core.config.DirectAccessProperties;
 
 /**
  * A custom servlet filter that restricts access to Actuator endpoints based on JWT token presence, validity,
@@ -57,20 +58,52 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private final WebIdentityAccessManager webIdentityAccessManager;
     private final SecurityContextExecutor securityContextExecutor;
     private final String baseActuatorPath;
+    private final DirectAccessProperties directAccessProperties;
 
     public JwtAuthorizationFilter(
             WebIdentityAccessManager webIdentityAccessManager,
             SecurityContextExecutor securityContextExecutor,
-            String baseActuatorPath) {
+            String baseActuatorPath,
+            DirectAccessProperties directAccessProperties) {
 
         this.webIdentityAccessManager = webIdentityAccessManager;
         this.securityContextExecutor = securityContextExecutor;
         this.baseActuatorPath = baseActuatorPath;
+        this.directAccessProperties = directAccessProperties;
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !request.getServletPath().startsWith(baseActuatorPath + "/axelix-");
+        String servletPath = request.getServletPath();
+        if (!servletPath.startsWith(baseActuatorPath + "/axelix-")) {
+            return true;
+        }
+
+        String endpointId = resolveEndpointId(servletPath);
+        if (isReadOperation(request.getMethod())) {
+            DirectAccessProperties.AccessMode diagnostics = directAccessProperties.getDiagnostics();
+            return diagnostics.isEnabled() && diagnostics.getEndpoints().contains(endpointId);
+        }
+
+        if (isControlOperation(request.getMethod())) {
+            DirectAccessProperties.AccessMode control = directAccessProperties.getControl();
+            return control.isEnabled() && control.getEndpoints().contains(endpointId);
+        }
+        return false;
+    }
+
+    private String resolveEndpointId(String servletPath) {
+        String endpointPath = servletPath.substring(baseActuatorPath.length() + 1);
+        int nestedPathIndex = endpointPath.indexOf('/');
+        return nestedPathIndex < 0 ? endpointPath : endpointPath.substring(0, nestedPathIndex);
+    }
+
+    private static boolean isReadOperation(String method) {
+        return "GET".equals(method) || "HEAD".equals(method);
+    }
+
+    private static boolean isControlOperation(String method) {
+        return "POST".equals(method) || "PUT".equals(method) || "PATCH".equals(method) || "DELETE".equals(method);
     }
 
     @Override
