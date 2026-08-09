@@ -45,6 +45,9 @@ axelix:
       url: jdbc:sqlite:axelix.db
       username: ""
       password:
+    migrations:
+      username: ${axelix.master.database.username:}
+      password: ${axelix.master.database.password:}
     discovery:
       self-registration:
         enabled: true
