@@ -168,7 +168,7 @@ The endpoint is `POST /api/internal/service/register`. It is gated by the same J
 On the Master side there are **no required overrides** — every property here has a working default. The feature is **on
 by default** (`enabled=true`), set it to `false` only if you want Master to refuse all heartbeats. The starter-side
 properties that go *into* the heartbeat (`master-url`, `instance-actuator-url`, `instance-name`) are documented in the
-[Configuring Spring Boot Starter](../../setting-up-spring-boot-service/configuring-axelix-starter/configuring-axelix-starter.mdx) page.
+[Configuring Spring Boot Starter](../../setting-up-spring-boot-service/spring-boot-starter/configuration.mdx) page.
 
 <div className={styles.ConfigTable}>
 
@@ -579,7 +579,7 @@ and RoleBinding into your own manifests if you want a starting point.
 
 ## Related
 
-- [Configuring Spring Boot Starter](../../setting-up-spring-boot-service/configuring-axelix-starter/configuring-axelix-starter.mdx) — wire your monitored
+- [Configuring Spring Boot Starter](../../setting-up-spring-boot-service/spring-boot-starter/configuration.mdx) — wire your monitored
   applications so Master can see them.
 - [What is Master?](../what-is-master.mdx) — background on what Master does once it is running.
 - [Authentication](../authentication/authentication.mdx) — deeper look at JWT, super-admin, and OAuth2/OIDC.
