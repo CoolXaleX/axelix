@@ -173,16 +173,14 @@ class OAuth2CallbackControllerTest {
                 authTokenCookie.substring(authTokenCookie.indexOf("=") + 1, authTokenCookie.indexOf(";")));
 
         assertThat(decodedTokenToUser.getUsername()).isEqualTo(username);
-        assertThat(decodedTokenToUser.getRoles())
-                .singleElement()
-                .satisfies(role -> {
-                    assertThat(role.getName()).isEqualTo(DefaultRole.EDITOR.getName());
-                    assertThat(role.getAuthorities())
-                            .extracting(Authority::getName)
-                            .containsExactlyInAnyOrderElementsOf(DefaultRole.EDITOR.getAuthorities().stream()
-                                    .map(Authority::getName)
-                                    .toList());
-                });
+        assertThat(decodedTokenToUser.getRoles()).singleElement().satisfies(role -> {
+            assertThat(role.getName()).isEqualTo(DefaultRole.EDITOR.getName());
+            assertThat(role.getAuthorities())
+                    .extracting(Authority::getName)
+                    .containsExactlyInAnyOrderElementsOf(DefaultRole.EDITOR.getAuthorities().stream()
+                            .map(Authority::getName)
+                            .toList());
+        });
 
         String decodedAuthorities = assertThat(
                         // trying to extract an actual token from the cookie value
