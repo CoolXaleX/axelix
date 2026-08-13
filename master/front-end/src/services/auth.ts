@@ -36,5 +36,7 @@ export const authorize = (option: OIDCLoginOption) => {
     params.append("response_type", "code");
     params.append("redirect_uri", option.redirectUri);
 
+    Object.entries(option.additionalParameters ?? {}).forEach(([key, value]) => params.append(key, value));
+
     window.location.href = `${option.authorizationEndpoint}?${params.toString()}`;
 };

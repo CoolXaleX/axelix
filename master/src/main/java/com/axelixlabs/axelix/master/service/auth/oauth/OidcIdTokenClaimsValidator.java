@@ -15,17 +15,25 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+package com.axelixlabs.axelix.master.service.auth.oauth;
 
-export interface ILoginSubmitRequestData {
-    /**
-     * The username of the user.
-     * Used to identify the user during the login process.
-     */
-    username: string;
+import java.util.Map;
+
+import com.axelixlabs.axelix.master.exception.auth.OAuth2AuthenticationException;
+
+/**
+ * Extension point validating the OIDC ID token claims after the standard issuer/audience/signature
+ * validation. Every registered validator is invoked before the login is allowed to proceed.
+ *
+ * @author Nikita Kirillov
+ */
+public interface OidcIdTokenClaimsValidator {
 
     /**
-     * The password of the user.
-     * Used to authenticate the user during the login process.
+     * Validates the given ID token claims.
+     *
+     * @param idTokenClaims validated ID token claims
+     * @throws OAuth2AuthenticationException if the claims fail validation
      */
-    password: string;
+    void validate(Map<String, Object> idTokenClaims);
 }
