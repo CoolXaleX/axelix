@@ -35,5 +35,5 @@ public interface OidcIdTokenClaimsValidator {
      * @param idTokenClaims validated ID token claims
      * @throws OAuth2AuthenticationException if the claims fail validation
      */
-    void validate(Map<String, Object> idTokenClaims);
+    void validate(Map<String, Object> idTokenClaims) throws OAuth2AuthenticationException;
 }
