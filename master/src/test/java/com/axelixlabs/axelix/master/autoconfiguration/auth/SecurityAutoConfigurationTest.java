@@ -17,6 +17,7 @@
  */
 package com.axelixlabs.axelix.master.autoconfiguration.auth;
 
+import java.util.Map;
 import java.util.Optional;
 
 import org.jspecify.annotations.NonNull;
@@ -54,6 +55,7 @@ import com.axelixlabs.axelix.master.mcp.auth.handler.BearerMcpAuthenticationHand
 import com.axelixlabs.axelix.master.mcp.auth.handler.McpAuthenticationHandler;
 import com.axelixlabs.axelix.master.service.auth.CookieService;
 import com.axelixlabs.axelix.master.service.auth.MasterAuthorityResolver;
+import com.axelixlabs.axelix.master.service.auth.oauth.OidcAuthorizeEndpointAdditionalParametersProvider;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcClient;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcMetadataProvider;
 import com.axelixlabs.axelix.master.service.auth.provider.DatabaseUserAuthenticator;
@@ -456,6 +458,33 @@ class SecurityAutoConfigurationTest {
                 assertThat(context).hasFailed();
             });
         }
+
+        @Test
+        void shouldContributeParametersFromMultipleAdditionalParametersProviders() {
+            // given.
+            ApplicationContextRunner contextRunner = baselineConfigAppContextRunner()
+                    .withPropertyValues(
+                            "axelix.master.auth.options.oauth2.enabled=true",
+                            "axelix.master.auth.options.oauth2.issuer-uri=https://issuer.example",
+                            "axelix.master.auth.options.oauth2.client-id=test-client",
+                            "axelix.master.auth.options.oauth2.client-secret=test-secret",
+                            "axelix.master.auth.options.oauth2.base-url=https://app.example",
+                            "axelix.master.auth.options.oauth2.scopes=openid profile")
+                    .withUserConfiguration(
+                            TestOAuth2DependenciesConfig.class, TestAdditionalParametersProvidersConfig.class)
+                    .withConfiguration(
+                            AutoConfigurations.of(SecurityAutoConfiguration.OAuth2LoginAutoConfiguration.class));
+
+            // when.
+            contextRunner.run(context -> {
+                // then.
+                assertThat(context.getBeansOfType(OidcAuthorizeEndpointAdditionalParametersProvider.class))
+                        .hasSize(2);
+                assertThat(context.getBean(OidcAuthenticationOption.class).getAdditionalParameters())
+                        .containsEntry("prompt", "consent")
+                        .containsEntry("access_type", "offline");
+            });
+        }
     }
 
     @Nested
@@ -515,6 +544,20 @@ class SecurityAutoConfigurationTest {
         @Bean
         public ObjectMapper objectMapper() {
             return new ObjectMapper();
+        }
+    }
+
+    @TestConfiguration
+    static class TestAdditionalParametersProvidersConfig {
+
+        @Bean
+        public OidcAuthorizeEndpointAdditionalParametersProvider promptParametersProvider() {
+            return () -> Map.of("prompt", "consent");
+        }
+
+        @Bean
+        public OidcAuthorizeEndpointAdditionalParametersProvider accessTypeParametersProvider() {
+            return () -> Map.of("access_type", "offline");
         }
     }
 

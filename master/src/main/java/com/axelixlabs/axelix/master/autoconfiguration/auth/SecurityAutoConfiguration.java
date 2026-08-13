@@ -17,7 +17,9 @@
  */
 package com.axelixlabs.axelix.master.autoconfiguration.auth;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import tools.jackson.databind.ObjectMapper;
 
@@ -61,6 +63,7 @@ import com.axelixlabs.axelix.master.service.auth.MasterAuthorityResolver;
 import com.axelixlabs.axelix.master.service.auth.encoder.SuperAdminPasswordEncoder;
 import com.axelixlabs.axelix.master.service.auth.oauth.DefaultOidcClient;
 import com.axelixlabs.axelix.master.service.auth.oauth.JmesPathJsonInspector;
+import com.axelixlabs.axelix.master.service.auth.oauth.OidcAuthorizeEndpointAdditionalParametersProvider;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcClient;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcMetadataProvider;
 import com.axelixlabs.axelix.master.service.auth.oauth.UserInfoJsonAccessor;
@@ -218,11 +221,21 @@ public class SecurityAutoConfiguration {
 
         @Bean
         public AuthenticationOption authSettingsOAuth2(
-                OAuth2Properties oAuth2Properties, OidcMetadataProvider oidcMetadataProvider) {
+                List<OidcAuthorizeEndpointAdditionalParametersProvider> providers,
+                OAuth2Properties oAuth2Properties,
+                OidcMetadataProvider oidcMetadataProvider) {
+
+            Map<String, String> additionalParameters = new HashMap<>();
+
+            for (var provider : providers) {
+                additionalParameters.putAll(provider.contribute());
+            }
+
             return new OidcAuthenticationOption(
                     oAuth2Properties.scopes(),
                     oAuth2Properties.clientId(),
                     oAuth2Properties.redirectUri(),
+                    additionalParameters,
                     Lazy.of(oidcMetadataProvider::getAuthorizationEndpoint));
         }
 
