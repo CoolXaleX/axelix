@@ -12,7 +12,7 @@ val jsonUnitAssertJVersion = "2.40.1"
 
 dependencies {
     // Self
-    api(project(":common:api"))
+    api(project(":common"))
 
     // Test
     testImplementation(platform("org.springframework.boot:spring-boot-dependencies:$springBootTestPlatformVersion"))

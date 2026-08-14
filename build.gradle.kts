@@ -179,9 +179,9 @@ val pluginModules = listOf(
     project(":plugins:axelix-maven-plugin")
 )
 
-val commonModules = listOf(
+val shadedModules = listOf(
     project(":sbs:starter-domain"),
-    project(":common:api")
+    project(":common")
 )
 
 val publishableModules = starterModules + pluginModules
@@ -219,14 +219,14 @@ configure(publishableModules) {
         tasks {
             jar {
                 duplicatesStrategy = DuplicatesStrategy.WARN
-                commonModules.forEach { from(it.sourceSets.main.get().output) }
+                shadedModules.forEach { from(it.sourceSets.main.get().output) }
             }
             named<Jar>("sourcesJar") {
                 duplicatesStrategy = DuplicatesStrategy.WARN
-                commonModules.forEach { from(it.sourceSets.main.get().allSource) }
+                shadedModules.forEach { from(it.sourceSets.main.get().allSource) }
             }
             withType<Javadoc> {
-                commonModules.forEach { source(it.sourceSets.main.get().allJava) }
+                shadedModules.forEach { source(it.sourceSets.main.get().allJava) }
                 classpath = project.configurations.compileClasspath.get()
             }
             named<Jar>("javadocJar") {

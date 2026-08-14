@@ -28,7 +28,7 @@ val vertxVersion = "4.5.31"
 
 dependencies {
     // Self
-    api(project(":common:api"))
+    api(project(":common"))
 
     // Impl
     api(platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}"))
@@ -76,7 +76,7 @@ dependencies {
     runtimeOnly("org.xerial:sqlite-jdbc:${sqliteVersion}")
 
     // Test Self
-    testFixturesImplementation(project(":common:api"))
+    testFixturesImplementation(project(":common"))
 
     // Test
     testFixturesApi(platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion"))

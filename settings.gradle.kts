@@ -13,7 +13,7 @@ include(
     ":sbs:axelix-spring-boot-3-starter",
     ":sbs:axelix-spring-boot-4-starter",
     ":sbs:starter-domain",
-    ":common:api",
+    ":common",
     ":plugins:axelix-gradle-plugin",
     ":plugins:axelix-maven-plugin",
 )
