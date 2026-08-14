@@ -5,8 +5,6 @@ plugins {
 val jsonUnitAssertJVersion = "2.40.1"
 
 dependencies {
-    api(project(":common:domain"))
-
     testImplementation("net.javacrumbs.json-unit:json-unit-assertj:${jsonUnitAssertJVersion}")
 
     // Test

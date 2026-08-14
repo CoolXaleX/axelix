@@ -28,7 +28,6 @@ val vertxVersion = "4.5.31"
 
 dependencies {
     // Self
-    api(project(":common:domain"))
     api(project(":common:api"))
     api(project(":common:utils"))
 
@@ -78,7 +77,6 @@ dependencies {
     runtimeOnly("org.xerial:sqlite-jdbc:${sqliteVersion}")
 
     // Test Self
-    testFixturesImplementation(project(":common:domain"))
     testFixturesImplementation(project(":common:api"))
     testFixturesImplementation(project(":common:utils"))
 
