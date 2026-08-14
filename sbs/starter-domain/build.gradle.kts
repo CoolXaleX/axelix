@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
     id("shared")
+    id("java-test-fixtures")
     kotlin("jvm") version "2.4.10"
 }
 

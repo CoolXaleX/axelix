@@ -1,5 +1,6 @@
 plugins {
     id("common")
+    id("java-test-fixtures")
 }
 
 val jsonUnitAssertJVersion = "2.40.1"
