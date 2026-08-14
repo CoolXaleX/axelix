@@ -181,8 +181,7 @@ val pluginModules = listOf(
 
 val commonModules = listOf(
     project(":sbs:starter-domain"),
-    project(":common:api"),
-    project(":common:utils")
+    project(":common:api")
 )
 
 val publishableModules = starterModules + pluginModules
