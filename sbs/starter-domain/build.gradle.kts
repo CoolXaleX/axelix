@@ -12,7 +12,6 @@ val jsonUnitAssertJVersion = "2.40.1"
 
 dependencies {
     // Self
-    api(project(":common:auth"))
     api(project(":common:api"))
     api(project(":common:domain"))
     api(project(":common:utils"))

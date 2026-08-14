@@ -30,7 +30,6 @@ dependencies {
     // Self
     api(project(":common:domain"))
     api(project(":common:api"))
-    api(project(":common:auth"))
     api(project(":common:utils"))
 
     // Impl
@@ -81,7 +80,6 @@ dependencies {
     // Test Self
     testFixturesImplementation(project(":common:domain"))
     testFixturesImplementation(project(":common:api"))
-    testFixturesImplementation(project(":common:auth"))
     testFixturesImplementation(project(":common:utils"))
 
     // Test

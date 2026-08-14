@@ -14,7 +14,6 @@ include(
     ":sbs:axelix-spring-boot-4-starter",
     ":sbs:starter-domain",
     ":common:api",
-    ":common:auth",
     ":common:domain",
     ":common:utils",
     ":plugins:axelix-gradle-plugin",
