@@ -31,10 +31,13 @@
         last_login_at TEXT,
         first_name TEXT,
         last_name TEXT,
-        status TEXT,
+        status TEXT NOT NULL DEFAULT 'ACTIVE',
         job_title TEXT,
         organizational_unit TEXT,
-        CONSTRAINT pk_users PRIMARY KEY (id)
+        CONSTRAINT pk_users PRIMARY KEY (id),
+        CONSTRAINT uq_users_username UNIQUE (username),
+        CONSTRAINT uq_users_email UNIQUE (email),
+        CONSTRAINT ck_users_status CHECK (status IN ('ACTIVE', 'SUSPENDED'))
       );
     </sql>
 
