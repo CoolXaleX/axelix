@@ -1,6 +1,7 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import styles from './styles.module.css';
+import { UpcomingReleaseNotice } from '@site/src/components';
 
 # Configuring Master
 
@@ -31,6 +32,18 @@ The default super-admin credentials (`admin / admin`) grant full control over ev
 the JWT signing key has no default at all. Override both — together with `axelix.master.auth.cookie.secure` when serving
 over HTTPS — before exposing Master to anyone other than yourself.
 :::
+
+### General
+
+<UpcomingReleaseNotice />
+
+<div className={styles.ConfigTable}>
+
+| Property                    | Default | Description                                                                             |
+|-------------------------------|---------|--------------------------------------------------------------------------------------------|
+| `axelix.master.environment` | empty   | Name of the environment this Master instance runs in, for example `production` or `staging`. Currently only used to populate the ECS `service.environment` field when [structured logging](#structured-logging) is enabled. |
+
+</div>
 
 ### Database
 
@@ -187,6 +200,23 @@ properties that go *into* the heartbeat (`master-url`, `instance-actuator-url`, 
 | Property                           | Default | Description                                                     |
 |------------------------------------|---------|-----------------------------------------------------------------|
 | `axelix.master.mcp-server.enabled` | `true`  | Expose the bundled Model Context Protocol server at `/api/mcp`. |
+
+</div>
+
+### Structured logging
+
+<UpcomingReleaseNotice />
+
+By default, Master logs plain text to the console (i.e. the process stdout). Set `axelix.master.logging.json.enabled=true`
+to switch to [Elastic Common Schema](https://www.elastic.co/guide/en/ecs/8.11/ecs-reference.html) (ECS) structured JSON
+logging instead — the only structured format Master supports today. ECS is a JSON-based logging format; reach for it
+when logs are shipped to an aggregator such as Elasticsearch or a similar ECS-aware pipeline.
+
+<div className={styles.ConfigTable}>
+
+| Property                             | Default | Description                                                               |
+|----------------------------------------|---------|------------------------------------------------------------------------------|
+| `axelix.master.logging.json.enabled` | `false` | Switch console logging from plain text to ECS-formatted structured JSON.     |
 
 </div>
 
