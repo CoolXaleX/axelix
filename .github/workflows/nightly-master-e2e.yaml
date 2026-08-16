@@ -52,13 +52,23 @@ jobs:
         with:
           bw-access-token: ${{ secrets.BW_ACCESS_TOKEN }}
 
-      # Re-checkout with submodules using the token loaded from Bitwarden.
-      - name: Checkout repository with submodules
+      # Re-checkout with the token loaded from Bitwarden. The enterprise submodule URL is
+      # intentionally kept out of .gitmodules and supplied via the GITHUB_ENTERPRISE_REPO_LOCATION
+      # secret (loaded from Bitwarden above), so it is initialized explicitly below rather than
+      # by `submodules: 'true'`.
+      - name: Checkout repository
         uses: actions/checkout@v7
         with:
           token: ${{ env.GITHUB_MASTER_ACCESS_TOKEN }}
-          submodules: 'true'
           persist-credentials: false
+
+      - name: Initialize enterprise submodule
+        run: |
+          # The runner has no SSH key, so rewrite the SSH-style URL to token-authenticated
+          # HTTPS (mirrors what actions/checkout does for token-based submodule fetches).
+          git config url."https://x-access-token:${GITHUB_MASTER_ACCESS_TOKEN}@github.com/".insteadOf "git@github.com:"
+          git config submodule.axelix-enterprise.url "$GITHUB_ENTERPRISE_REPO_LOCATION"
+          git submodule update --init --recursive axelix-enterprise
 
       - name: Checkout helm-charts
         uses: actions/checkout@v7
