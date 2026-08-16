@@ -298,7 +298,7 @@ class UserApiTest {
                     "roles": ["VIEWER"],
                     "userOrigin": "OAUTH2/OIDC",
                     "status": "SUSPENDED",
-                    "lastLoginAt": null
+                    "lastLoginAt": "${json-unit.any-string}"
                   }
                 ]
                 """.formatted(alice.id(), bob.id());

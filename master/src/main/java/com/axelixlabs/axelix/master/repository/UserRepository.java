@@ -78,7 +78,6 @@ public interface UserRepository extends ListCrudRepository<UserEntity, String> {
                 job_title = :jobTitle,
                 organizational_unit = :organizationalUnit,
                 password = COALESCE(:password, password),
-                roles = :roles,
                 last_login_at = COALESCE(:lastLoginAt, last_login_at)
         WHERE id = :id
         """)

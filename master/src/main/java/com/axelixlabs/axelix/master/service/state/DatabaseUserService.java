@@ -19,6 +19,7 @@ package com.axelixlabs.axelix.master.service.state;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -246,12 +247,21 @@ public class DatabaseUserService implements UserService {
     // TODO: Right now this is acceptable (i.e. a non-bulk INSERT) but in the future that may need optimization
     private void grantRoles(String userId, Set<String> roleNames) {
         roleNames.forEach(roleName -> {
-            int rowsAffected = userRepository.attachRole(userId, roleName);
+            String normalizedRole = validateAndNormalizeRole(roleName);
+            int rowsAffected = userRepository.attachRole(userId, normalizedRole);
 
             if (rowsAffected != 1) {
-                throw new UserRoleNotFoundException(roleName);
+                throw new UserRoleNotFoundException(normalizedRole);
             }
         });
+    }
+
+    private String validateAndNormalizeRole(@Nullable String role) throws UserInvalidValueException {
+        if (role == null || role.isBlank()) {
+            throw new UserInvalidValueException(role);
+        }
+
+        return role.trim().toUpperCase(Locale.ROOT);
     }
 
     private boolean userWithSuchEmailAlreadyExists(String id, String normalizedEmail) {

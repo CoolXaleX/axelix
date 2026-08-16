@@ -113,6 +113,9 @@ class ScheduledTaskServiceTest {
 
         ManagedScheduledTask task = taskRegistry.find(taskId).orElseThrow();
         assertThat(task.getFuture().isCancelled()).isTrue();
+
+        // Restore the shared task state so this test does not leak into others.
+        taskService.enableTask(taskId);
     }
 
     @Test

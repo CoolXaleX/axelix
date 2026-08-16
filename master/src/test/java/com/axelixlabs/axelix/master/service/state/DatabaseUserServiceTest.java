@@ -98,7 +98,7 @@ class DatabaseUserServiceTest {
         assertThat(saved.email()).isEqualTo("alice@example.com");
         assertThat(saved.jobTitle()).isEqualTo("Software Engineer");
         assertThat(saved.organizationalUnit()).isEqualTo("Platform");
-        assertThat(saved.roles().values()).containsExactly("ADMIN");
+        assertThat(userService.findRoleNamesByUserId(saved.id())).containsExactly("ADMIN");
         assertThat(saved.userOrigin()).isEqualTo(UserOrigin.LOCAL);
         assertThat(saved.status()).isEqualTo(UserStatus.ACTIVE);
         assertThat(saved.password()).isNotEqualTo("plainPass"); // Hash password
@@ -394,7 +394,7 @@ class DatabaseUserServiceTest {
         assertThat(updated.email()).isEqualTo("new@example.com");
         assertThat(updated.jobTitle()).isEqualTo("Engineering Manager");
         assertThat(updated.organizationalUnit()).isEqualTo("Engineering");
-        assertThat(updated.roles().values()).containsExactlyInAnyOrder("ADMIN", "EDITOR");
+        assertThat(userService.findRoleNamesByUserId(updated.id())).containsExactlyInAnyOrder("ADMIN", "EDITOR");
         assertThat(passwordEncoder.matches("newPass", updated.password())).isTrue();
     }
 
@@ -422,7 +422,7 @@ class DatabaseUserServiceTest {
         UserEntity updated = userRepository.findById(existing.id()).orElseThrow();
         assertThat(updated.username()).isEqualTo("newName");
         assertThat(updated.email()).isEqualTo("new@example.com");
-        assertThat(updated.roles().values()).containsExactlyInAnyOrder("ADMIN", "EDITOR");
+        assertThat(userService.findRoleNamesByUserId(updated.id())).containsExactlyInAnyOrder("ADMIN", "EDITOR");
         assertThat(passwordEncoder.matches(oldPassword, updated.password())).isTrue();
     }
 
@@ -441,7 +441,7 @@ class DatabaseUserServiceTest {
                 null,
                 null,
                 "newPass",
-                existing.roles().values(),
+                userService.findRoleNamesByUserId(existing.id()),
                 null);
 
         // then.
@@ -461,7 +461,7 @@ class DatabaseUserServiceTest {
                 .isInstanceOf(UserRoleNotFoundException.class);
 
         UserEntity untouched = userRepository.findById(existing.id()).orElseThrow();
-        assertThat(untouched.roles().values()).containsExactly("VIEWER");
+        assertThat(userService.findRoleNamesByUserId(untouched.id())).containsExactly("VIEWER");
     }
 
     @Test
@@ -526,7 +526,7 @@ class DatabaseUserServiceTest {
                 .isInstanceOf(UserInvalidValueException.class);
 
         UserEntity untouched = userRepository.findById(existing.id()).orElseThrow();
-        assertThat(untouched.roles().values()).containsExactly("VIEWER");
+        assertThat(userService.findRoleNamesByUserId(untouched.id())).containsExactly("VIEWER");
     }
 
     @Test
@@ -549,7 +549,7 @@ class DatabaseUserServiceTest {
                 .isInstanceOf(UserInvalidValueException.class);
 
         UserEntity untouched = userRepository.findById(existing.id()).orElseThrow();
-        assertThat(untouched.roles().values()).containsExactly("VIEWER");
+        assertThat(userService.findRoleNamesByUserId(untouched.id())).containsExactly("VIEWER");
     }
 
     @Test
@@ -625,7 +625,7 @@ class DatabaseUserServiceTest {
         UserEntity updated = userRepository.findById(alice.id()).orElseThrow();
         assertThat(updated.username()).isEqualTo("alice");
         assertThat(updated.email()).isEqualTo("alice@example.com");
-        assertThat(updated.roles().values()).containsExactly("ADMIN");
+        assertThat(userService.findRoleNamesByUserId(updated.id())).containsExactly("ADMIN");
     }
 
     @Test
@@ -648,7 +648,7 @@ class DatabaseUserServiceTest {
 
         // then.
         UserEntity updated = userRepository.findById(existing.id()).orElseThrow();
-        assertThat(updated.roles().values()).containsExactly("ADMIN");
+        assertThat(userService.findRoleNamesByUserId(updated.id())).containsExactly("ADMIN");
         assertThat(passwordEncoder.matches("newPass", updated.password())).isTrue();
     }
 

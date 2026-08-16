@@ -117,12 +117,12 @@ class OAuth2CallbackControllerTest {
     @BeforeEach
     void prepare() {
         restTemplate = new TestRestTemplate(new RestTemplateBuilder().redirects(HttpRedirects.DONT_FOLLOW));
-        userRepository.deleteAll();
+        userRepository.findAll().forEach(user -> userService.deleteById(user.id()));
     }
 
     @AfterEach
     void cleanUp() {
-        userRepository.deleteAll();
+        userRepository.findAll().forEach(user -> userService.deleteById(user.id()));
     }
 
     @Test
@@ -215,7 +215,9 @@ class OAuth2CallbackControllerTest {
         assertThat(userEntity.jobTitle()).isEqualTo(jobTitle);
         assertThat(userEntity.organizationalUnit()).isEqualTo(organizationalUnit);
         assertThat(userEntity.password()).isNull();
-        assertThat(userEntity.roles().values()).hasSize(1).containsOnly("EDITOR");
+        assertThat(userService.findRoleNamesByUserId(userEntity.id()))
+                .hasSize(1)
+                .containsOnly("EDITOR");
         assertThat(userEntity.userOrigin()).isEqualTo(UserOrigin.OIDC);
         assertThat(userEntity.status()).isEqualTo(UserStatus.ACTIVE);
         assertThat(userEntity.lastLoginAt()).isNotNull().isBetween(beforeLogin, afterLogin);
@@ -249,7 +251,7 @@ class OAuth2CallbackControllerTest {
         assertThat(updated.firstName()).isEqualTo("Original");
         assertThat(updated.lastName()).isEqualTo("Name");
         assertThat(updated.email()).isEqualTo(updatedEmail);
-        assertThat(updated.roles().values()).containsOnly(TestRoles.EDITOR.getName());
+        assertThat(userService.findRoleNamesByUserId(updated.id())).containsOnly(TestRoles.EDITOR.getName());
         assertThat(updated.userOrigin()).isEqualTo(UserOrigin.OIDC);
         assertThat(updated.lastLoginAt()).isNotNull().isBetween(beforeLogin, afterLogin);
     }
@@ -304,7 +306,7 @@ class OAuth2CallbackControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(userInDb).isPresent().hasValueSatisfying(userEntity -> {
             assertThat(userEntity.userOrigin()).isEqualTo(UserOrigin.LOCAL);
-            assertThat(userEntity.roles().values()).containsOnly("ADMIN");
+            assertThat(userService.findRoleNamesByUserId(userEntity.id())).containsOnly("ADMIN");
         });
     }
 

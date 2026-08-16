@@ -116,7 +116,7 @@ abstract class AbstractMcpAuthorizationFilterTest {
     @BeforeEach
     void setUpRestTemplate() {
         instanceRepository.deleteAll();
-        userRepository.deleteAll();
+        userRepository.findAll().forEach(user -> userService.deleteById(user.id()));
         this.restTemplate = new TestRestTemplate(new RestTemplateBuilder().baseUri("http://localhost:" + port));
     }
 
