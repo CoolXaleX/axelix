@@ -220,6 +220,43 @@ when logs are shipped to an aggregator such as Elasticsearch or a similar ECS-aw
 
 </div>
 
+### Metrics
+
+#### Prometheus
+
+<UpcomingReleaseNotice />
+
+Master exposes a Prometheus scrape endpoint once you turn it on with `axelix.master.metrics.prometheus.enabled=true`.
+It responds at `/api/actuator/prometheus` and does not require authentication.
+
+Attach common tags to every exported metric with `axelix.master.metrics.prometheus.tags.<name>=<value>`, for example
+a deployment region or environment.
+
+:::warning
+Because the endpoint is unauthenticated, anyone who can reach Master over the network can read metric values and any
+configured common tags. Restrict `/api/actuator/prometheus` to trusted Prometheus infrastructure with a network
+policy, ingress rule, or an equivalent perimeter control.
+:::
+
+<div className={styles.ConfigTable}>
+
+| Property                                      | Default | Description                                                           |
+|------------------------------------------------|---------|---------------------------------------------------------------------------|
+| `axelix.master.metrics.prometheus.enabled` | `false` | Expose the Prometheus scrape endpoint at `/api/actuator/prometheus`.  |
+| `axelix.master.metrics.prometheus.tags`    | empty   | Common tags applied to every exported metric.                         |
+
+</div>
+
+```yaml
+axelix:
+  master:
+    metrics:
+      prometheus:
+        enabled: true
+        tags:
+          region: eu-west-1
+```
+
 ## Run as a JAR
 
 Use this when you want the lightest possible runtime — a single process on a machine you already manage, no container

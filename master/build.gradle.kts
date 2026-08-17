@@ -74,6 +74,7 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("com.mysql:mysql-connector-j")
     runtimeOnly("org.xerial:sqlite-jdbc:${sqliteVersion}")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 
     // Test Self
     testFixturesImplementation(project(":common"))

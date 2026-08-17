@@ -230,6 +230,44 @@ Starter](../../setting-up-spring-boot-service/spring-boot-starter/configuration.
 
 </div>
 
+### Метрики
+
+#### Prometheus
+
+<UpcomingReleaseNotice />
+
+Master открывает эндпоинт для сбора метрик Prometheus, если включить его через
+`axelix.master.metrics.prometheus.enabled=true`. Он отвечает по адресу `/api/actuator/prometheus` и не требует
+аутентификации.
+
+Добавляйте общие теги к каждой экспортируемой метрике через `axelix.master.metrics.prometheus.tags.<name>=<value>`,
+например регион развёртывания или окружение.
+
+:::warning
+Поскольку эндпоинт не требует аутентификации, любой, кто имеет сетевой доступ к Master, сможет прочитать значения
+метрик и настроенные общие теги. Ограничьте доступ к `/api/actuator/prometheus` доверенной инфраструктуре
+Prometheus с помощью network policy, правил ingress или другого аналогичного контроля периметра.
+:::
+
+<div className={styles.ConfigTable}>
+
+| Свойство                                      | По умолчанию | Описание                                                                        |
+|------------------------------------------------|--------------|--------------------------------------------------------------------------------------|
+| `axelix.master.metrics.prometheus.enabled` | `false`      | Открыть эндпоинт сбора метрик Prometheus по адресу `/api/actuator/prometheus`.  |
+| `axelix.master.metrics.prometheus.tags`    | empty        | Общие теги, применяемые к каждой экспортируемой метрике.                       |
+
+</div>
+
+```yaml
+axelix:
+  master:
+    metrics:
+      prometheus:
+        enabled: true
+        tags:
+          region: eu-west-1
+```
+
 ## Запуск как JAR
 
 Используйте этот вариант, когда вам нужна максимально лёгкая среда выполнения — один процесс на машине, которой вы уже
