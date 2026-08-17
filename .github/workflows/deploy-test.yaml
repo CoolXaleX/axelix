@@ -84,7 +84,11 @@ jobs:
         run: |
           # The runner has no SSH key, so rewrite the SSH-style URL to token-authenticated
           # HTTPS (mirrors what actions/checkout does for token-based submodule fetches).
-          git config url."https://x-access-token:${GITHUB_MASTER_ACCESS_TOKEN}@github.com/".insteadOf "git@github.com:"
+          # The rewrite MUST be global: `git submodule update` clones the submodule in a
+          # child git process with its own git dir, which does not read the superproject's
+          # local config, so a --local insteadOf would be ignored and the raw SSH URL used.
+          git config --global url."https://x-access-token:${GITHUB_MASTER_ACCESS_TOKEN}@github.com/".insteadOf "git@github.com:"
+          git config --global url."https://x-access-token:${GITHUB_MASTER_ACCESS_TOKEN}@github.com/".insteadOf "ssh://git@github.com/"
           git config submodule.axelix-enterprise.url "$GITHUB_ENTERPRISE_REPO_LOCATION"
           git submodule update --init --recursive axelix-enterprise
 
