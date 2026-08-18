@@ -18,6 +18,7 @@
 package com.axelixlabs.axelix.master.service.state;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -109,7 +110,7 @@ public class DatabaseUserService implements UserService {
         }
 
         jdbcAggregateTemplate.insert(userEntity);
-        grantRoles(userEntity.id(), Set.of(role));
+        grantRoles(userEntity.id(), Collections.singleton(role));
     }
 
     @Override
