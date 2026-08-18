@@ -2,17 +2,11 @@ name: Release Pipeline
 
 on:
   workflow_dispatch:
-    inputs:
-      git_tag:
-        description: 'Git release tag WITHOUT `v` prefix (e.g., 1.0.1)'
-        required: true
-        type: string
 
 env:
   USERNAME: ${{ github.actor }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GITHUB_CONTAINER_REGISTRY: ghcr.io
-  RELEASE_TAG: ${{ github.event.inputs.git_tag }}
 
 jobs:
   build-and-test:
@@ -21,7 +15,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
-          ref: v${{ env.RELEASE_TAG }}
           fetch-depth: 0
 
       - name: Set up JDK 25
@@ -74,7 +67,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
-          ref: v${{ env.RELEASE_TAG }}
           fetch-depth: 0
 
       - name: Set up starter test JDK and Gradle JDK 25
@@ -102,7 +94,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
-          ref: v${{ env.RELEASE_TAG }}
           fetch-depth: 0
 
       - name: Running Security Check
@@ -114,14 +105,17 @@ jobs:
     permissions:
       contents: read
       packages: write
-    env:
-      VITE_APP_VERSION: ${{ github.event.inputs.git_tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
-          ref: v${{ env.RELEASE_TAG }}
           fetch-depth: 0
+
+      - name: Resolve release version from gradle.properties
+        run: |
+          RELEASE_TAG=$(grep '^axelixVersion=' gradle.properties | cut -d'=' -f2)
+          echo "RELEASE_TAG=$RELEASE_TAG" >> "$GITHUB_ENV"
+          echo "VITE_APP_VERSION=$RELEASE_TAG" >> "$GITHUB_ENV"
 
       - name: Loading Secrets
         uses: ./.github/actions/bitwarden
