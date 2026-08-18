@@ -9,6 +9,7 @@ import java.net.http.HttpResponse
 import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 import java.util.Base64
+import kotlin.io.path.exists
 import kotlin.io.path.readText
 
 plugins {
@@ -38,7 +39,7 @@ dependencies {
     }
 }
 
-val aggregateTestProfilerReports by tasks.registering(Copy::class) {
+val aggregateTestProfilerReports by tasks.register<Copy>("aggregateTestProfilerReports") {
     group = "reporting"
     description = "Aggregates spring-test-profiler HTML reports from all subprojects."
 
@@ -70,12 +71,9 @@ subprojects {
         errorprone("com.uber.nullaway:nullaway:0.13.8")
     }
 
-    val licenseHeaderFile = if (projectDir.toPath().startsWith(rootDir.resolve("axelix-enterprise").toPath())) {
-        "${rootDir.path}/axelix-enterprise/LICENSE_HEADER_ENTERPRISE"
-    } else {
-        "${rootDir.path}/LICENSE_HEADER"
-    }
-    val licenseHeaderText = Paths.get(licenseHeaderFile).readText(charset = StandardCharsets.UTF_8)
+    val customLicenseHeader = projectDir.resolve("../LICENSE_HEADER").toPath()
+    val licenseHeaderFile = if (customLicenseHeader.exists()) customLicenseHeader else Paths.get("${rootDir.path}/LICENSE_HEADER")
+    val licenseHeaderText = licenseHeaderFile.readText(charset = StandardCharsets.UTF_8)
 
     spotless {
         java {
