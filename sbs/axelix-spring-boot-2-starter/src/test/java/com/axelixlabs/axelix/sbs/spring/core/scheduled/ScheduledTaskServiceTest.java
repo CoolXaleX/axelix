@@ -56,6 +56,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest
 @Import(ScheduledTaskServiceTest.ScheduledTaskServiceTestConfiguration.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class ScheduledTaskServiceTest {
 
     // Cron
@@ -265,7 +266,6 @@ class ScheduledTaskServiceTest {
     }
 
     @Test // GH-1497
-    @DirtiesContext
     void shouldCancelAllTasksAndClearRegistryWhenServiceCloses() {
         Optional<ManagedScheduledTask> taskBefore = taskService.find(CRON_TASK_ID);
         assertThat(taskBefore).isPresent();
