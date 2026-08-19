@@ -144,7 +144,7 @@ jobs:
 
       # Intentionally leaving the setup-gradle action for release pipeline to not introduce any cached behavior
       # and to create the release build from scratch. With the enterprise submodule present, this builds the
-      # unified (OSS + Enterprise) distribution, including the master-unified.jar consumed by the Docker image.
+      # unified (OSS + Enterprise) distribution.
       - name: Build
         run: ./gradlew clean build sourcesJar javadocJar
 
@@ -175,5 +175,11 @@ jobs:
 
       - name: Create and push release tag
         run: |
+          git tag "v${RELEASE_TAG}"
+          git push origin "v${RELEASE_TAG}"
+
+      - name: Create release tag in the Enterprise version
+        run: |
+          cd axelix-enterprise
           git tag "v${RELEASE_TAG}"
           git push origin "v${RELEASE_TAG}"
