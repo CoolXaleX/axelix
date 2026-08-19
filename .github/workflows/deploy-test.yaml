@@ -71,14 +71,7 @@ jobs:
           bw-access-token: ${{ secrets.BW_ACCESS_TOKEN }}
 
       - name: Initialize enterprise submodule
-        run: |
-          mkdir -p "$HOME/.ssh"
-          printf '%s\n' "$GITHUB_ENTERPRISE_PRIVATE_KEY" > "$HOME/.ssh/enterprise.key"
-          chmod 600 "$HOME/.ssh/enterprise.key"
-          git config submodule.axelix-enterprise.url "$GITHUB_ENTERPRISE_REPO_LOCATION"
-          GIT_SSH_COMMAND="ssh -i $HOME/.ssh/enterprise.key -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new" \
-            git submodule update --init --recursive axelix-enterprise
-          rm "$HOME/.ssh/enterprise.key"
+        uses: ./.github/actions/enterprise-submodule
 
       # Java 25 will be installed at this step.
       - name: Build Backend
