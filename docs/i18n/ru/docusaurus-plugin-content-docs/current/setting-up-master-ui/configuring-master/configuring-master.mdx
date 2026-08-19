@@ -305,6 +305,49 @@ axelix:
           region: eu-west-1
 ```
 
+#### OTLP
+
+<UpcomingReleaseNotice />
+
+Master может отправлять собственные метрики JVM, HTTP, пула соединений с базой данных и другие метрики Micrometer в
+OTLP-совместимый коллектор по HTTP/protobuf. Экспортируются метрики самого Master, а не метрики сервисов, подключённых
+через стартер Axelix. По умолчанию экспорт выключен, поэтому обновление Master не создаёт исходящий трафик телеметрии.
+
+<div className={styles.ConfigTable}>
+
+| Свойство                                      | По умолчанию                       | Описание                                                                                                           |
+|-----------------------------------------------|------------------------------------|--------------------------------------------------------------------------------------------------------------------|
+| `axelix.master.metrics.otlp.enabled`          | `false`                            | Включает периодический экспорт метрик через OTLP.                                                                  |
+| `axelix.master.metrics.otlp.url`              | `http://localhost:4318/v1/metrics` | Полный адрес HTTP/protobuf для метрик. Добавьте путь `/v1/metrics`.                                                 |
+| `axelix.master.metrics.otlp.step`             | `1m`                               | Интервал между отправками в формате Spring `Duration`.                                                             |
+| `axelix.master.metrics.otlp.headers.*`        | пусто                              | Дополнительные заголовки запроса, например заголовок авторизации. Передавайте секретные значения во время запуска. |
+| `axelix.master.metrics.otlp.compression-mode` | `none`                             | Режим сжатия запроса: `none` или `gzip`.                                                                            |
+
+</div>
+
+```yaml
+axelix:
+  master:
+    metrics:
+      otlp:
+        enabled: true
+        url: http://otel-collector:4318/v1/metrics
+        step: 30s
+        headers:
+          Authorization: ${OTLP_AUTHORIZATION_HEADER}
+```
+
+Эти же настройки можно передать через переменные окружения:
+
+```bash
+AXELIX_MASTER_METRICS_OTLP_ENABLED=true
+AXELIX_MASTER_METRICS_OTLP_URL=http://otel-collector:4318/v1/metrics
+AXELIX_MASTER_METRICS_OTLP_HEADERS_AUTHORIZATION="Bearer my-token"
+```
+
+Заголовки авторизации лучше передавать из хранилища секретов вашей платформы развёртывания, а не сохранять в файле
+конфигурации.
+
 ## Запуск как JAR
 
 Используйте этот вариант, когда вам нужна максимально лёгкая среда выполнения — один процесс на машине, которой вы уже
