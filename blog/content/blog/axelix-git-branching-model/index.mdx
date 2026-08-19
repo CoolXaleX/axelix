@@ -55,7 +55,7 @@ And in our case, we have selected to follow the Lockstep Versioning of the Axeli
 Yes, we know that Lockstep versioning is generally *a highly debatable subject for a couple of reasons*. And I would say, that team should generally think twice before adopting it.
 I should probably write another article outlining why we choose semver with lockstep, and why it _may be_ a good idea for _some_ of you as well. But this is an off-top for this article.
 
-# The Problem
+## The Problem
 
 So, you're starting a new project, or you're about to revisit the git branching model in your team for various reasons. When you try to implement any technical solution (let's say, you want to choose a git branching model for the project), it is generally a good idea to take a step back and answer the question:
 
@@ -64,20 +64,20 @@ So, you're starting a new project, or you're about to revisit the git branching 
 Indeed, before explaining anything, we should first realize what are the specific requirements that we want to address with any git branching model. And these requirements
 will be different for different kinds of software that has different release cadence. In the case of Axelix, we wanted a branching model that would:
 
-#### 1. Give us the ability to do patches
+### 1. Give us the ability to do patches
 
 We want to be able to deliver patches quickly.
 
 Moreover, the important thing is that *we do not know the amount of patch releases in the given minor in advance*. The general
 requirement is to be able to go to the *arbitrary minor release*, and apply *an arbitrary number of patches* for it (for example, to fix the CVE).
 
-#### 2. Avoid the merge hell.
+### 2. Avoid the merge hell.
 
 A lot of git branching strategies easily end-up in the merge hell, e.g. GitFlow is infamous for ending up in such conundrums.
 
 So, with that in mind, let's finally discuss what branching model we actually adopt.
 
-# Axelix Git Branching Model
+## Axelix Git Branching Model
 
 At Axelix, we have the monorepo. And in this monorepo we have the main trunk, called 'master' trunk (the thing we borrowed from TBD). Some commits that do
 polishing or basic housekeeping happen directly in the master trunk. For features, we create short-lived branches (directly from master) that gets merged
@@ -113,7 +113,7 @@ Once we have created necessary patches in the 1.0.x branch, we create a tag in t
 And here the pivot point where we significantly and deliberately depart from TBD. In TBD, it is forbidden to have long-lived branches apart from the main trunk.
 But I want to take a step back and explain not what is forbidden, but why TBD advocates against it, and why it is okay in our use case.
 
-# TBD: Why patch-branches are okay.
+## TBD: Why patch-branches are okay.
 
 TBD is a well-known and proven git branching strategy. It [is adopted by Google, Facebook and other companies](https://trunkbaseddevelopment.com/game-changers/#google-revealing-their-monorepo-trunk-2016).
 And it does not allow long-lived (apart from the main trunk) branches for a variety of reasons. One of them, and, probably, the most notorious is the merging problem. Merging the long-lived branches is quite challenging and time-consuming,
@@ -135,11 +135,11 @@ The core idea is that *patch branches will never have any kind of features devel
 
 In our case, for example, the changes that end up in the patch branches are the very specific commits that just got cherry-picked from the main master trunk.
 
-# Challenges & Problems
+## Challenges & Problems
 
 Of course, such a model as above has challenges. There are a couple of them. Let me enumerate them.
 
-## 1. Minor/Major Dilemma
+### 1. Minor/Major Dilemma
 
 One of the most important challenges of such architecture is its Minor/Major inflexibility.
 
@@ -156,7 +156,7 @@ It becomes really hard, in some cases infeasible. That is the inflexibility I'm 
 Still, that problem (in its various levels of severity) of having no simple return follows _a lot_ of similar git models, TBD included.
 So, in the industry, this problem is generally a consequence of the trade-off of not having merge hells.
 
-## Long-Lived Breaking Changes Branches
+### 2. Long-Lived Breaking Changes Branches
 
 Well, when I said to you, that we have master trunk and patch branches as the only long-lived branches, I have omitted one thing. One _very important thing_.
 
@@ -174,7 +174,7 @@ feasible/predictable, but tackling that problem not from a technical, but from a
 
 So, admittedly, this is also a challenge that we have to live with. We may try to mitigate that, but to some degree we're going to have it.
 
-# Conclusions. Axelix, Lessons Learned.
+## Conclusions. Axelix, Lessons Learned.
 
 So, again, I did not want to say that we have invented some astonishing or mind-blowing git model. Internally, we just felt that it may be worth sharing with
 the world the git branching model we adopted and the reasons why.
