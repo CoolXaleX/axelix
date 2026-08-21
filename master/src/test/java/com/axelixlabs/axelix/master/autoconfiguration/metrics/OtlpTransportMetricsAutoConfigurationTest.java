@@ -106,6 +106,24 @@ class OtlpTransportMetricsAutoConfigurationTest {
         }
 
         @Test // GH-1496
+        void shouldFailToStartWhenUrlIsMissing() {
+            // given.
+            ApplicationContextRunner contextRunner =
+                    baselineContextRunner().withPropertyValues(AXELIX_MASTER_METRICS_OTLP_PREFIX + ".enabled=true");
+
+            // when.
+            contextRunner.run(context -> {
+                // then.
+                assertThat(context)
+                        .hasFailed()
+                        .getFailure()
+                        .rootCause()
+                        .isInstanceOf(IllegalStateException.class)
+                        .hasMessageContaining(AXELIX_MASTER_METRICS_OTLP_PREFIX + ".enabled");
+            });
+        }
+
+        @Test // GH-1496
         void shouldMapAxelixPropertiesOntoOtlpConfig() {
             // given.
             ApplicationContextRunner contextRunner = baselineContextRunner()
