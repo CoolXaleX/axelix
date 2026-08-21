@@ -51,7 +51,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-restclient")
     api("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-opentelemetry")
     implementation("io.micrometer:micrometer-registry-otlp")
     api("org.springframework.boot:spring-boot-starter-liquibase")
 
