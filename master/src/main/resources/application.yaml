@@ -32,7 +32,7 @@ management:
     web:
       base-path: /api/actuator
       exposure:
-        include: [ "health", "prometheus" ]
+        include: [ "health" ]
   prometheus:
     metrics:
       export:
