@@ -88,9 +88,14 @@ class OtlpTransportMetricsAutoConfigurationTest {
 
         @Test // GH-1496
         void shouldWireOtlpConfigAndMeterRegistry() {
-            // given.
-            ApplicationContextRunner contextRunner =
-                    baselineContextRunner().withPropertyValues(AXELIX_MASTER_METRICS_OTLP_PREFIX + ".enabled=true");
+            // given. // The defaults live in application.yaml, which the slice runner does not load, so the
+            // values the registry needs to start (url/step/compression-mode) are supplied explicitly here.
+            ApplicationContextRunner contextRunner = baselineContextRunner()
+                    .withPropertyValues(
+                            AXELIX_MASTER_METRICS_OTLP_PREFIX + ".enabled=true",
+                            AXELIX_MASTER_METRICS_OTLP_PREFIX + ".url=http://localhost:4318/v1/metrics",
+                            AXELIX_MASTER_METRICS_OTLP_PREFIX + ".step=1m",
+                            AXELIX_MASTER_METRICS_OTLP_PREFIX + ".compression-mode=none");
 
             // when.
             contextRunner.run(context -> {

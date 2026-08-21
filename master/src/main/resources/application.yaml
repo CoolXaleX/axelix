@@ -50,6 +50,10 @@ axelix:
     metrics:
       otlp:
         enabled: false
+        url: http://localhost:4318/v1/metrics
+        step: 1m
+        headers: {}
+        compression-mode: none
       prometheus:
         enabled: false
         # tags:
