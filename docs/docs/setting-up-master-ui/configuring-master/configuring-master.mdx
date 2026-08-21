@@ -299,7 +299,7 @@ axelix:
 
 Master can push its own JVM, HTTP, database-pool, and other Micrometer metrics to an OTLP-compatible collector over
 HTTP/protobuf. This exports metrics produced by Master itself, not metrics read from services connected through an
-Axelix starter. Export is disabled by default, so upgrading Master does not create outbound telemetry traffic.
+Axelix starter. Export of metrics via OTLP is disabled by default (see properties below).
 
 <div className={styles.ConfigTable}>
 
@@ -325,13 +325,9 @@ axelix:
           Authorization: ${OTLP_AUTHORIZATION_HEADER}
 ```
 
-The same settings can be supplied through environment variables:
-
-```bash
-AXELIX_MASTER_METRICS_OTLP_ENABLED=true
-AXELIX_MASTER_METRICS_OTLP_URL=http://otel-collector:4318/v1/metrics
-AXELIX_MASTER_METRICS_OTLP_HEADERS_AUTHORIZATION="Bearer my-token"
-```
+These settings can equally be supplied as environment variables or JVM system properties — see [Supplying
+properties](#supplying-properties) for the relaxed-binding rules that map, for example,
+`axelix.master.metrics.otlp.enabled` to `AXELIX_MASTER_METRICS_OTLP_ENABLED`.
 
 Prefer injecting authentication headers from your deployment platform's secret store instead of committing them to a
 configuration file.
