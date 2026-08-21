@@ -20,10 +20,11 @@ package com.axelixlabs.axelix.master.autoconfiguration.metrics;
 import java.time.Duration;
 import java.util.Map;
 
-import com.axelixlabs.axelix.common.utils.Assert;
 import io.micrometer.registry.otlp.CompressionMode;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import com.axelixlabs.axelix.common.utils.Assert;
 
 /**
  * The OTLP metrics export properties that are specific to Axelix Master.
@@ -42,8 +43,9 @@ public record OtlpProperties(
     public OtlpProperties {
         if (enabled) {
             Assert.state(
-                () -> url != null && !url.isBlank(),
-                "OTel-compatible backend url must be supplied when " + AXELIX_MASTER_METRICS_OTLP_PREFIX + ".enabled is 'true'");
+                    () -> url != null && !url.isBlank(),
+                    "OTel-compatible backend url must be supplied when " + AXELIX_MASTER_METRICS_OTLP_PREFIX
+                            + ".enabled is 'true'");
         }
     }
 
