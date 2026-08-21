@@ -3,6 +3,9 @@ server:
   port: 8080
 
 spring:
+  autoconfigure:
+    # OTLP metrics export is owned by OtlpTransportMetricsAutoConfiguration, not Spring Boot.
+    exclude: org.springframework.boot.micrometer.metrics.autoconfigure.export.otlp.OtlpMetricsExportAutoConfiguration
   cloud:
     compatibility-verifier:
       # TODO: This is a temporary fix, until we wait for the official cloud support of boot 4.1
@@ -45,6 +48,12 @@ axelix:
       json:
         enabled: false
     metrics:
+      otlp:
+        enabled: false
+        url: http://localhost:4318/v1/metrics
+        step: 1m
+        headers: {}
+        compression-mode: none
       prometheus:
         enabled: false
         # tags:
