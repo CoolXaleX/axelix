@@ -167,13 +167,13 @@ public class SecurityAutoConfiguration {
                 JwtDecoderService jwtDecoderService,
                 Authorizer authorizer,
                 SecurityContextExecutor securityContextExecutor,
-                List<IamEvaluationInterceptor> iamEvaluationInterceptors) {
+                ObjectProvider<IamEvaluationInterceptor> iamEvaluationInterceptors) {
             return new CookieBasedJwtAuthorizationFilter(
                     cookieProperties.getAuthCookieName(),
                     securityContextExecutor,
                     jwtDecoderService,
                     authorizer,
-                    iamEvaluationInterceptors);
+                    iamEvaluationInterceptors.orderedStream().toList());
         }
     }
 
