@@ -122,9 +122,6 @@ public class CookieBasedJwtAuthorizationFilter extends OncePerRequestFilter {
 
             securityContextExecutor.runWithinSecurityContext(
                     () -> filterChain.doFilter(request, response), new DefaultSecurityContext(user, token));
-        } catch (AuthorizationException e) {
-            onInvalidTokenCallback(request, currentRequestContext);
-            throw e;
         } catch (ServletException | IOException e) {
             // TODO: What do we do when the user encounters a general error?
             throw e;

@@ -233,15 +233,13 @@ public class SecurityAutoConfiguration {
 
         @Bean
         public AuthenticationOption authSettingsOAuth2(
-                List<OidcAuthorizeEndpointAdditionalParametersProvider> providers,
+                ObjectProvider<OidcAuthorizeEndpointAdditionalParametersProvider> providers,
                 OAuth2Properties oAuth2Properties,
                 OidcMetadataProvider oidcMetadataProvider) {
 
             Map<String, String> additionalParameters = new HashMap<>();
 
-            for (var provider : providers) {
-                additionalParameters.putAll(provider.contribute());
-            }
+            providers.orderedStream().forEach(provider -> additionalParameters.putAll(provider.contribute()));
 
             return new OidcAuthenticationOption(
                     oAuth2Properties.scopes(),
