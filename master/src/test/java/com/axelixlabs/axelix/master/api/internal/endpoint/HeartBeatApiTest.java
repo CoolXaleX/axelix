@@ -50,8 +50,8 @@ import com.axelixlabs.axelix.master.domain.HistoricalApplicationSnapshot.Snapsho
 import com.axelixlabs.axelix.master.domain.Instance;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.utils.CapturingIamInterceptor;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
-import com.axelixlabs.axelix.master.utils.auth.CapturingIamInterceptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

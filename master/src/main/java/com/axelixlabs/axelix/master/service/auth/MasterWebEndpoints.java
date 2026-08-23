@@ -220,9 +220,9 @@ public final class MasterWebEndpoints {
             register("users:read", HttpMethod.GET, ApiPaths.UsersApi.USERS_FEED, DefaultAuthority.USERS_VIEW);
     public static final MasterWebEndpoint USER_READ_ONE =
             register("users:read-one", HttpMethod.GET, ApiPaths.UsersApi.GET_USER_BY_ID, null);
-    public static final MasterWebEndpoint AUTH_LOGIN =
+    public static final MasterWebEndpoint LOCAL_LOGIN =
             register("auth:login", HttpMethod.POST, ApiPaths.UsersApi.LOGIN, null);
-    public static final MasterWebEndpoint AUTH_LOGOUT =
+    public static final MasterWebEndpoint LOGOUT =
             register("auth:logout", HttpMethod.POST, ApiPaths.UsersApi.LOGOUT, null);
 
     // Oidc/Oauth

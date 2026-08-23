@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.master.utils.auth;
+package com.axelixlabs.axelix.master.utils;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -26,6 +26,7 @@ import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
 import com.axelixlabs.axelix.master.service.auth.intercept.web.OnAccessDenied;
 import com.axelixlabs.axelix.master.service.auth.intercept.web.OnAuthenticationFailure;
 import com.axelixlabs.axelix.master.service.auth.intercept.web.OnSuccessfulResult;
+import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
 
 /**
  * Test IAM interceptor that records the {@link MasterWebEndpoint} each auth callback is invoked with. It lets

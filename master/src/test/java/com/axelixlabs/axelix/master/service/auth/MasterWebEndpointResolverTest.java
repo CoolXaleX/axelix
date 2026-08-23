@@ -55,7 +55,7 @@ class MasterWebEndpointResolverTest {
         return Stream.of(
                 // Non-templated paths.
                 Arguments.of("/applications/grid", HttpMethod.GET, MasterWebEndpoints.INSTANCES_READ),
-                Arguments.of("/users/login", HttpMethod.POST, MasterWebEndpoints.AUTH_LOGIN),
+                Arguments.of("/users/login", HttpMethod.POST, MasterWebEndpoints.LOCAL_LOGIN),
                 Arguments.of("/dashboard", HttpMethod.GET, MasterWebEndpoints.DASHBOARD_READ),
 
                 // Single trailing template variable.

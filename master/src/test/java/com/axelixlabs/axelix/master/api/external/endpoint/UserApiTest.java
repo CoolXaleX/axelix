@@ -123,6 +123,7 @@ class UserApiTest extends AbstractProtectedEndpointTest {
                 .contains(String.valueOf(jwtProperties.lifespan().getSeconds()));
         assertThat(cookieHeader).contains("HttpOnly");
         assertThat(cookieHeader).contains("SameSite=Strict");
+        assertSuccessfulCallback(MasterWebEndpoints.LOCAL_LOGIN);
     }
 
     @Test
@@ -157,6 +158,7 @@ class UserApiTest extends AbstractProtectedEndpointTest {
 
         UserEntity updated = userRepository.findById(user.id()).orElseThrow();
         assertThat(updated.lastLoginAt()).isNotNull();
+        assertSuccessfulCallback(MasterWebEndpoints.LOCAL_LOGIN);
     }
 
     @Test
@@ -241,7 +243,7 @@ class UserApiTest extends AbstractProtectedEndpointTest {
                 .anySatisfy(cookieHeader -> assertThat(cookieHeader).contains(CookieProperties.AUTH_COOKIE_NAME))
                 .anySatisfy(
                         cookieHeader -> assertThat(cookieHeader).contains(CookieProperties.AUTHORITIES_COOKIE_NAME));
-        assertSuccessfulCallback(MasterWebEndpoints.AUTH_LOGOUT);
+        assertSuccessfulCallback(MasterWebEndpoints.LOGOUT);
     }
 
     @Test

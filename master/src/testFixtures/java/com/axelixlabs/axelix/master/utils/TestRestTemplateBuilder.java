@@ -87,10 +87,6 @@ public class TestRestTemplateBuilder {
         return withRole(TestRoles.EDITOR);
     }
 
-    public TestRestTemplate asAdmin() {
-        return withRole(TestRoles.ADMIN);
-    }
-
     public TestRestTemplate withRole(Role role) {
         String token = generateToken(new Role[] {role});
 
@@ -104,13 +100,13 @@ public class TestRestTemplateBuilder {
     }
 
     // START: Bad token auth scenarios
-    TestRestTemplate withExpiredToken() {
+    public TestRestTemplate withExpiredToken() {
         String expiredToken = generateExpiredToken();
 
         return buildWithToken(expiredToken);
     }
 
-    TestRestTemplate withMalformedToken() {
+    public TestRestTemplate withMalformedToken() {
         String malformedToken = "malformed token";
 
         return buildWithToken(malformedToken);

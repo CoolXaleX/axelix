@@ -36,7 +36,7 @@ import org.springframework.http.ResponseEntity;
 import com.axelixlabs.axelix.common.auth.core.DefaultRole;
 import com.axelixlabs.axelix.common.auth.core.Role;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
-import com.axelixlabs.axelix.master.utils.InvalidAuthScenario;
+import com.axelixlabs.axelix.master.utils.CapturingIamInterceptor;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -138,6 +138,7 @@ public abstract class AbstractProtectedEndpointTest {
      */
     public record TestableMasterWebEndpoint(MasterWebEndpoint target, String url) {}
 
+    @Deprecated
     protected void assertSuccessfulCallback(MasterWebEndpoint target) {
         assertThat(capturingIamInterceptor.successfulEndpoint())
                 .isNotNull()
