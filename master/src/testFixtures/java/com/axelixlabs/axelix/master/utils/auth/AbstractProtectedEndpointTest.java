@@ -19,12 +19,6 @@ package com.axelixlabs.axelix.master.utils.auth;
 
 import java.util.Set;
 
-import com.axelixlabs.axelix.common.auth.core.DefaultRole;
-import com.axelixlabs.axelix.common.auth.core.Role;
-import com.axelixlabs.axelix.master.autoconfiguration.web.WebAutoConfiguration;
-import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
-import com.axelixlabs.axelix.master.utils.InvalidAuthScenario;
-import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -36,6 +30,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import com.axelixlabs.axelix.common.auth.core.DefaultRole;
+import com.axelixlabs.axelix.common.auth.core.Role;
+import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
+import com.axelixlabs.axelix.master.utils.InvalidAuthScenario;
+import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -59,7 +59,7 @@ public abstract class AbstractProtectedEndpointTest {
     /**
      * The endpoint whose cross-cutting auth behaviour is under test. Subclasses construct it inline.
      */
-    protected abstract TestableMasterWebEndpoint endpointUnderTest();
+    protected abstract Set<TestableMasterWebEndpoint> endpointsUnderTest();
 
     @BeforeEach
     void resetCapturingInterceptor() {
@@ -69,32 +69,49 @@ public abstract class AbstractProtectedEndpointTest {
     @ParameterizedTest
     @EnumSource(InvalidAuthScenario.class)
     void shouldRejectRequestWithInvalidToken(InvalidAuthScenario scenario) {
-        ResponseEntity<Void> response = scenario.getModifier()
-                .apply(restTemplate)
-                .exchange(endpointUnderTest().url(), httpMethod(), null, Void.class);
+        for (TestableMasterWebEndpoint endpointUnderTest : endpointsUnderTest()) {
 
-        assertThat(capturingIamInterceptor.invalidTokenEndpoint())
-            .isNotNull()
-            .extracting(MasterWebEndpoint::operationCode)
-            .isEqualTo(endpointUnderTest().target().operationCode());
+            ResponseEntity<Void> response = scenario.getModifier()
+                    .apply(restTemplate)
+                    .exchange(
+                            endpointUnderTest.url(),
+                            HttpMethod.valueOf(
+                                    endpointUnderTest.target().method().name()),
+                            null,
+                            Void.class);
 
-        assertThat(response.getStatusCode().value()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+            assertThat(capturingIamInterceptor.invalidTokenEndpoint())
+                    .isNotNull()
+                    .extracting(MasterWebEndpoint::operationCode)
+                    .isEqualTo(endpointUnderTest.target().operationCode());
+
+            assertThat(response.getStatusCode().value()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        }
     }
 
     @Test
     void shouldRejectRequestWithInsufficientAuthority() {
-        assumeTrue(endpointUnderTest().target().authority() != null, "Endpoint requires no authority; nothing to deny");
+        for (TestableMasterWebEndpoint endpointUnderTest : endpointsUnderTest()) {
 
-        ResponseEntity<Void> response = restTemplate
-                .withRole(roleWithoutRequiredAuthority())
-                .exchange(endpointUnderTest().url(), httpMethod(), null, Void.class);
+            assumeTrue(
+                    endpointUnderTest.target().authority() != null, "Endpoint requires no authority; nothing to deny");
 
-        assertThat(capturingIamInterceptor.accessDeniedEndpoint())
-            .isNotNull()
-            .extracting(MasterWebEndpoint::operationCode)
-            .isEqualTo(endpointUnderTest().target().operationCode());
+            ResponseEntity<Void> response = restTemplate
+                    .withRole(roleWithoutRequiredAuthority())
+                    .exchange(
+                            endpointUnderTest.url(),
+                            HttpMethod.valueOf(
+                                    endpointUnderTest.target().method().name()),
+                            null,
+                            Void.class);
 
-        assertThat(response.getStatusCode().value()).isEqualTo(HttpStatus.FORBIDDEN.value());
+            assertThat(capturingIamInterceptor.accessDeniedEndpoint())
+                    .isNotNull()
+                    .extracting(MasterWebEndpoint::operationCode)
+                    .isEqualTo(endpointUnderTest.target().operationCode());
+
+            assertThat(response.getStatusCode().value()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        }
     }
 
     /**
@@ -103,10 +120,6 @@ public abstract class AbstractProtectedEndpointTest {
      */
     private Role roleWithoutRequiredAuthority() {
         return new DefaultRole("PROTECTED_ENDPOINT_TEST_ROLE", Set.of());
-    }
-
-    private HttpMethod httpMethod() {
-        return HttpMethod.valueOf(endpointUnderTest().target().method().name());
     }
 
     /**

@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import com.axelixlabs.axelix.master.exception.auth.AuthenticationException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;

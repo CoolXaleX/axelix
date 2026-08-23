@@ -18,9 +18,9 @@
 package com.axelixlabs.axelix.master.api.external.endpoint;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.UUID;
 
-import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -38,10 +38,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-import com.axelixlabs.axelix.common.domain.http.HttpMethod;
-import com.axelixlabs.axelix.master.api.external.ApiPaths;
 import com.axelixlabs.axelix.master.domain.InstanceId;
-import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
+import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
@@ -320,9 +318,9 @@ class BeansApiTest extends AbstractProtectedEndpointTest {
     }
 
     @Override
-    protected TestableMasterWebEndpoint endpointUnderTest() {
-        return new TestableMasterWebEndpoint(
-            MasterWebEndpoints.BEANS_READ,
-            "/api/external/beans/feed/%s".formatted(UUID.randomUUID().toString()));
+    protected Set<TestableMasterWebEndpoint> endpointsUnderTest() {
+        return Set.of(new TestableMasterWebEndpoint(
+                MasterWebEndpoints.BEANS_READ,
+                "/api/external/beans/feed/%s".formatted(UUID.randomUUID().toString())));
     }
 }

@@ -82,7 +82,8 @@ public class HeapDumpApi {
         Resource resource = endpointInvoker.invoke(
                 InstanceId.of(instanceId), ActuatorEndpoints.GET_HEAP_DUMP, NoHttpPayload.INSTANCE);
 
-        for (HeapDumpCustomizer heapDumpCustomizer : heapDumpCustomizers.orderedStream().toList()) {
+        for (HeapDumpCustomizer heapDumpCustomizer :
+                heapDumpCustomizers.orderedStream().toList()) {
             resource = heapDumpCustomizer.customize(resource);
         }
 
