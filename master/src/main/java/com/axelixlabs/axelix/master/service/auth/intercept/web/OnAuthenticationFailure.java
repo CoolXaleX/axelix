@@ -15,13 +15,24 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.master.filter.auth.requestcontext;
+package com.axelixlabs.axelix.master.service.auth.intercept.web;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
 
 /**
- * Immutable data container that represents the context of the HTTP request from the Web UI.
+ * {@link OnWebIamEventInterceptor} to be called when authentication failure has occurred.
  *
  * @author Mikhail Polivakha
  */
-public record WebRequestContext(MasterWebEndpoint masterWebEndpoint) implements MasterRequestContext {}
+public interface OnAuthenticationFailure extends OnWebIamEventInterceptor {
+
+    /**
+     * Actual callback.
+     *
+     * @param target the web endpoint that was attempted to be accessed/executed.
+     * @param request the overall http request as provided by the servlet container
+     */
+    void onAuthenticationFailure(MasterWebEndpoint target, HttpServletRequest request);
+}

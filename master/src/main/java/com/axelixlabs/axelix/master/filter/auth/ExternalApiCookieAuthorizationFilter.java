@@ -33,7 +33,6 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.core.annotation.Order;
-import org.springframework.data.util.ProxyUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.axelixlabs.axelix.common.auth.core.Authority;
@@ -42,19 +41,15 @@ import com.axelixlabs.axelix.common.auth.core.DefaultSecurityContext;
 import com.axelixlabs.axelix.common.auth.core.PasswordlessUser;
 import com.axelixlabs.axelix.common.auth.core.SecurityContextExecutor;
 import com.axelixlabs.axelix.common.auth.core.User;
-import com.axelixlabs.axelix.common.auth.exception.AuthorizationException;
 import com.axelixlabs.axelix.common.auth.exception.JwtProcessingException;
 import com.axelixlabs.axelix.common.auth.service.Authorizer;
 import com.axelixlabs.axelix.common.auth.service.JwtDecoderService;
 import com.axelixlabs.axelix.master.api.infrastructure.InfrastructureApiPaths;
 import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.CookieProperties;
 import com.axelixlabs.axelix.master.filter.FiltersOrder;
+import com.axelixlabs.axelix.master.filter.auth.requestcontext.ExternalWebRequestContext;
 import com.axelixlabs.axelix.master.filter.auth.requestcontext.MasterRequestContextInitFilter;
-import com.axelixlabs.axelix.master.filter.auth.requestcontext.WebRequestContext;
-import com.axelixlabs.axelix.master.service.auth.intercept.web.OnAccessDenied;
-import com.axelixlabs.axelix.master.service.auth.intercept.web.OnInvalidTokenInRequest;
 import com.axelixlabs.axelix.master.service.auth.intercept.web.OnSuccessfulResult;
-import com.axelixlabs.axelix.master.service.auth.intercept.web.OnWebIamEventInterceptor;
 
 /**
  * Auth filter that is based on the {@link org.springframework.http.HttpHeaders#SET_COOKIE Set-Cookie} header.
@@ -63,27 +58,23 @@ import com.axelixlabs.axelix.master.service.auth.intercept.web.OnWebIamEventInte
  * @author Mikhail Polivakha
  */
 @Order(FiltersOrder.EXTERNAL_API_JWT_AUTHORIZATION_FILTER)
-public class ExternalApiJwtAuthorizationFilter extends OncePerRequestFilter {
+public class ExternalApiCookieAuthorizationFilter extends OncePerRequestFilter {
 
     private final SecurityContextExecutor securityContextExecutor;
     private final JwtDecoderService jwtDecoderService;
     private final Authorizer authorizer;
-    private final List<OnInvalidTokenInRequest> onInvalidTokenInRequestInterceptors;
-    private final List<OnAccessDenied> onAccessDeniedInterceptors;
     private final List<OnSuccessfulResult> onSuccessInterceptors;
 
-    public ExternalApiJwtAuthorizationFilter(
+    public ExternalApiCookieAuthorizationFilter(
             SecurityContextExecutor securityContextExecutor,
             JwtDecoderService jwtDecoderService,
             Authorizer authorizer,
-            List<OnWebIamEventInterceptor> interceptors) {
+            List<OnSuccessfulResult> interceptors) {
 
         this.securityContextExecutor = securityContextExecutor;
         this.jwtDecoderService = jwtDecoderService;
         this.authorizer = authorizer;
-        this.onInvalidTokenInRequestInterceptors = getInterceptorsOfType(interceptors, OnInvalidTokenInRequest.class);
-        this.onAccessDeniedInterceptors = getInterceptorsOfType(interceptors, OnAccessDenied.class);
-        this.onSuccessInterceptors = getInterceptorsOfType(interceptors, OnSuccessfulResult.class);
+        this.onSuccessInterceptors = interceptors;
     }
 
     @Override
@@ -105,26 +96,24 @@ public class ExternalApiJwtAuthorizationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        WebRequestContext currentRequestContext = MasterRequestContextInitFilter.requireWebRequestContext();
+        ExternalWebRequestContext currentRequestContext = MasterRequestContextInitFilter.requireWebRequestContext();
 
         String token = resolveToken(request.getCookies());
 
         if (token == null || token.isBlank()) {
-            onInvalidTokenCallback(request, currentRequestContext);
             throw new JwtProcessingException("Authorization token is missing");
         }
 
         try {
             PasswordlessUser user = jwtDecoderService.decodeTokenToUser(token);
 
-            authorizeUser(request, currentRequestContext, user);
+            authorizeUser(currentRequestContext, user);
 
             securityContextExecutor.runWithinSecurityContext(
                     () -> {
@@ -132,32 +121,22 @@ public class ExternalApiJwtAuthorizationFilter extends OncePerRequestFilter {
                         onSuccessfulResult(request, currentRequestContext, user);
                     },
                     new DefaultSecurityContext(user, token));
-        } catch (ServletException | IOException e) {
-            // TODO: What do we do when the user encounters a general error?
-            throw e;
-        } catch (JwtProcessingException e) {
-            onInvalidTokenCallback(request, currentRequestContext);
+        } catch (JwtProcessingException | ServletException | IOException e) {
             throw e;
         } catch (Exception e) {
             throw new ServletException(e);
         }
     }
 
-    private void authorizeUser(
-            HttpServletRequest request, WebRequestContext currentRequestContext, PasswordlessUser decodedTokenToUser) {
-        try {
-            Set<Authority> requiredAuthorities = Optional.ofNullable(
-                            currentRequestContext.masterWebEndpoint().authority())
-                    .map(Set::of)
-                    .orElse(Collections.emptySet());
+    private void authorizeUser(ExternalWebRequestContext currentRequestContext, PasswordlessUser decodedTokenToUser) {
+        Set<Authority> requiredAuthorities = Optional.ofNullable(
+                        currentRequestContext.masterWebEndpoint().authority())
+                .map(Set::of)
+                .orElse(Collections.emptySet());
 
-            AuthorizationRequest authorizationRequest = new AuthorizationRequest(requiredAuthorities);
+        AuthorizationRequest authorizationRequest = new AuthorizationRequest(requiredAuthorities);
 
-            authorizer.authorize(decodedTokenToUser, authorizationRequest);
-        } catch (AuthorizationException e) {
-            onAccessDenied(request, currentRequestContext, decodedTokenToUser);
-            throw e;
-        }
+        authorizer.authorize(decodedTokenToUser, authorizationRequest);
     }
 
     @Nullable
@@ -173,28 +152,9 @@ public class ExternalApiJwtAuthorizationFilter extends OncePerRequestFilter {
         return null;
     }
 
-    private void onInvalidTokenCallback(HttpServletRequest request, WebRequestContext currentRequestContext) {
-
-        onInvalidTokenInRequestInterceptors.forEach(
-                it -> it.onInvalidToken(currentRequestContext.masterWebEndpoint(), request));
-    }
-
-    private void onAccessDenied(HttpServletRequest request, WebRequestContext currentRequestContext, User user) {
-
-        onAccessDeniedInterceptors.forEach(
-                it -> it.onAccessDenied(currentRequestContext.masterWebEndpoint(), request, user));
-    }
-
-    private void onSuccessfulResult(HttpServletRequest request, WebRequestContext currentRequestContext, User user) {
+    private void onSuccessfulResult(
+            HttpServletRequest request, ExternalWebRequestContext currentRequestContext, User user) {
 
         onSuccessInterceptors.forEach(it -> it.onSuccess(currentRequestContext.masterWebEndpoint(), request, user));
-    }
-
-    private static <T> List<T> getInterceptorsOfType(
-            List<OnWebIamEventInterceptor> interceptors, Class<T> interceptorType) {
-        return interceptors.stream()
-                .filter(it -> interceptorType.isAssignableFrom(ProxyUtils.getUserClass(it.getClass())))
-                .map(interceptorType::cast)
-                .toList();
     }
 }

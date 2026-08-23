@@ -22,4 +22,4 @@ package com.axelixlabs.axelix.master.filter.auth.requestcontext;
  *
  * @author Mikhail Polivakha
  */
-public sealed interface MasterRequestContext permits McpRequestContext, WebRequestContext {}
+public sealed interface MasterRequestContext permits McpRequestContext, ExternalWebRequestContext {}

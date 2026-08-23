@@ -47,8 +47,6 @@ import com.axelixlabs.axelix.master.autoconfiguration.web.WebAutoConfiguration;
 import com.axelixlabs.axelix.master.exception.auth.AuthenticationException;
 import com.axelixlabs.axelix.master.filter.ContentCachingServletRequest;
 import com.axelixlabs.axelix.master.filter.FiltersOrder;
-import com.axelixlabs.axelix.master.filter.auth.requestcontext.MasterRequestContextInitFilter;
-import com.axelixlabs.axelix.master.filter.auth.requestcontext.McpRequestContext;
 import com.axelixlabs.axelix.master.mcp.auth.AuthorizationHeader;
 import com.axelixlabs.axelix.master.mcp.auth.McpIdentityAccessManager;
 
@@ -109,7 +107,6 @@ public class McpAuthorizationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain)
             throws IOException, ServletException {
 
-        McpRequestContext mcpRequestContext = MasterRequestContextInitFilter.requireMcpRequestContext();
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         AuthorizationHeader authorizationHeader = parseAuthHeader(authHeader);
 

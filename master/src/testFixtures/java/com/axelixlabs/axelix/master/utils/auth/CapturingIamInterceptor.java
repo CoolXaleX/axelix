@@ -24,7 +24,7 @@ import org.jspecify.annotations.Nullable;
 import com.axelixlabs.axelix.common.auth.core.User;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
 import com.axelixlabs.axelix.master.service.auth.intercept.web.OnAccessDenied;
-import com.axelixlabs.axelix.master.service.auth.intercept.web.OnInvalidTokenInRequest;
+import com.axelixlabs.axelix.master.service.auth.intercept.web.OnAuthenticationFailure;
 import com.axelixlabs.axelix.master.service.auth.intercept.web.OnSuccessfulResult;
 
 /**
@@ -34,14 +34,14 @@ import com.axelixlabs.axelix.master.service.auth.intercept.web.OnSuccessfulResul
  *
  * @author Mikhail Polivakha
  */
-public class CapturingIamInterceptor implements OnInvalidTokenInRequest, OnAccessDenied, OnSuccessfulResult {
+public class CapturingIamInterceptor implements OnAuthenticationFailure, OnAccessDenied, OnSuccessfulResult {
 
     private @Nullable MasterWebEndpoint invalidTokenEndpoint;
     private @Nullable MasterWebEndpoint accessDeniedEndpoint;
     private @Nullable MasterWebEndpoint successfulEndpoint;
 
     @Override
-    public void onInvalidToken(MasterWebEndpoint target, HttpServletRequest request) {
+    public void onAuthenticationFailure(MasterWebEndpoint target, HttpServletRequest request) {
         this.invalidTokenEndpoint = target;
     }
 

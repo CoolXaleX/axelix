@@ -15,25 +15,13 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.master.service.auth.intercept.web;
-
-import jakarta.servlet.http.HttpServletRequest;
+package com.axelixlabs.axelix.master.filter.auth.requestcontext;
 
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
 
 /**
- * {@link OnWebIamEventInterceptor} to be called when token in HTTP request is either
- * invalid (i.e. signature invalid), not present at all or expired.
+ * Immutable data container that represents the context of the external HTTP request from the Web UI.
  *
  * @author Mikhail Polivakha
  */
-public interface OnInvalidTokenInRequest extends OnWebIamEventInterceptor {
-
-    /**
-     * Actual callback.
-     *
-     * @param target the web endpoint that was attempted to be accessed/executed.
-     * @param request the overall http request as provided by the servlet container
-     */
-    void onInvalidToken(MasterWebEndpoint target, HttpServletRequest request);
-}
+public record ExternalWebRequestContext(MasterWebEndpoint masterWebEndpoint) implements MasterRequestContext {}

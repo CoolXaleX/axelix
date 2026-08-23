@@ -30,7 +30,6 @@ import com.axelixlabs.axelix.common.auth.core.PasswordlessUser;
 import com.axelixlabs.axelix.common.auth.core.Role;
 import com.axelixlabs.axelix.common.auth.core.SecurityContext;
 import com.axelixlabs.axelix.common.auth.core.User;
-import com.axelixlabs.axelix.common.auth.exception.AuthorizationException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -82,7 +81,7 @@ class RequiredAuthorityCheckServiceTest {
     @Test
     void hasAuthority_ShouldThrowException_WhenNoSecurityContext() {
         assertThatThrownBy(() -> subject.hasAuthority(DefaultAuthority.CONFIG_PROPS_VALUES_READ))
-                .isInstanceOf(AuthorizationException.class);
+                .isInstanceOf(IllegalStateException.class);
     }
 
     private static User createUserWithAuthorities(DefaultAuthority... authorities) {

@@ -33,7 +33,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.axelixlabs.axelix.common.domain.http.HttpMethod;
-import com.axelixlabs.axelix.common.utils.Assert;
 import com.axelixlabs.axelix.master.autoconfiguration.web.WebAutoConfiguration;
 import com.axelixlabs.axelix.master.filter.FiltersOrder;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
@@ -48,7 +47,7 @@ import com.axelixlabs.axelix.master.service.auth.MasterWebEndpointResolver;
 @Order(FiltersOrder.REQUEST_PROFILE_FILTER)
 public class MasterRequestContextInitFilter extends OncePerRequestFilter {
 
-    private static final ScopedValue<MasterRequestContext> WEBS_REQUEST_CONTEXT = ScopedValue.newInstance();
+    private static final ScopedValue<MasterRequestContext> MASTER_REQUEST_CONTEXT = ScopedValue.newInstance();
 
     private final MasterWebEndpointResolver masterWebEndpointResolver;
     private final @Nullable McpServerStreamableHttpProperties mcpProperties;
@@ -76,7 +75,22 @@ public class MasterRequestContextInitFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String relativePath = request.getServletPath().substring(WebAutoConfiguration.EXTERNAL_API_PATH.length());
+        String servletPath = request.getServletPath();
+
+        if (servletPath.startsWith(WebAutoConfiguration.EXTERNAL_API_PATH)) {
+            processExternalWebRequest(request, response, filterChain, servletPath);
+        }
+
+        if (mcpProperties != null && servletPath.startsWith(mcpProperties.getMcpEndpoint())) {
+            // TODO:
+            filterChain.doFilter(request, response);
+        }
+    }
+
+    private void processExternalWebRequest(
+            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain, String servletPath)
+            throws IOException, ServletException {
+        String relativePath = servletPath.substring(WebAutoConfiguration.EXTERNAL_API_PATH.length());
 
         Optional<MasterWebEndpoint> masterWebEndpoint =
                 masterWebEndpointResolver.resolveEndpoint(relativePath, HttpMethod.valueOf(request.getMethod()));
@@ -85,7 +99,7 @@ public class MasterRequestContextInitFilter extends OncePerRequestFilter {
             MasterWebEndpoint endpoint = masterWebEndpoint.get();
 
             try {
-                ScopedValue.where(WEBS_REQUEST_CONTEXT, new WebRequestContext(endpoint))
+                ScopedValue.where(MASTER_REQUEST_CONTEXT, new ExternalWebRequestContext(endpoint))
                         .call(() -> {
                             filterChain.doFilter(request, response);
                             return null;
@@ -100,22 +114,34 @@ public class MasterRequestContextInitFilter extends OncePerRequestFilter {
         }
     }
 
-    public static WebRequestContext requireWebRequestContext() {
-        return requireContextOfType(WebRequestContext.class);
+    public static ExternalWebRequestContext requireWebRequestContext() {
+        return getWebRequestContext()
+                .orElseThrow(() ->
+                        new IllegalStateException("Expect ExternalWebRequestContext to be bounded to the thread"));
     }
 
     public static McpRequestContext requireMcpRequestContext() {
-        return requireContextOfType(McpRequestContext.class);
+        return getMcpRequestContext()
+                .orElseThrow(() -> new IllegalStateException("Expect McpRequestContext to be bounded to the thread"));
     }
 
-    private static <T> T requireContextOfType(Class<T> contextType) {
-        MasterRequestContext masterRequestContext = WEBS_REQUEST_CONTEXT.get();
+    public static Optional<ExternalWebRequestContext> getWebRequestContext() {
+        if (!MASTER_REQUEST_CONTEXT.isBound()) {
+            return Optional.empty();
+        }
 
-        Assert.state(() -> masterRequestContext != null, "RequestContext cannot be null at this point");
-        Assert.state(
-                () -> contextType.isInstance(masterRequestContext),
-                "Expected RequestContext to be of type " + contextType.getSimpleName());
+        return Optional.ofNullable(MASTER_REQUEST_CONTEXT.get())
+                .filter(it -> it instanceof ExternalWebRequestContext)
+                .map(it -> (ExternalWebRequestContext) it);
+    }
 
-        return contextType.cast(masterRequestContext);
+    public static Optional<McpRequestContext> getMcpRequestContext() {
+        if (!MASTER_REQUEST_CONTEXT.isBound()) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(MASTER_REQUEST_CONTEXT.get())
+                .filter(it -> it instanceof McpRequestContext)
+                .map(it -> (McpRequestContext) it);
     }
 }

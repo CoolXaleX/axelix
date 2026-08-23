@@ -52,7 +52,7 @@ import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.JwtPropert
 import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.OAuth2Properties;
 import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.SuperAdminConfigurationProperties;
 import com.axelixlabs.axelix.master.autoconfiguration.mcp.ConditionalOnMcpServerEnabled;
-import com.axelixlabs.axelix.master.filter.auth.ExternalApiJwtAuthorizationFilter;
+import com.axelixlabs.axelix.master.filter.auth.ExternalApiCookieAuthorizationFilter;
 import com.axelixlabs.axelix.master.filter.auth.requestcontext.MasterRequestContextInitFilter;
 import com.axelixlabs.axelix.master.mcp.auth.handler.BasicMcpAuthenticationHandler;
 import com.axelixlabs.axelix.master.mcp.auth.handler.BearerMcpAuthenticationHandler;
@@ -63,7 +63,7 @@ import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpointResolver;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.auth.encoder.SuperAdminPasswordEncoder;
-import com.axelixlabs.axelix.master.service.auth.intercept.web.OnWebIamEventInterceptor;
+import com.axelixlabs.axelix.master.service.auth.intercept.web.OnSuccessfulResult;
 import com.axelixlabs.axelix.master.service.auth.oauth.DefaultOidcClient;
 import com.axelixlabs.axelix.master.service.auth.oauth.JmesPathJsonInspector;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcAuthorizeEndpointAdditionalParametersProvider;
@@ -164,13 +164,13 @@ public class SecurityAutoConfiguration {
         }
 
         @Bean
-        public ExternalApiJwtAuthorizationFilter cookieBasedJwtAuthorizationFilter(
+        public ExternalApiCookieAuthorizationFilter cookieBasedJwtAuthorizationFilter(
                 JwtDecoderService jwtDecoderService,
                 Authorizer authorizer,
                 SecurityContextExecutor securityContextExecutor,
-                ObjectProvider<OnWebIamEventInterceptor> iamEvaluationInterceptors) {
+                ObjectProvider<OnSuccessfulResult> iamEvaluationInterceptors) {
 
-            return new ExternalApiJwtAuthorizationFilter(
+            return new ExternalApiCookieAuthorizationFilter(
                     securityContextExecutor,
                     jwtDecoderService,
                     authorizer,
