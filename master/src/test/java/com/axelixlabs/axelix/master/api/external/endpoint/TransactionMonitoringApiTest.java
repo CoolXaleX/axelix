@@ -45,6 +45,7 @@ import com.axelixlabs.axelix.master.service.state.DatabaseHistoricalApplicationS
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestMetadataFactory;
+import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
 
@@ -144,15 +145,15 @@ class TransactionMonitoringApiTest extends AbstractProtectedEndpointTest {
         historicalApplicationSnapshotService.reloadCurrentState(metadata);
 
         // when.
-        ResponseEntity<String> response = restTemplate
-                .asViewer()
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response = viewer
                 .getForEntity("/api/external/transaction-monitoring/{instanceId}", String.class, activeInstanceId);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_PERSISTENCE_INSIGHTS_JSON);
-        assertSuccessfulCallback(MasterWebEndpoints.TRANSACTION_MONITORING_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.TRANSACTION_MONITORING_READ, viewer.getActor());
     }
 
     @Test
@@ -162,15 +163,15 @@ class TransactionMonitoringApiTest extends AbstractProtectedEndpointTest {
         historicalApplicationSnapshotService.reloadCurrentState(TestMetadataFactory.create(groupId, artifactId));
 
         // when.
-        ResponseEntity<String> response = restTemplate
-                .asViewer()
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response = viewer
                 .getForEntity("/api/external/transaction-monitoring/{instanceId}", String.class, activeInstanceId);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).isEqualTo(EXPECTED_EMPTY_PERSISTENCE_INSIGHTS_JSON);
-        assertSuccessfulCallback(MasterWebEndpoints.TRANSACTION_MONITORING_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.TRANSACTION_MONITORING_READ, viewer.getActor());
     }
 
     @Test

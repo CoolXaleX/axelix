@@ -43,6 +43,7 @@ import org.springframework.http.ResponseEntity;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
@@ -112,9 +113,10 @@ class HeapDumpApiTest extends AbstractProtectedEndpointTest {
     @Test
     void shouldReturnHeapDumpAsAttachment() {
         // when.
-        ResponseEntity<byte[]> response = restTemplate
-                .asViewer()
-                .getForEntity("/api/external/heapdump/{instanceId}", byte[].class, activeInstanceId);
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+
+        ResponseEntity<byte[]> response =
+                viewer.getForEntity("/api/external/heapdump/{instanceId}", byte[].class, activeInstanceId);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -126,7 +128,7 @@ class HeapDumpApiTest extends AbstractProtectedEndpointTest {
         assertThat(contentDisposition).contains("filename=\"heapdump.hprof\"");
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody()).contains(mockHeapDump);
-        assertSuccessfulCallback(MasterWebEndpoints.HEAP_DUMP_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.HEAP_DUMP_READ, viewer.getActor());
     }
 
     @Test

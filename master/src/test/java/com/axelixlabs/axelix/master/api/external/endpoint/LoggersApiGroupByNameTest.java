@@ -42,6 +42,7 @@ import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
+import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
 
@@ -135,8 +136,8 @@ public class LoggersApiGroupByNameTest extends AbstractProtectedEndpointTest {
         String groupName = "test";
 
         // when.
-        ResponseEntity<String> response = restTemplate
-                .asViewer()
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response = viewer
                 .getForEntity(
                         "/api/external/loggers/{instanceId}/group/{groupName}",
                         String.class,
@@ -149,7 +150,7 @@ public class LoggersApiGroupByNameTest extends AbstractProtectedEndpointTest {
 
         String body = response.getBody();
         assertThatJson(body).when(IGNORING_ARRAY_ORDER).isEqualTo(expectedJson);
-        assertSuccessfulCallback(MasterWebEndpoints.LOGGER_GROUP_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.LOGGER_GROUP_READ, viewer.getActor());
     }
 
     @Test
@@ -163,8 +164,8 @@ public class LoggersApiGroupByNameTest extends AbstractProtectedEndpointTest {
         String groupName = "web";
 
         // when.
-        ResponseEntity<String> response = restTemplate
-                .asViewer()
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response = viewer
                 .getForEntity(
                         "/api/external/loggers/{instanceId}/group/{groupName}",
                         String.class,
@@ -175,7 +176,7 @@ public class LoggersApiGroupByNameTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(expectedJson);
-        assertSuccessfulCallback(MasterWebEndpoints.LOGGER_GROUP_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.LOGGER_GROUP_READ, viewer.getActor());
     }
 
     @Test

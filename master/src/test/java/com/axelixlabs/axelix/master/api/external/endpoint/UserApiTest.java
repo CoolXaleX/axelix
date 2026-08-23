@@ -47,6 +47,7 @@ import com.axelixlabs.axelix.master.domain.UserStatus;
 import com.axelixlabs.axelix.master.repository.UserRepository;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.UserService;
+import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
 
@@ -219,7 +220,8 @@ class UserApiTest extends AbstractProtectedEndpointTest {
 
     @Test
     void shouldClearCookieOnLogout() {
-        String token = jwtEncoderService.generateToken(new PasswordlessUser("someUser", Set.of()));
+        PasswordlessUser actor = new PasswordlessUser("someUser", Set.of());
+        String token = jwtEncoderService.generateToken(actor);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -243,7 +245,7 @@ class UserApiTest extends AbstractProtectedEndpointTest {
                 .anySatisfy(cookieHeader -> assertThat(cookieHeader).contains(CookieProperties.AUTH_COOKIE_NAME))
                 .anySatisfy(
                         cookieHeader -> assertThat(cookieHeader).contains(CookieProperties.AUTHORITIES_COOKIE_NAME));
-        assertSuccessfulCallback(MasterWebEndpoints.LOGOUT);
+        assertSuccessfulCallback(MasterWebEndpoints.LOGOUT, actor);
     }
 
     @Test
@@ -303,15 +305,15 @@ class UserApiTest extends AbstractProtectedEndpointTest {
                 """.formatted(alice.id(), bob.id());
 
         // when.
-        ResponseEntity<String> response =
-                restTemplateBuilder.withRole(SUPER_ADMIN).getForEntity(USERS_FEED_PATH, String.class);
+        IdentityAwareTestRestTemplate superAdmin = restTemplateBuilder.withRole(SUPER_ADMIN);
+        ResponseEntity<String> response = superAdmin.getForEntity(USERS_FEED_PATH, String.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(expectedFeed);
         assertThat(response.getBody()).doesNotContain("password");
-        assertSuccessfulCallback(MasterWebEndpoints.USERS_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.USERS_READ, superAdmin.getActor());
     }
 
     @Test
@@ -347,15 +349,15 @@ class UserApiTest extends AbstractProtectedEndpointTest {
                 """.formatted(alice.id());
 
         // when.
-        ResponseEntity<String> response =
-                restTemplateBuilder.withRole(SUPER_ADMIN).getForEntity(USER_BY_ID_PATH, String.class, alice.id());
+        IdentityAwareTestRestTemplate superAdmin = restTemplateBuilder.withRole(SUPER_ADMIN);
+        ResponseEntity<String> response = superAdmin.getForEntity(USER_BY_ID_PATH, String.class, alice.id());
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).isEqualTo(expectedUser);
         assertThat(response.getBody()).doesNotContain("password");
-        assertSuccessfulCallback(MasterWebEndpoints.USER_READ_ONE);
+        assertSuccessfulCallback(MasterWebEndpoints.USER_READ_ONE, superAdmin.getActor());
     }
 
     @Test
@@ -374,14 +376,14 @@ class UserApiTest extends AbstractProtectedEndpointTest {
     @Test
     void shouldReturnEmptyUsersFeed() {
         // when.
-        ResponseEntity<String> response =
-                restTemplateBuilder.withRole(SUPER_ADMIN).getForEntity(USERS_FEED_PATH, String.class);
+        IdentityAwareTestRestTemplate superAdmin = restTemplateBuilder.withRole(SUPER_ADMIN);
+        ResponseEntity<String> response = superAdmin.getForEntity(USERS_FEED_PATH, String.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).isEqualTo("[]");
-        assertSuccessfulCallback(MasterWebEndpoints.USERS_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.USERS_READ, superAdmin.getActor());
     }
 
     @Override

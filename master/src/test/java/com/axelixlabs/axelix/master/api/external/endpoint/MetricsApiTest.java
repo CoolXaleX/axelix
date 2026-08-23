@@ -218,15 +218,15 @@ public class MetricsApiTest extends AbstractProtectedEndpointTest {
     @Test
     void shouldReturnJSONMetricsGroupResponse() {
         // when.
-        ResponseEntity<String> response = restTemplate
-                .asViewer()
-                .getForEntity("/api/external/metrics/{instanceId}", String.class, activeInstanceId);
+        var viewer = restTemplate.asViewer();
+        ResponseEntity<String> response =
+                viewer.getForEntity("/api/external/metrics/{instanceId}", String.class, activeInstanceId);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_GROUPS_METRICS_JSON);
-        assertSuccessfulCallback(MasterWebEndpoints.METRICS_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.METRICS_READ, viewer.getActor());
     }
 
     @Test

@@ -42,6 +42,7 @@ import com.axelixlabs.axelix.common.api.caches.CachesFeed;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
@@ -222,15 +223,15 @@ public class CachesReadApiTest extends AbstractProtectedEndpointTest {
     @Test
     void shouldReturnJSONAllCachesResponse() {
         // when
-        ResponseEntity<String> response = restTemplate
-                .asViewer()
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response = viewer
                 .getForEntity("/api/external/caches/{instanceId}", String.class, activeInstanceId);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_ALL_CACHES_JSON);
-        assertSuccessfulCallback(MasterWebEndpoints.CACHES_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.CACHES_READ, viewer.getActor());
     }
 
     @Test
@@ -248,8 +249,8 @@ public class CachesReadApiTest extends AbstractProtectedEndpointTest {
         """.formatted(requestedCacheName, requestedCacheManagerName);
 
         // when.
-        ResponseEntity<String> response = restTemplate
-                .asViewer()
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response = viewer
                 .getForEntity(
                         "/api/external/caches/{instanceId}/cache/{cacheName}?cacheManager=" + requestedCacheManagerName,
                         String.class,
@@ -260,7 +261,7 @@ public class CachesReadApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(expectedResponseFromMaster);
-        assertSuccessfulCallback(MasterWebEndpoints.CACHE_READ_ONE);
+        assertSuccessfulCallback(MasterWebEndpoints.CACHE_READ_ONE, viewer.getActor());
     }
 
     @Test
@@ -273,15 +274,15 @@ public class CachesReadApiTest extends AbstractProtectedEndpointTest {
             """;
 
         // when
-        ResponseEntity<CachesFeed> response = restTemplate
-                .asViewer()
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<CachesFeed> response = viewer
                 .getForEntity("/api/external/caches/{instanceId}", CachesFeed.class, activeInstanceIdEmptyCaches);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(expectedEmptyCaches);
-        assertSuccessfulCallback(MasterWebEndpoints.CACHES_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.CACHES_READ, viewer.getActor());
     }
 
     @Test

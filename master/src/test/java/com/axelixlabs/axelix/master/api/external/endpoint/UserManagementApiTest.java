@@ -40,6 +40,7 @@ import com.axelixlabs.axelix.master.domain.UserStatus;
 import com.axelixlabs.axelix.master.repository.UserRepository;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.UserService;
+import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
 
@@ -96,9 +97,10 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
                 """;
 
         // when.
-        ResponseEntity<Void> response = restTemplate
-                .withRole(SUPER_ADMIN)
-                .exchange(USERS_CREATE_PATH, HttpMethod.POST, defaultEntity(request), Void.class);
+        IdentityAwareTestRestTemplate superAdmin = restTemplate.withRole(SUPER_ADMIN);
+
+        ResponseEntity<Void> response =
+                superAdmin.exchange(USERS_CREATE_PATH, HttpMethod.POST, defaultEntity(request), Void.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -120,7 +122,7 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
         assertThat(saved.lastLoginAt()).isNull();
         assertThat(saved.password()).isNotEqualTo("plainPassword"); // Hash password
         assertThat(passwordEncoder.matches("plainPassword", saved.password())).isTrue();
-        assertSuccessfulCallback(MasterWebEndpoints.USER_CREATE);
+        assertSuccessfulCallback(MasterWebEndpoints.USER_CREATE, superAdmin.getActor());
     }
 
     @Test
@@ -141,16 +143,17 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
                 """;
 
         // when.
-        ResponseEntity<Void> response = restTemplate
-                .withRole(SUPER_ADMIN)
-                .exchange(USERS_CREATE_PATH, HttpMethod.POST, defaultEntity(request), Void.class);
+        IdentityAwareTestRestTemplate superAdmin = restTemplate.withRole(SUPER_ADMIN);
+
+        ResponseEntity<Void> response =
+                superAdmin.exchange(USERS_CREATE_PATH, HttpMethod.POST, defaultEntity(request), Void.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         UserEntity saved = userRepository.findByUsername("newUser").orElseThrow();
         assertThat(saved.jobTitle()).isNull();
         assertThat(saved.organizationalUnit()).isNull();
-        assertSuccessfulCallback(MasterWebEndpoints.USER_CREATE);
+        assertSuccessfulCallback(MasterWebEndpoints.USER_CREATE, superAdmin.getActor());
     }
 
     @Test
@@ -303,14 +306,15 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
                 """.formatted(user.id());
 
         // when.
-        ResponseEntity<Void> response = restTemplate
-                .withRole(SUPER_ADMIN)
-                .exchange(USERS_DELETE_PATH, HttpMethod.DELETE, defaultEntity(request), Void.class);
+        IdentityAwareTestRestTemplate superAdmin = restTemplate.withRole(SUPER_ADMIN);
+
+        ResponseEntity<Void> response =
+                superAdmin.exchange(USERS_DELETE_PATH, HttpMethod.DELETE, defaultEntity(request), Void.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(userRepository.findById(user.id())).isEmpty();
-        assertSuccessfulCallback(MasterWebEndpoints.USER_DELETE);
+        assertSuccessfulCallback(MasterWebEndpoints.USER_DELETE, superAdmin.getActor());
     }
 
     @Test
@@ -334,9 +338,10 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
                 """.formatted(user.id());
 
         // when.
-        ResponseEntity<Void> response = restTemplate
-                .withRole(SUPER_ADMIN)
-                .exchange(USERS_UPDATE_PATH, HttpMethod.PUT, defaultEntity(request), Void.class);
+        IdentityAwareTestRestTemplate superAdmin = restTemplate.withRole(SUPER_ADMIN);
+
+        ResponseEntity<Void> response =
+                superAdmin.exchange(USERS_UPDATE_PATH, HttpMethod.PUT, defaultEntity(request), Void.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
@@ -350,7 +355,7 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
         assertThat(updated.organizationalUnit()).isEqualTo("Engineering");
         assertThat(userService.findRoleNamesByUserId(user.id())).containsExactlyInAnyOrder("ADMIN", "EDITOR");
         assertThat(passwordEncoder.matches("newPass", updated.password())).isTrue();
-        assertSuccessfulCallback(MasterWebEndpoints.USER_UPDATE);
+        assertSuccessfulCallback(MasterWebEndpoints.USER_UPDATE, superAdmin.getActor());
     }
 
     @Test
@@ -372,9 +377,10 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
                 """.formatted(user.id(), newUsername);
 
         // when.
-        ResponseEntity<Void> response = restTemplate
-                .withRole(SUPER_ADMIN)
-                .exchange(USERS_UPDATE_PATH, HttpMethod.PUT, defaultEntity(request), Void.class);
+        IdentityAwareTestRestTemplate superAdmin = restTemplate.withRole(SUPER_ADMIN);
+
+        ResponseEntity<Void> response =
+                superAdmin.exchange(USERS_UPDATE_PATH, HttpMethod.PUT, defaultEntity(request), Void.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
@@ -384,7 +390,7 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
         assertThat(updated.email()).isEqualTo(null);
         assertThat(userService.findRoleNamesByUserId(user.id())).containsExactly("VIEWER");
         assertThat(passwordEncoder.matches(oldPassword, updated.password())).isTrue();
-        assertSuccessfulCallback(MasterWebEndpoints.USER_UPDATE);
+        assertSuccessfulCallback(MasterWebEndpoints.USER_UPDATE, superAdmin.getActor());
     }
 
     @Test
@@ -570,16 +576,17 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
                 """.formatted(user.id());
 
         // when.
-        ResponseEntity<Void> response = restTemplate
-                .withRole(SUPER_ADMIN)
-                .exchange(USERS_STATUS_PATH, HttpMethod.PUT, defaultEntity(request), Void.class);
+        IdentityAwareTestRestTemplate superAdmin = restTemplate.withRole(SUPER_ADMIN);
+
+        ResponseEntity<Void> response =
+                superAdmin.exchange(USERS_STATUS_PATH, HttpMethod.PUT, defaultEntity(request), Void.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         UserEntity updated = userRepository.findById(user.id()).orElseThrow();
         assertThat(updated.status()).isEqualTo(UserStatus.SUSPENDED);
         assertThat(updated).usingRecursiveComparison().ignoringFields("status").isEqualTo(user);
-        assertSuccessfulCallback(MasterWebEndpoints.USER_CHANGE_STATUS);
+        assertSuccessfulCallback(MasterWebEndpoints.USER_CHANGE_STATUS, superAdmin.getActor());
     }
 
     @Test
@@ -594,14 +601,15 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
                 """.formatted(user.id());
 
         // when.
-        ResponseEntity<Void> response = restTemplate
-                .withRole(SUPER_ADMIN)
-                .exchange(USERS_STATUS_PATH, HttpMethod.PUT, defaultEntity(request), Void.class);
+        IdentityAwareTestRestTemplate superAdmin = restTemplate.withRole(SUPER_ADMIN);
+
+        ResponseEntity<Void> response =
+                superAdmin.exchange(USERS_STATUS_PATH, HttpMethod.PUT, defaultEntity(request), Void.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(userRepository.findById(user.id()).orElseThrow().status()).isEqualTo(UserStatus.ACTIVE);
-        assertSuccessfulCallback(MasterWebEndpoints.USER_CHANGE_STATUS);
+        assertSuccessfulCallback(MasterWebEndpoints.USER_CHANGE_STATUS, superAdmin.getActor());
     }
 
     @Test

@@ -41,6 +41,7 @@ import org.springframework.http.ResponseEntity;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
@@ -268,15 +269,15 @@ class EnvironmentApiTest extends AbstractProtectedEndpointTest {
     @Test
     void shouldReturnJSONEnvironmentFeed() {
         // when.
-        ResponseEntity<String> response = restTemplate
-                .asViewer()
-                .getForEntity("/api/external/env/feed/{instanceId}", String.class, activeInstanceId);
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response =
+                viewer.getForEntity("/api/external/env/feed/{instanceId}", String.class, activeInstanceId);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_ENV_JSON);
-        assertSuccessfulCallback(MasterWebEndpoints.ENVIRONMENT_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.ENVIRONMENT_READ, viewer.getActor());
     }
 
     @Test

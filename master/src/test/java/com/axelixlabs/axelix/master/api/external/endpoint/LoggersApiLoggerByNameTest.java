@@ -41,6 +41,7 @@ import org.springframework.http.ResponseEntity;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
@@ -136,8 +137,8 @@ public class LoggersApiLoggerByNameTest extends AbstractProtectedEndpointTest {
         String loggerName = "com.example";
 
         // when.
-        ResponseEntity<String> response = restTemplate
-                .asViewer()
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response = viewer
                 .getForEntity(
                         "/api/external/loggers/{instanceId}/logger/{loggerName}",
                         String.class,
@@ -150,7 +151,7 @@ public class LoggersApiLoggerByNameTest extends AbstractProtectedEndpointTest {
 
         String body = response.getBody();
         assertThatJson(body).when(IGNORING_ARRAY_ORDER).isEqualTo(expectedJson);
-        assertSuccessfulCallback(MasterWebEndpoints.LOGGER_READ_ONE);
+        assertSuccessfulCallback(MasterWebEndpoints.LOGGER_READ_ONE, viewer.getActor());
     }
 
     @Test
@@ -164,8 +165,8 @@ public class LoggersApiLoggerByNameTest extends AbstractProtectedEndpointTest {
         String loggerName = "org.springframework.web";
 
         // when.
-        ResponseEntity<String> response = restTemplate
-                .asViewer()
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response = viewer
                 .getForEntity(
                         "/api/external/loggers/{instanceId}/logger/{loggerName}",
                         String.class,
@@ -176,7 +177,7 @@ public class LoggersApiLoggerByNameTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(expectedJson);
-        assertSuccessfulCallback(MasterWebEndpoints.LOGGER_READ_ONE);
+        assertSuccessfulCallback(MasterWebEndpoints.LOGGER_READ_ONE, viewer.getActor());
     }
 
     @Test

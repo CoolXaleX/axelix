@@ -323,15 +323,15 @@ public class ScheduledTasksApiTest extends AbstractProtectedEndpointTest {
     @Test
     void shouldReturnJSONScheduledTasksResponse() {
         // when.
-        ResponseEntity<String> response = restTemplate
-                .asViewer()
-                .getForEntity("/api/external/scheduled-tasks/{instanceId}", String.class, activeInstanceId);
+        var viewer = restTemplate.asViewer();
+        ResponseEntity<String> response =
+                viewer.getForEntity("/api/external/scheduled-tasks/{instanceId}", String.class, activeInstanceId);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_MASTER_RESPONSE);
-        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASKS_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASKS_READ, viewer.getActor());
     }
 
     @ParameterizedTest
@@ -341,20 +341,20 @@ public class ScheduledTasksApiTest extends AbstractProtectedEndpointTest {
                 "org.springframework.samples.petclinic.scheduled.SchedulerTestConfig.fixedRateTask");
 
         // when.
-        ResponseEntity<String> body = restTemplate
-                .asEditor()
-                .postForEntity(
-                        "/api/external/scheduled-tasks/{instanceId}" + scheduledTaskStatus,
-                        requestBody,
-                        String.class,
-                        activeInstanceId);
+        var editor = restTemplate.asEditor();
+        ResponseEntity<String> body = editor.postForEntity(
+                "/api/external/scheduled-tasks/{instanceId}" + scheduledTaskStatus,
+                requestBody,
+                String.class,
+                activeInstanceId);
 
         // then.
         assertThat(body.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertSuccessfulCallback(
                 scheduledTaskStatus.equals("/enable")
                         ? MasterWebEndpoints.SCHEDULED_TASK_ENABLE
-                        : MasterWebEndpoints.SCHEDULED_TASK_DISABLE);
+                        : MasterWebEndpoints.SCHEDULED_TASK_DISABLE,
+                editor.getActor());
     }
 
     @Test
@@ -364,17 +364,16 @@ public class ScheduledTasksApiTest extends AbstractProtectedEndpointTest {
                 "org.springframework.samples.petclinic.scheduled.SchedulerTestConfig.cronTask", "*/5 * * * * *");
 
         // when.
-        ResponseEntity<Void> response = restTemplate
-                .asEditor()
-                .postForEntity(
-                        "/api/external/scheduled-tasks/{instanceId}/modify/cron-expression",
-                        requestBody,
-                        Void.class,
-                        activeInstanceId);
+        var editor = restTemplate.asEditor();
+        ResponseEntity<Void> response = editor.postForEntity(
+                "/api/external/scheduled-tasks/{instanceId}/modify/cron-expression",
+                requestBody,
+                Void.class,
+                activeInstanceId);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASK_MODIFY_CRON);
+        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASK_MODIFY_CRON, editor.getActor());
     }
 
     @Test
@@ -383,18 +382,17 @@ public class ScheduledTasksApiTest extends AbstractProtectedEndpointTest {
         var requestBody = new ScheduledTaskCronExpressionValidationRequest("*/5 * * * * *");
 
         // when.
-        ResponseEntity<ScheduledTaskCronExpressionValidationResponse> response = restTemplate
-                .asEditor()
-                .postForEntity(
-                        "/api/external/scheduled-tasks/validate-cron-expression",
-                        requestBody,
-                        ScheduledTaskCronExpressionValidationResponse.class);
+        var editor = restTemplate.asEditor();
+        ResponseEntity<ScheduledTaskCronExpressionValidationResponse> response = editor.postForEntity(
+                "/api/external/scheduled-tasks/validate-cron-expression",
+                requestBody,
+                ScheduledTaskCronExpressionValidationResponse.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().valid()).isTrue();
-        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASK_VALIDATE_CRON);
+        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASK_VALIDATE_CRON, editor.getActor());
     }
 
     @ParameterizedTest
@@ -404,18 +402,17 @@ public class ScheduledTasksApiTest extends AbstractProtectedEndpointTest {
         var requestBody = new ScheduledTaskCronExpressionValidationRequest(invalidCronExpression);
 
         // when.
-        ResponseEntity<ScheduledTaskCronExpressionValidationResponse> response = restTemplate
-                .asEditor()
-                .postForEntity(
-                        "/api/external/scheduled-tasks/validate-cron-expression",
-                        requestBody,
-                        ScheduledTaskCronExpressionValidationResponse.class);
+        var editor = restTemplate.asEditor();
+        ResponseEntity<ScheduledTaskCronExpressionValidationResponse> response = editor.postForEntity(
+                "/api/external/scheduled-tasks/validate-cron-expression",
+                requestBody,
+                ScheduledTaskCronExpressionValidationResponse.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().valid()).isFalse();
-        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASK_VALIDATE_CRON);
+        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASK_VALIDATE_CRON, editor.getActor());
     }
 
     @ParameterizedTest
@@ -456,17 +453,16 @@ public class ScheduledTasksApiTest extends AbstractProtectedEndpointTest {
                 "org.springframework.samples.petclinic.scheduled.SchedulerTestConfig.fixedRateTask", 555555L);
 
         // when.
-        ResponseEntity<Void> response = restTemplate
-                .asEditor()
-                .postForEntity(
-                        "/api/external/scheduled-tasks/{instanceId}/modify/interval",
-                        requestBody,
-                        Void.class,
-                        activeInstanceId);
+        var editor = restTemplate.asEditor();
+        ResponseEntity<Void> response = editor.postForEntity(
+                "/api/external/scheduled-tasks/{instanceId}/modify/interval",
+                requestBody,
+                Void.class,
+                activeInstanceId);
 
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASK_MODIFY_INTERVAL);
+        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASK_MODIFY_INTERVAL, editor.getActor());
     }
 
     @Test
@@ -476,17 +472,16 @@ public class ScheduledTasksApiTest extends AbstractProtectedEndpointTest {
                 "org.springframework.samples.petclinic.scheduled.SchedulerTestConfig.fixedRateTask");
 
         // when.
-        ResponseEntity<Void> response = restTemplate
-                .asEditor()
-                .postForEntity(
-                        "/api/external/scheduled-tasks/{instanceId}/execute",
-                        requestBody,
-                        Void.class,
-                        activeInstanceId);
+        var editor = restTemplate.asEditor();
+        ResponseEntity<Void> response = editor.postForEntity(
+                "/api/external/scheduled-tasks/{instanceId}/execute",
+                requestBody,
+                Void.class,
+                activeInstanceId);
 
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASK_EXECUTE);
+        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASK_EXECUTE, editor.getActor());
     }
 
     @Test

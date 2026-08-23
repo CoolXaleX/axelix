@@ -48,6 +48,7 @@ import com.axelixlabs.axelix.master.service.state.DatabaseHistoricalApplicationS
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestMetadataFactory;
+import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
 
@@ -282,29 +283,29 @@ public class DetailsApiTest extends AbstractProtectedEndpointTest {
     @Test
     void shouldReturnJSONDetailsResponse() {
         // when.
-        ResponseEntity<String> response = restTemplate
-                .asViewer()
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response = viewer
                 .getForEntity("/api/external/details/{instanceId}", String.class, activeInstanceId);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_DETAILS_JSON);
-        assertSuccessfulCallback(MasterWebEndpoints.DETAILS_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.DETAILS_READ, viewer.getActor());
     }
 
     @Test
     void shouldReturnJSONDetailsResponseWithoutPlugin() {
         // when.
-        ResponseEntity<String> response = restTemplate
-                .asViewer()
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response = viewer
                 .getForEntity("/api/external/details/{instanceId}", String.class, instanceWithoutPluginId);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_DETAILS_JSON_WITHOUT_PLUGIN);
-        assertSuccessfulCallback(MasterWebEndpoints.DETAILS_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.DETAILS_READ, viewer.getActor());
     }
 
     @Test

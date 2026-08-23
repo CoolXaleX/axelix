@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
 
+import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -224,15 +225,16 @@ class ConditionsApiTest extends AbstractProtectedEndpointTest {
     @Test
     void shouldReturnJSONConditionsFeed() {
         // when.
-        ResponseEntity<String> response = restTemplate
-                .asViewer()
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+
+        ResponseEntity<String> response = viewer
                 .getForEntity("/api/external/conditions/feed/{instanceId}", String.class, activeInstanceId);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_CONDITIONS_JSON);
-        assertSuccessfulCallback(MasterWebEndpoints.CONDITIONS_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.CONDITIONS_READ, viewer.getActor());
     }
 
     @Test

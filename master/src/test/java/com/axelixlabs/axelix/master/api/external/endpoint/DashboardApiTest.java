@@ -47,6 +47,7 @@ import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.DatabaseHistoricalApplicationSnapshotService;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestMetadataFactory;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
@@ -215,13 +216,14 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
     @Test
     void shouldReturnJSONDashboardResponse() {
         // when.
-        ResponseEntity<String> response = restTemplate.asViewer().getForEntity("/api/external/dashboard", String.class);
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response = viewer.getForEntity("/api/external/dashboard", String.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_DASHBOARD_JSON_WITH_INSTANCES);
-        assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ, viewer.getActor());
     }
 
     @Test
@@ -230,13 +232,14 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
         deRegisterAll();
 
         // when.
-        ResponseEntity<String> response = restTemplate.asViewer().getForEntity("/api/external/dashboard", String.class);
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response = viewer.getForEntity("/api/external/dashboard", String.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_DASHBOARD_JSON_EMPTY);
-        assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ, viewer.getActor());
     }
 
     @Test
@@ -248,8 +251,8 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
 
         try {
             // when.
-            ResponseEntity<String> response =
-                    restTemplate.asViewer().getForEntity("/api/external/dashboard", String.class);
+            IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+            ResponseEntity<String> response = viewer.getForEntity("/api/external/dashboard", String.class);
 
             // then.
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -257,7 +260,7 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
             assertThatJson(response.getBody())
                     .node("healthStatus.statuses.UNKNOWN")
                     .isPresent();
-            assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ);
+            assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ, viewer.getActor());
         } finally {
             registry.deRegister(InstanceId.of(unknownInstanceId));
         }
@@ -271,8 +274,8 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
                 metadata("com.example", "service-b", GarbageCollector.ZGC)));
 
         // when.
-        ResponseEntity<String> response =
-                restTemplate.asViewer().getForEntity("/api/external/dashboard/java", String.class);
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response = viewer.getForEntity("/api/external/dashboard/java", String.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -283,7 +286,7 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
         assertThatJson(response.getBody())
                 .node("garbageCollectorDistribution.ZGC")
                 .isEqualTo(50.0);
-        assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ_JAVA);
+        assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ_JAVA, viewer.getActor());
     }
 
     @Test
@@ -296,8 +299,8 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
                 persistenceMetadata("com.example", "service-b", List.of(), Map.of("owner", 3))));
 
         // when.
-        ResponseEntity<String> response =
-                restTemplate.asViewer().getForEntity("/api/external/dashboard/persistence", String.class);
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response = viewer.getForEntity("/api/external/dashboard/persistence", String.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -310,7 +313,7 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
                 .when(IGNORING_ARRAY_ORDER)
                 .node("inMemoryPagination")
                 .isEqualTo("[{\"appName\":\"service-b\",\"size\":1}]");
-        assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ_PERSISTENCE);
+        assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ_PERSISTENCE, viewer.getActor());
     }
 
     @Override

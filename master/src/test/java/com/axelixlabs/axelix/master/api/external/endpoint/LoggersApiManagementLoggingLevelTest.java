@@ -47,6 +47,7 @@ import com.axelixlabs.axelix.master.api.external.request.loggers.LogLevelLoggerB
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
@@ -137,18 +138,17 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
         LogLevelChangeRequest requestBody = new LogLevelChangeRequest("INFO", null);
 
         // when.
-        ResponseEntity<String> body = restTemplate
-                .asViewer()
-                .postForEntity(
-                        "/api/external/loggers/{instanceId}/group/{groupName}",
-                        requestBody,
-                        String.class,
-                        activeInstanceId,
-                        groupName);
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> body = viewer.postForEntity(
+                "/api/external/loggers/{instanceId}/group/{groupName}",
+                requestBody,
+                String.class,
+                activeInstanceId,
+                groupName);
 
         // then.
         assertThat(body.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertSuccessfulCallback(MasterWebEndpoints.LOGGER_GROUP_CHANGE);
+        assertSuccessfulCallback(MasterWebEndpoints.LOGGER_GROUP_CHANGE, viewer.getActor());
     }
 
     @Test
@@ -158,8 +158,9 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
                 List.of(activeInstanceId, siblingInstanceId), "logger.name", null, "DEBUG");
 
         // when.
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
         ResponseEntity<String> response =
-                restTemplate.asViewer().postForEntity("/api/external/loggers/logger", requestBody, String.class);
+                viewer.postForEntity("/api/external/loggers/logger", requestBody, String.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
@@ -167,7 +168,7 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
                 .containsExactlyInAnyOrder(
                         "/" + activeInstanceId + "/axelix-loggers/logger/logger.name/change-level",
                         "/" + siblingInstanceId + "/axelix-loggers/logger/logger.name/change-level");
-        assertSuccessfulCallback(MasterWebEndpoints.LOGGERS_BULK_CHANGE);
+        assertSuccessfulCallback(MasterWebEndpoints.LOGGERS_BULK_CHANGE, viewer.getActor());
     }
 
     @Test
@@ -175,18 +176,17 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
         String loggerName = "reset.logger.name";
 
         // when
-        ResponseEntity<String> response = restTemplate
-                .asViewer()
-                .postForEntity(
-                        "/api/external/loggers/{instanceId}/logger/{loggerName}/reset",
-                        null,
-                        String.class,
-                        activeInstanceId,
-                        loggerName);
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
+        ResponseEntity<String> response = viewer.postForEntity(
+                "/api/external/loggers/{instanceId}/logger/{loggerName}/reset",
+                null,
+                String.class,
+                activeInstanceId,
+                loggerName);
 
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        assertSuccessfulCallback(MasterWebEndpoints.LOGGER_RESET);
+        assertSuccessfulCallback(MasterWebEndpoints.LOGGER_RESET, viewer.getActor());
     }
 
     @ParameterizedTest
@@ -311,14 +311,15 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
                 List.of(activeInstanceId, activeInstanceId), "logger.name", null, "DEBUG");
 
         // when.
+        IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
         ResponseEntity<String> response =
-                restTemplate.asViewer().postForEntity("/api/external/loggers/logger", requestBody, String.class);
+                viewer.postForEntity("/api/external/loggers/logger", requestBody, String.class);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(invokedPaths)
                 .containsExactly("/" + activeInstanceId + "/axelix-loggers/logger/logger.name/change-level");
-        assertSuccessfulCallback(MasterWebEndpoints.LOGGERS_BULK_CHANGE);
+        assertSuccessfulCallback(MasterWebEndpoints.LOGGERS_BULK_CHANGE, viewer.getActor());
     }
 
     @Test

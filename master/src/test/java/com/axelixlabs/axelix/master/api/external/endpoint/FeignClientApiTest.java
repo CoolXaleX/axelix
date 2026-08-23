@@ -240,15 +240,15 @@ class FeignClientApiTest extends AbstractProtectedEndpointTest {
     @Test
     void shouldReturnJSONFeign() {
         // when.
-        ResponseEntity<String> response = restTemplate
-                .asViewer()
-                .getForEntity("/api/external/feign/{instanceId}", String.class, activeInstanceId);
+        var viewer = restTemplate.asViewer();
+        ResponseEntity<String> response =
+                viewer.getForEntity("/api/external/feign/{instanceId}", String.class, activeInstanceId);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_FEIGN_JSON);
-        assertSuccessfulCallback(MasterWebEndpoints.FEIGN_READ);
+        assertSuccessfulCallback(MasterWebEndpoints.FEIGN_READ, viewer.getActor());
     }
 
     @Test

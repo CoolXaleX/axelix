@@ -44,6 +44,7 @@ import org.springframework.http.ResponseEntity;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
@@ -117,44 +118,44 @@ class CachesManagementApiTest extends AbstractProtectedEndpointTest {
     @MethodSource("cacheOperations")
     void shouldEnableOrDisableSpecificCache(String cacheStatus) {
         // when.
-        ResponseEntity<Void> response = restTemplate
-                .asEditor()
-                .postForEntity(
-                        "/api/external/caches/{instanceId}/{cacheManagerName}/{cacheName}/" + cacheStatus,
-                        null,
-                        Void.class,
-                        Map.of(
-                                "instanceId",
-                                activeInstanceId,
-                                "cacheManagerName",
-                                "cacheManager",
-                                "cacheName",
-                                "vets"));
+        IdentityAwareTestRestTemplate editor = restTemplate.asEditor();
+        ResponseEntity<Void> response = editor.postForEntity(
+                "/api/external/caches/{instanceId}/{cacheManagerName}/{cacheName}/" + cacheStatus,
+                null,
+                Void.class,
+                Map.of(
+                        "instanceId",
+                        activeInstanceId,
+                        "cacheManagerName",
+                        "cacheManager",
+                        "cacheName",
+                        "vets"));
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertSuccessfulCallback(
-                cacheStatus.equals("enable") ? MasterWebEndpoints.CACHE_ENABLE : MasterWebEndpoints.CACHE_DISABLE);
+                cacheStatus.equals("enable") ? MasterWebEndpoints.CACHE_ENABLE : MasterWebEndpoints.CACHE_DISABLE,
+                editor.getActor());
     }
 
     @ParameterizedTest
     @MethodSource("cacheOperations")
     void shouldEnableOrDisableCacheManager(String cacheStatus) {
         // when.
-        ResponseEntity<Void> response = restTemplate
-                .asEditor()
-                .postForEntity(
-                        "/api/external/caches/{instanceId}/{cacheManagerName}/" + cacheStatus,
-                        null,
-                        Void.class,
-                        Map.of("instanceId", activeInstanceId, "cacheManagerName", "cacheManager"));
+        IdentityAwareTestRestTemplate editor = restTemplate.asEditor();
+        ResponseEntity<Void> response = editor.postForEntity(
+                "/api/external/caches/{instanceId}/{cacheManagerName}/" + cacheStatus,
+                null,
+                Void.class,
+                Map.of("instanceId", activeInstanceId, "cacheManagerName", "cacheManager"));
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertSuccessfulCallback(
                 cacheStatus.equals("enable")
                         ? MasterWebEndpoints.CACHE_MANAGER_ENABLE
-                        : MasterWebEndpoints.CACHE_MANAGER_DISABLE);
+                        : MasterWebEndpoints.CACHE_MANAGER_DISABLE,
+                editor.getActor());
     }
 
     @ParameterizedTest

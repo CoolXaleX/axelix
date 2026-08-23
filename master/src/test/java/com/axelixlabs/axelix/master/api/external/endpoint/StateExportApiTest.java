@@ -417,13 +417,12 @@ class StateExportApiTest extends AbstractProtectedEndpointTest {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
 
-        ResponseEntity<byte[]> response = restTemplate
-                .asViewer()
-                .postForEntity(
-                        "/api/external/export-state/{instanceId}",
-                        new HttpEntity<>(HTTP_REQUEST_BODY, headers),
-                        byte[].class,
-                        activeInstanceId);
+        var viewer = restTemplate.asViewer();
+        ResponseEntity<byte[]> response = viewer.postForEntity(
+                "/api/external/export-state/{instanceId}",
+                new HttpEntity<>(HTTP_REQUEST_BODY, headers),
+                byte[].class,
+                activeInstanceId);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.parseMediaType("application/zip"));
@@ -434,7 +433,7 @@ class StateExportApiTest extends AbstractProtectedEndpointTest {
 
         assertZipArchiveContent(zipData);
 
-        assertSuccessfulCallback(MasterWebEndpoints.STATE_EXPORT);
+        assertSuccessfulCallback(MasterWebEndpoints.STATE_EXPORT, viewer.getActor());
     }
 
     private static void assertZipArchiveContent(byte[] zipData) throws IOException {
