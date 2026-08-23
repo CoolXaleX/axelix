@@ -48,7 +48,7 @@ import com.axelixlabs.axelix.master.api.external.response.settings.LocalAuthenti
 import com.axelixlabs.axelix.master.api.external.response.settings.OidcAuthenticationOption;
 import com.axelixlabs.axelix.master.api.external.response.settings.SuperAdminAuthenticationOption;
 import com.axelixlabs.axelix.master.filter.auth.CookieBasedJwtAuthorizationFilter;
-import com.axelixlabs.axelix.master.filter.auth.WebRequestContextInitFilter;
+import com.axelixlabs.axelix.master.filter.auth.requestcontext.MasterRequestContextInitFilter;
 import com.axelixlabs.axelix.master.mcp.auth.handler.BasicMcpAuthenticationHandler;
 import com.axelixlabs.axelix.master.mcp.auth.handler.BearerMcpAuthenticationHandler;
 import com.axelixlabs.axelix.master.mcp.auth.handler.McpAuthenticationHandler;
@@ -126,7 +126,7 @@ class SecurityAutoConfigurationTest {
                 // then.
                 assertThat(context).hasSingleBean(MasterWebEndpointResolver.class);
                 assertThat(context).hasSingleBean(Authorizer.class);
-                assertThat(context).hasSingleBean(WebRequestContextInitFilter.class);
+                assertThat(context).hasSingleBean(MasterRequestContextInitFilter.class);
                 assertThat(context).hasSingleBean(JwtEncoderService.class);
                 assertThat(context).hasSingleBean(JwtDecoderService.class);
                 assertThat(context).hasSingleBean(CookieService.class);

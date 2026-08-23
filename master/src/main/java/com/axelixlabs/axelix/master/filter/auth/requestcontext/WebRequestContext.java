@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.master.filter.auth;
+package com.axelixlabs.axelix.master.filter.auth.requestcontext;
 
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
 
@@ -24,4 +24,4 @@ import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
  *
  * @author Mikhail Polivakha
  */
-public record WebRequestContext(MasterWebEndpoint masterWebEndpoint) {}
+public record WebRequestContext(MasterWebEndpoint masterWebEndpoint) implements MasterRequestContext {}

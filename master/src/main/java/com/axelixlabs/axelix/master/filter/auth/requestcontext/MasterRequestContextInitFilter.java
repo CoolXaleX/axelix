@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.master.filter.auth;
+package com.axelixlabs.axelix.master.filter.auth.requestcontext;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -25,35 +25,51 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.jspecify.annotations.Nullable;
+
+import org.springframework.ai.mcp.server.common.autoconfigure.properties.McpServerStreamableHttpProperties;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.axelixlabs.axelix.common.domain.http.HttpMethod;
+import com.axelixlabs.axelix.common.utils.Assert;
 import com.axelixlabs.axelix.master.autoconfiguration.web.WebAutoConfiguration;
 import com.axelixlabs.axelix.master.filter.FiltersOrder;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpointResolver;
 
 /**
- * {@link OncePerRequestFilter} whose job is to record the profile of the request being executed. Right now,
- * it consists
+ * {@link OncePerRequestFilter} whose job is to record the profile of the request that was attempted to
+ * be executed.
  *
  * @author Mikhail Polivakha
  */
 @Order(FiltersOrder.REQUEST_PROFILE_FILTER)
-public class WebRequestContextInitFilter extends OncePerRequestFilter {
+public class MasterRequestContextInitFilter extends OncePerRequestFilter {
 
-    private static final ScopedValue<WebRequestContext> WEBS_REQUEST_CONTEXT = ScopedValue.newInstance();
+    private static final ScopedValue<MasterRequestContext> WEBS_REQUEST_CONTEXT = ScopedValue.newInstance();
 
     private final MasterWebEndpointResolver masterWebEndpointResolver;
+    private final @Nullable McpServerStreamableHttpProperties mcpProperties;
 
-    public WebRequestContextInitFilter(MasterWebEndpointResolver masterWebEndpointResolver) {
+    public MasterRequestContextInitFilter(
+            MasterWebEndpointResolver masterWebEndpointResolver,
+            ObjectProvider<McpServerStreamableHttpProperties> mcpProperties) {
+        this.mcpProperties = mcpProperties.getIfAvailable();
         this.masterWebEndpointResolver = masterWebEndpointResolver;
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !request.getServletPath().startsWith(WebAutoConfiguration.EXTERNAL_API_PATH);
+        return !shouldFilter(request);
+    }
+
+    private boolean shouldFilter(HttpServletRequest request) {
+        String servletPath = request.getServletPath();
+
+        return servletPath.startsWith(WebAutoConfiguration.EXTERNAL_API_PATH)
+                || (mcpProperties != null && servletPath.startsWith(mcpProperties.getMcpEndpoint()));
     }
 
     @Override
@@ -84,7 +100,22 @@ public class WebRequestContextInitFilter extends OncePerRequestFilter {
         }
     }
 
-    public static WebRequestContext getCurrentRequestContext() {
-        return WEBS_REQUEST_CONTEXT.get();
+    public static WebRequestContext requireWebRequestContext() {
+        return requireContextOfType(WebRequestContext.class);
+    }
+
+    public static McpRequestContext requireMcpRequestContext() {
+        return requireContextOfType(McpRequestContext.class);
+    }
+
+    private static <T> T requireContextOfType(Class<T> contextType) {
+        MasterRequestContext masterRequestContext = WEBS_REQUEST_CONTEXT.get();
+
+        Assert.state(() -> masterRequestContext != null, "RequestContext cannot be null at this point");
+        Assert.state(
+                () -> contextType.isInstance(masterRequestContext),
+                "Expected RequestContext to be of type " + contextType.getSimpleName());
+
+        return contextType.cast(masterRequestContext);
     }
 }

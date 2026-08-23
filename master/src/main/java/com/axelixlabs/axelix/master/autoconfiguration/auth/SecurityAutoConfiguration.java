@@ -24,6 +24,7 @@ import java.util.Map;
 
 import tools.jackson.databind.ObjectMapper;
 
+import org.springframework.ai.mcp.server.common.autoconfigure.properties.McpServerStreamableHttpProperties;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -52,7 +53,7 @@ import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.OAuth2Prop
 import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.SuperAdminConfigurationProperties;
 import com.axelixlabs.axelix.master.autoconfiguration.mcp.ConditionalOnMcpServerEnabled;
 import com.axelixlabs.axelix.master.filter.auth.CookieBasedJwtAuthorizationFilter;
-import com.axelixlabs.axelix.master.filter.auth.WebRequestContextInitFilter;
+import com.axelixlabs.axelix.master.filter.auth.requestcontext.MasterRequestContextInitFilter;
 import com.axelixlabs.axelix.master.mcp.auth.handler.BasicMcpAuthenticationHandler;
 import com.axelixlabs.axelix.master.mcp.auth.handler.BearerMcpAuthenticationHandler;
 import com.axelixlabs.axelix.master.mcp.auth.handler.McpAuthenticationHandler;
@@ -124,10 +125,11 @@ public class SecurityAutoConfiguration {
     }
 
     @Bean
-    public WebRequestContextInitFilter webRequestContextInitFilter(
-            MasterWebEndpointResolver masterWebEndpointResolver) {
+    public MasterRequestContextInitFilter masterRequestContextInitFilter(
+            MasterWebEndpointResolver masterWebEndpointResolver,
+            ObjectProvider<McpServerStreamableHttpProperties> mcpProperties) {
 
-        return new WebRequestContextInitFilter(masterWebEndpointResolver);
+        return new MasterRequestContextInitFilter(masterWebEndpointResolver, mcpProperties);
     }
 
     /**

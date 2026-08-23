@@ -48,6 +48,8 @@ import com.axelixlabs.axelix.common.auth.service.Authorizer;
 import com.axelixlabs.axelix.common.auth.service.JwtDecoderService;
 import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.CookieProperties;
 import com.axelixlabs.axelix.master.filter.FiltersOrder;
+import com.axelixlabs.axelix.master.filter.auth.requestcontext.MasterRequestContextInitFilter;
+import com.axelixlabs.axelix.master.filter.auth.requestcontext.WebRequestContext;
 import com.axelixlabs.axelix.master.service.auth.intercept.web.OnAccessDenied;
 import com.axelixlabs.axelix.master.service.auth.intercept.web.OnInvalidTokenInRequest;
 import com.axelixlabs.axelix.master.service.auth.intercept.web.OnSuccessfulResult;
@@ -111,7 +113,7 @@ public class CookieBasedJwtAuthorizationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        WebRequestContext currentRequestContext = WebRequestContextInitFilter.getCurrentRequestContext();
+        WebRequestContext currentRequestContext = MasterRequestContextInitFilter.requireWebRequestContext();
 
         String token = resolveToken(request.getCookies());
 
