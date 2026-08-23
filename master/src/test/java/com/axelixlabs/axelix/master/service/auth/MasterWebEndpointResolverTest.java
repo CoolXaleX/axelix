@@ -23,7 +23,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.axelixlabs.axelix.common.auth.core.DefaultAuthority;
 import com.axelixlabs.axelix.common.domain.http.HttpMethod;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,103 +38,63 @@ class MasterWebEndpointResolverTest {
     private final MasterWebEndpointResolver resolver = new MasterWebEndpointResolver(MasterWebEndpoints.oss());
 
     @ParameterizedTest
-    @MethodSource("authorityProtectedEndpoints")
-    void shouldResolveEndpointCarryingItsRequiredAuthority(
-            String path, HttpMethod httpMethod, DefaultAuthority authority) {
+    @MethodSource("resolvableRequests")
+    void shouldResolveEndpointForMatchingPathAndMethod(String path, HttpMethod httpMethod, MasterWebEndpoint expected) {
         // when/then.
-        assertThat(resolver.resolveEndpoint(path, httpMethod))
-                .hasValueSatisfying(endpoint -> assertThat(endpoint.authority()).isEqualTo(authority));
+        assertThat(resolver.resolveEndpoint(path, httpMethod)).contains(expected);
     }
 
     @ParameterizedTest
-    @MethodSource("unprotectedEndpoints")
-    void shouldResolveUnprotectedEndpointWithoutAuthority(String path, HttpMethod httpMethod) {
-        // when/then.
-        assertThat(resolver.resolveEndpoint(path, httpMethod))
-                .hasValueSatisfying(endpoint -> assertThat(endpoint.authority()).isNull());
-    }
-
-    @ParameterizedTest
-    @MethodSource("unresolvableEndpoints")
-    void shouldNotResolveUnknownOrWrongMethodEndpoints(String path, HttpMethod httpMethod) {
+    @MethodSource("unresolvableRequests")
+    void shouldNotResolveEndpointForUnknownPathOrMethod(String path, HttpMethod httpMethod) {
         // when/then.
         assertThat(resolver.resolveEndpoint(path, httpMethod)).isEmpty();
     }
 
-    @ParameterizedTest
-    @MethodSource("operationCodes")
-    void shouldResolveEndpointWithOperationCode(String path, HttpMethod httpMethod, String operationCode) {
-        // when/then.
-        assertThat(resolver.resolveEndpoint(path, httpMethod))
-                .hasValueSatisfying(
-                        endpoint -> assertThat(endpoint.operationCode()).isEqualTo(operationCode));
-    }
-
-    private static Stream<Arguments> authorityProtectedEndpoints() {
+    private static Stream<Arguments> resolvableRequests() {
         return Stream.of(
-                // USERS_MANAGEMENT
-                Arguments.of("/users-management/create", HttpMethod.POST, DefaultAuthority.USERS_MANAGEMENT),
-                Arguments.of("/users-management/delete", HttpMethod.DELETE, DefaultAuthority.USERS_MANAGEMENT),
-                Arguments.of("/users-management/status", HttpMethod.PUT, DefaultAuthority.USERS_MANAGEMENT),
-                Arguments.of("/users-management/update", HttpMethod.PUT, DefaultAuthority.USERS_MANAGEMENT),
+                // Non-templated paths.
+                Arguments.of("/applications/grid", HttpMethod.GET, MasterWebEndpoints.INSTANCES_READ),
+                Arguments.of("/users/login", HttpMethod.POST, MasterWebEndpoints.AUTH_LOGIN),
+                Arguments.of("/dashboard", HttpMethod.GET, MasterWebEndpoints.DASHBOARD_READ),
 
-                // USERS_VIEW
-                Arguments.of("/users/feed", HttpMethod.GET, DefaultAuthority.USERS_VIEW),
+                // Single trailing template variable.
+                Arguments.of("/env/feed/42", HttpMethod.GET, MasterWebEndpoints.ENVIRONMENT_READ),
+                Arguments.of("/caches/42", HttpMethod.DELETE, MasterWebEndpoints.CACHES_CLEAR_ALL),
 
-                // CACHES_TOGGLE
-                Arguments.of("/caches/i/cm/cn/disable", HttpMethod.POST, DefaultAuthority.CACHES_TOGGLE),
-                Arguments.of("/caches/i/cm/cn/enable", HttpMethod.POST, DefaultAuthority.CACHES_TOGGLE),
-                Arguments.of("/caches/i/cm/disable", HttpMethod.POST, DefaultAuthority.CACHES_TOGGLE),
-                Arguments.of("/caches/i/cm/enable", HttpMethod.POST, DefaultAuthority.CACHES_TOGGLE),
-
-                // CACHES_CLEAR
-                Arguments.of("/caches/i/cache/cn", HttpMethod.DELETE, DefaultAuthority.CACHES_CLEAR),
-                Arguments.of("/caches/i", HttpMethod.DELETE, DefaultAuthority.CACHES_CLEAR),
-
-                // GARBAGE_COLLECTOR
-                Arguments.of("/garbage-collector/logs/i/disable", HttpMethod.POST, DefaultAuthority.GARBAGE_COLLECTOR),
-                Arguments.of("/garbage-collector/logs/i/enable", HttpMethod.POST, DefaultAuthority.GARBAGE_COLLECTOR),
-                Arguments.of("/garbage-collector/i/trigger", HttpMethod.POST, DefaultAuthority.GARBAGE_COLLECTOR),
-
-                // SCHEDULED_TASKS_MODIFY
-                Arguments.of("/scheduled-tasks/i/disable", HttpMethod.POST, DefaultAuthority.SCHEDULED_TASKS_MODIFY),
-                Arguments.of("/scheduled-tasks/i/enable", HttpMethod.POST, DefaultAuthority.SCHEDULED_TASKS_MODIFY),
-                Arguments.of("/scheduled-tasks/i/execute", HttpMethod.POST, DefaultAuthority.SCHEDULED_TASKS_MODIFY),
+                // Template variable followed by a static segment.
+                Arguments.of("/garbage-collector/logs/42/enable", HttpMethod.POST, MasterWebEndpoints.GC_LOG_ENABLE),
                 Arguments.of(
-                        "/scheduled-tasks/i/modify/cron-expression",
+                        "/scheduled-tasks/42/modify/cron-expression",
                         HttpMethod.POST,
-                        DefaultAuthority.SCHEDULED_TASKS_MODIFY),
+                        MasterWebEndpoints.SCHEDULED_TASK_MODIFY_CRON),
+
+                // Multiple template variables.
+                Arguments.of("/metrics/42/jvm.memory.used", HttpMethod.GET, MasterWebEndpoints.METRIC_READ_ONE),
+                Arguments.of("/loggers/42/logger/com.foo.Bar", HttpMethod.GET, MasterWebEndpoints.LOGGER_READ_ONE),
+                Arguments.of("/caches/42/cache/orders", HttpMethod.DELETE, MasterWebEndpoints.CACHE_CLEAR_ONE),
                 Arguments.of(
-                        "/scheduled-tasks/i/modify/interval",
-                        HttpMethod.POST,
-                        DefaultAuthority.SCHEDULED_TASKS_MODIFY));
+                        "/caches/42/cacheManager/orders/disable", HttpMethod.POST, MasterWebEndpoints.CACHE_DISABLE),
+
+                // Multiple template variables followed by a static segment.
+                Arguments.of("/loggers/42/logger/com.foo.Bar/reset", HttpMethod.POST, MasterWebEndpoints.LOGGER_RESET));
     }
 
-    private static Stream<Arguments> unprotectedEndpoints() {
+    private static Stream<Arguments> unresolvableRequests() {
         return Stream.of(
-                Arguments.of("/env/feed/i", HttpMethod.GET),
-                Arguments.of("/caches/i", HttpMethod.GET),
-                Arguments.of("/garbage-collector/logs/i/status", HttpMethod.GET),
-                Arguments.of("/users/login", HttpMethod.POST));
-    }
+                // Completely unknown path.
+                Arguments.of("/unknown/path", HttpMethod.POST),
 
-    private static Stream<Arguments> unresolvableEndpoints() {
-        return Stream.of(
-                // wrong method for known path
-                Arguments.of("/caches/i/cm/cn/disable", HttpMethod.GET),
-                Arguments.of("/scheduled-tasks/i/modify/cron-expression", HttpMethod.GET),
+                // Known path, but wrong HTTP method.
+                Arguments.of("/users/login", HttpMethod.GET),
+                Arguments.of("/caches/42/cacheManager/orders/disable", HttpMethod.GET),
 
-                // unknown endpoint
-                Arguments.of("/unknown/path", HttpMethod.POST));
-    }
+                // Known prefix, but the path does not match any pattern in full.
+                Arguments.of("/caches", HttpMethod.GET),
+                Arguments.of("/env/feed", HttpMethod.GET),
+                Arguments.of("/dashboard/unknown", HttpMethod.GET),
 
-    private static Stream<Arguments> operationCodes() {
-        return Stream.of(
-                Arguments.of("/env/feed/i", HttpMethod.GET, "environment:read"),
-                Arguments.of("/beans/feed/i", HttpMethod.GET, "beans:read"),
-                Arguments.of("/caches/i", HttpMethod.DELETE, "caches:clear-all"),
-                Arguments.of("/caches/i", HttpMethod.GET, "caches:read"),
-                Arguments.of("/users-management/create", HttpMethod.POST, "users:create"),
-                Arguments.of("/users/login", HttpMethod.POST, "auth:login"));
+                // A template variable does not match extra trailing segments.
+                Arguments.of("/env/feed/42/extra", HttpMethod.GET));
     }
 }

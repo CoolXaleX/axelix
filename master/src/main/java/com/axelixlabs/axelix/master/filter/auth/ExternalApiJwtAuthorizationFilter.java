@@ -70,9 +70,7 @@ public class ExternalApiJwtAuthorizationFilter extends OncePerRequestFilter {
     private final Authorizer authorizer;
     private final List<OnInvalidTokenInRequest> onInvalidTokenInRequestInterceptors;
     private final List<OnAccessDenied> onAccessDeniedInterceptors;
-    private final List<OnSuccessfulResult> onSuccessIntercetpros;
-
-    public static final Set<String> PERMITS_ALL_PATHS = Set.of();
+    private final List<OnSuccessfulResult> onSuccessInterceptors;
 
     public ExternalApiJwtAuthorizationFilter(
             SecurityContextExecutor securityContextExecutor,
@@ -85,7 +83,7 @@ public class ExternalApiJwtAuthorizationFilter extends OncePerRequestFilter {
         this.authorizer = authorizer;
         this.onInvalidTokenInRequestInterceptors = getInterceptorsOfType(interceptors, OnInvalidTokenInRequest.class);
         this.onAccessDeniedInterceptors = getInterceptorsOfType(interceptors, OnAccessDenied.class);
-        this.onSuccessIntercetpros = getInterceptorsOfType(interceptors, OnSuccessfulResult.class);
+        this.onSuccessInterceptors = getInterceptorsOfType(interceptors, OnSuccessfulResult.class);
     }
 
     @Override
@@ -189,7 +187,7 @@ public class ExternalApiJwtAuthorizationFilter extends OncePerRequestFilter {
 
     private void onSuccessfulResult(HttpServletRequest request, WebRequestContext currentRequestContext, User user) {
 
-        onSuccessIntercetpros.forEach(it -> it.onSuccess(currentRequestContext.masterWebEndpoint(), request, user));
+        onSuccessInterceptors.forEach(it -> it.onSuccess(currentRequestContext.masterWebEndpoint(), request, user));
     }
 
     private static <T> List<T> getInterceptorsOfType(
