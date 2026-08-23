@@ -46,6 +46,7 @@ import com.axelixlabs.axelix.common.auth.exception.AuthorizationException;
 import com.axelixlabs.axelix.common.auth.exception.JwtProcessingException;
 import com.axelixlabs.axelix.common.auth.service.Authorizer;
 import com.axelixlabs.axelix.common.auth.service.JwtDecoderService;
+import com.axelixlabs.axelix.master.api.infrastructure.InfrastructureApiPaths;
 import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.CookieProperties;
 import com.axelixlabs.axelix.master.filter.FiltersOrder;
 import com.axelixlabs.axelix.master.filter.auth.requestcontext.MasterRequestContextInitFilter;
@@ -61,10 +62,9 @@ import com.axelixlabs.axelix.master.service.auth.intercept.web.OnWebIamEventInte
  * @author Nikita Kirillov
  * @author Mikhail Polivakha
  */
-@Order(FiltersOrder.COOKIE_BASED_JWT_AUTHORIZATION_FILTER)
-public class CookieBasedJwtAuthorizationFilter extends OncePerRequestFilter {
+@Order(FiltersOrder.EXTERNAL_API_JWT_AUTHORIZATION_FILTER)
+public class ExternalApiJwtAuthorizationFilter extends OncePerRequestFilter {
 
-    private final String authCookieName;
     private final SecurityContextExecutor securityContextExecutor;
     private final JwtDecoderService jwtDecoderService;
     private final Authorizer authorizer;
@@ -72,13 +72,14 @@ public class CookieBasedJwtAuthorizationFilter extends OncePerRequestFilter {
     private final List<OnAccessDenied> onAccessDeniedInterceptors;
     private final List<OnSuccessfulResult> onSuccessIntercetpros;
 
-    public CookieBasedJwtAuthorizationFilter(
+    public static final Set<String> PERMITS_ALL_PATHS = Set.of();
+
+    public ExternalApiJwtAuthorizationFilter(
             SecurityContextExecutor securityContextExecutor,
             JwtDecoderService jwtDecoderService,
             Authorizer authorizer,
             List<OnWebIamEventInterceptor> interceptors) {
 
-        this.authCookieName = CookieProperties.AUTH_COOKIE_NAME;
         this.securityContextExecutor = securityContextExecutor;
         this.jwtDecoderService = jwtDecoderService;
         this.authorizer = authorizer;
@@ -95,8 +96,8 @@ public class CookieBasedJwtAuthorizationFilter extends OncePerRequestFilter {
         // as well as actuator health endpoints
         // TODO: We must refactor it
         return !path.startsWith("/api/")
-                || path.startsWith("/api/actuator/health")
-                || path.startsWith("/api/actuator/prometheus")
+                || path.startsWith(InfrastructureApiPaths.HEALTH_STATUS_PATH)
+                || path.startsWith(InfrastructureApiPaths.PROMETHEUS_METRICS_SCRAPE_PATH)
                 || path.equalsIgnoreCase("/api/external/users/login")
                 || path.startsWith("/api/external/oauth2/callback")
                 || path.startsWith("/api/external/settings")
@@ -165,7 +166,7 @@ public class CookieBasedJwtAuthorizationFilter extends OncePerRequestFilter {
     private String resolveToken(Cookie[] cookies) {
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (authCookieName.equals(cookie.getName())) {
+                if (CookieProperties.AUTH_COOKIE_NAME.equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }

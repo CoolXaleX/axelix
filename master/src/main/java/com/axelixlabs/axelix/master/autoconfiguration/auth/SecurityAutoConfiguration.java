@@ -52,7 +52,7 @@ import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.JwtPropert
 import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.OAuth2Properties;
 import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.SuperAdminConfigurationProperties;
 import com.axelixlabs.axelix.master.autoconfiguration.mcp.ConditionalOnMcpServerEnabled;
-import com.axelixlabs.axelix.master.filter.auth.CookieBasedJwtAuthorizationFilter;
+import com.axelixlabs.axelix.master.filter.auth.ExternalApiJwtAuthorizationFilter;
 import com.axelixlabs.axelix.master.filter.auth.requestcontext.MasterRequestContextInitFilter;
 import com.axelixlabs.axelix.master.mcp.auth.handler.BasicMcpAuthenticationHandler;
 import com.axelixlabs.axelix.master.mcp.auth.handler.BearerMcpAuthenticationHandler;
@@ -164,13 +164,13 @@ public class SecurityAutoConfiguration {
         }
 
         @Bean
-        public CookieBasedJwtAuthorizationFilter cookieBasedJwtAuthorizationFilter(
+        public ExternalApiJwtAuthorizationFilter cookieBasedJwtAuthorizationFilter(
                 JwtDecoderService jwtDecoderService,
                 Authorizer authorizer,
                 SecurityContextExecutor securityContextExecutor,
                 ObjectProvider<OnWebIamEventInterceptor> iamEvaluationInterceptors) {
 
-            return new CookieBasedJwtAuthorizationFilter(
+            return new ExternalApiJwtAuthorizationFilter(
                     securityContextExecutor,
                     jwtDecoderService,
                     authorizer,
