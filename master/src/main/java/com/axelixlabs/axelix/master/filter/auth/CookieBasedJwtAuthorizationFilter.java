@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.axelixlabs.axelix.master.exception.auth.AuthenticationException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -124,6 +125,9 @@ public class CookieBasedJwtAuthorizationFilter extends OncePerRequestFilter {
                     () -> filterChain.doFilter(request, response), new DefaultSecurityContext(user, token));
         } catch (ServletException | IOException e) {
             // TODO: What do we do when the user encounters a general error?
+            throw e;
+        } catch (JwtProcessingException e) {
+            onInvalidTokenCallback(request, currentRequestContext);
             throw e;
         } catch (Exception e) {
             throw new ServletException(e);

@@ -52,8 +52,8 @@ public class WebRequestContextInitFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        return false; // TODO: add /api/external check
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return !request.getServletPath().startsWith(WebAutoConfiguration.EXTERNAL_API_PATH);
     }
 
     @Override
