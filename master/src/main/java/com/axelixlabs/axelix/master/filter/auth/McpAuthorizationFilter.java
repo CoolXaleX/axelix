@@ -29,6 +29,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.ai.mcp.server.common.autoconfigure.properties.McpServerStreamableHttpProperties;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -68,15 +69,18 @@ public class McpAuthorizationFilter extends OncePerRequestFilter {
     private final McpIdentityAccessManager mcpIdentityAccessManager;
     private final SecurityContextExecutor securityContextExecutor;
     private final JwtEncoderService jwtEncoderService;
+    private final McpServerStreamableHttpProperties mcpProperties;
 
     public McpAuthorizationFilter(
             ObjectProvider<OAuth2Properties> oAuth2PropertiesProvider,
             McpIdentityAccessManager mcpIdentityAccessManager,
             SecurityContextExecutor securityContextExecutor,
-            JwtEncoderService jwtEncoderService) {
+            JwtEncoderService jwtEncoderService,
+            McpServerStreamableHttpProperties mcpProperties) {
         this.mcpIdentityAccessManager = mcpIdentityAccessManager;
         this.securityContextExecutor = securityContextExecutor;
         this.jwtEncoderService = jwtEncoderService;
+        this.mcpProperties = mcpProperties;
 
         OAuth2Properties oAuth2Properties = oAuth2PropertiesProvider.getIfAvailable();
 
@@ -93,8 +97,7 @@ public class McpAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String requestURI = request.getRequestURI();
-        return !requestURI.startsWith("/api/mcp");
+        return !request.getRequestURI().startsWith(mcpProperties.getMcpEndpoint());
     }
 
     @Override

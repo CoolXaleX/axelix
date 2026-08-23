@@ -37,6 +37,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import org.springframework.ai.mcp.server.common.autoconfigure.properties.McpServerStreamableHttpProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.boot.resttestclient.TestRestTemplate;
@@ -101,6 +102,9 @@ abstract class AbstractMcpAuthorizationFilterTest {
 
     @Autowired
     protected UserRepository userRepository;
+
+    @Autowired
+    protected McpServerStreamableHttpProperties mcpProperties;
 
     @BeforeAll
     static void startMockWebServer() throws IOException {
@@ -169,12 +173,14 @@ abstract class AbstractMcpAuthorizationFilterTest {
             registerInstanceForBeansTool(activeInstanceId);
             HttpHeaders headers = commonMcpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, "Basic " + basicCredentials("admin", "admin"));
-            String mcpSessionId = initializeMcpSession(restTemplate, headers);
+            String mcpSessionId = initializeMcpSession(restTemplate, headers, mcpProperties);
             headers.set(MCP_SESSION_ID_HEADER, mcpSessionId);
 
             // when.
             ResponseEntity<String> response = restTemplate.postForEntity(
-                    "/api/mcp", new HttpEntity<>(buildToolsCallRequest(activeInstanceId), headers), String.class);
+                    mcpProperties.getMcpEndpoint(),
+                    new HttpEntity<>(buildToolsCallRequest(activeInstanceId), headers),
+                    String.class);
 
             // then.
             assertSuccessfulToolCallResponse(response);
@@ -194,12 +200,14 @@ abstract class AbstractMcpAuthorizationFilterTest {
             registerInstanceForBeansTool(activeInstanceId);
             HttpHeaders headers = commonMcpHeaders();
             headers.set(HttpHeaders.AUTHORIZATION, "Basic " + basicCredentials(username, password));
-            String mcpSessionId = initializeMcpSession(restTemplate, headers);
+            String mcpSessionId = initializeMcpSession(restTemplate, headers, mcpProperties);
             headers.set(MCP_SESSION_ID_HEADER, mcpSessionId);
 
             // when.
             ResponseEntity<String> response = restTemplate.postForEntity(
-                    "/api/mcp", new HttpEntity<>(buildToolsCallRequest(activeInstanceId), headers), String.class);
+                    mcpProperties.getMcpEndpoint(),
+                    new HttpEntity<>(buildToolsCallRequest(activeInstanceId), headers),
+                    String.class);
 
             // then.
             assertSuccessfulToolCallResponse(response);
@@ -212,8 +220,8 @@ abstract class AbstractMcpAuthorizationFilterTest {
             HttpHeaders headers = commonMcpHeaders();
 
             // when.
-            ResponseEntity<String> response =
-                    restTemplate.postForEntity("/api/mcp", new HttpEntity<>(request, headers), String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    mcpProperties.getMcpEndpoint(), new HttpEntity<>(request, headers), String.class);
 
             // then.
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
@@ -227,8 +235,8 @@ abstract class AbstractMcpAuthorizationFilterTest {
             headers.set(HttpHeaders.AUTHORIZATION, "Basic " + basicCredentials("admin", "wrong-password"));
 
             // when.
-            ResponseEntity<String> response =
-                    restTemplate.postForEntity("/api/mcp", new HttpEntity<>(request, headers), String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    mcpProperties.getMcpEndpoint(), new HttpEntity<>(request, headers), String.class);
 
             // then.
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
@@ -248,7 +256,7 @@ abstract class AbstractMcpAuthorizationFilterTest {
 
             // when.
             ResponseEntity<String> response = restTemplate.postForEntity(
-                    "/api/mcp",
+                    mcpProperties.getMcpEndpoint(),
                     new HttpEntity<>(buildToolsCallRequest(activeInstanceId, "clearAllCaches"), headers),
                     String.class);
 
@@ -269,7 +277,7 @@ abstract class AbstractMcpAuthorizationFilterTest {
 
             // when.
             ResponseEntity<String> response = restTemplate.postForEntity(
-                    "/api/mcp", new HttpEntity<>(buildInitializeRequest(), headers), String.class);
+                    mcpProperties.getMcpEndpoint(), new HttpEntity<>(buildInitializeRequest(), headers), String.class);
 
             // then.
             assertSuccessfulInitializeResponse(response);
@@ -304,12 +312,14 @@ abstract class AbstractMcpAuthorizationFilterTest {
             when(oidcClient.validateAccessTokenAndExtractUserInfo(token)).thenReturn(userInfoJson);
             when(userInfoJsonAccessor.extractRole(userInfoJson)).thenReturn(TestRoles.VIEWER);
             HttpHeaders headers = bearerAuthHeaders(token);
-            String mcpSessionId = initializeMcpSession(restTemplate, headers);
+            String mcpSessionId = initializeMcpSession(restTemplate, headers, mcpProperties);
             headers.set(MCP_SESSION_ID_HEADER, mcpSessionId);
 
             // when.
             ResponseEntity<String> response = restTemplate.postForEntity(
-                    "/api/mcp", new HttpEntity<>(buildToolsCallRequest(activeInstanceId), headers), String.class);
+                    mcpProperties.getMcpEndpoint(),
+                    new HttpEntity<>(buildToolsCallRequest(activeInstanceId), headers),
+                    String.class);
 
             // then.
             assertSuccessfulToolCallResponse(response);
@@ -327,7 +337,7 @@ abstract class AbstractMcpAuthorizationFilterTest {
 
             // when.
             ResponseEntity<String> response = restTemplate.postForEntity(
-                    "/api/mcp", new HttpEntity<>(buildInitializeRequest(), headers), String.class);
+                    mcpProperties.getMcpEndpoint(), new HttpEntity<>(buildInitializeRequest(), headers), String.class);
 
             // then.
             assertSuccessfulInitializeResponse(response);
@@ -340,8 +350,8 @@ abstract class AbstractMcpAuthorizationFilterTest {
             HttpHeaders headers = commonMcpHeaders();
 
             // when.
-            ResponseEntity<String> response =
-                    restTemplate.postForEntity("/api/mcp", new HttpEntity<>(request, headers), String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    mcpProperties.getMcpEndpoint(), new HttpEntity<>(request, headers), String.class);
 
             // then.
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
@@ -362,8 +372,8 @@ abstract class AbstractMcpAuthorizationFilterTest {
             HttpHeaders headers = bearerAuthHeaders(token);
 
             // when.
-            ResponseEntity<String> response =
-                    restTemplate.postForEntity("/api/mcp", new HttpEntity<>(request, headers), String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    mcpProperties.getMcpEndpoint(), new HttpEntity<>(request, headers), String.class);
 
             // then.
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
@@ -387,7 +397,7 @@ abstract class AbstractMcpAuthorizationFilterTest {
 
             // when.
             ResponseEntity<String> response = restTemplate.postForEntity(
-                    "/api/mcp",
+                    mcpProperties.getMcpEndpoint(),
                     new HttpEntity<>(buildToolsCallRequest(activeInstanceId, "clearAllCaches"), headers),
                     String.class);
 
@@ -466,14 +476,17 @@ abstract class AbstractMcpAuthorizationFilterTest {
         return headers;
     }
 
-    private static String initializeMcpSession(TestRestTemplate restTemplate, HttpHeaders authHeaders) {
+    private static String initializeMcpSession(
+            TestRestTemplate restTemplate, HttpHeaders authHeaders, McpServerStreamableHttpProperties mcpProperties) {
         HttpHeaders initializeHeaders = commonMcpHeaders();
         initializeHeaders.set(HttpHeaders.AUTHORIZATION, authHeaders.getFirst(HttpHeaders.AUTHORIZATION));
 
         String initializeRequestBody = buildInitializeRequest();
 
         ResponseEntity<String> initializeResponse = restTemplate.postForEntity(
-                "/api/mcp", new HttpEntity<>(initializeRequestBody, initializeHeaders), String.class);
+                mcpProperties.getMcpEndpoint(),
+                new HttpEntity<>(initializeRequestBody, initializeHeaders),
+                String.class);
 
         assertThat(initializeResponse.getStatusCode().value()).isEqualTo(HttpStatus.OK.value());
 

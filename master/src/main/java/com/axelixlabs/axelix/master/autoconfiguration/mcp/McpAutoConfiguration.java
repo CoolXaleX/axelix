@@ -21,6 +21,7 @@ import java.util.List;
 
 import tools.jackson.databind.json.JsonMapper;
 
+import org.springframework.ai.mcp.server.common.autoconfigure.properties.McpServerStreamableHttpProperties;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -54,9 +55,14 @@ public class McpAutoConfiguration {
             ObjectProvider<OAuth2Properties> oAuth2PropertiesObjectProvider,
             McpIdentityAccessManager mcpIdentityAccessManager,
             SecurityContextExecutor securityContextExecutor,
-            JwtEncoderService jwtEncoderService) {
+            JwtEncoderService jwtEncoderService,
+            McpServerStreamableHttpProperties mcpProperties) {
         return new McpAuthorizationFilter(
-                oAuth2PropertiesObjectProvider, mcpIdentityAccessManager, securityContextExecutor, jwtEncoderService);
+                oAuth2PropertiesObjectProvider,
+                mcpIdentityAccessManager,
+                securityContextExecutor,
+                jwtEncoderService,
+                mcpProperties);
     }
 
     @Bean
