@@ -163,13 +163,12 @@ public class SecurityAutoConfiguration {
 
         @Bean
         public CookieBasedJwtAuthorizationFilter cookieBasedJwtAuthorizationFilter(
-                CookieProperties cookieProperties,
                 JwtDecoderService jwtDecoderService,
                 Authorizer authorizer,
                 SecurityContextExecutor securityContextExecutor,
                 ObjectProvider<OnWebIamEventInterceptor> iamEvaluationInterceptors) {
+
             return new CookieBasedJwtAuthorizationFilter(
-                    cookieProperties.getAuthCookieName(),
                     securityContextExecutor,
                     jwtDecoderService,
                     authorizer,

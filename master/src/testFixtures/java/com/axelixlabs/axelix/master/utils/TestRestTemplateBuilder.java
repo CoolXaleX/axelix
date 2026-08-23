@@ -65,7 +65,6 @@ public class TestRestTemplateBuilder {
     // kind of have to lean towards a listener here.
     private int testTomcatServerPort;
 
-    private final CookieProperties cookieProperties;
     private final JwtEncoderService defaultJwtEncoderService;
     private final JwtEncoderService expiredJwtEncoderService;
 
@@ -74,11 +73,7 @@ public class TestRestTemplateBuilder {
         this.testTomcatServerPort = event.getWebServer().getPort();
     }
 
-    public TestRestTemplateBuilder(
-            CookieProperties cookieProperties,
-            JwtProperties jwtProperties,
-            JwtEncoderService defaultJwtEncoderService) {
-        this.cookieProperties = cookieProperties;
+    public TestRestTemplateBuilder(JwtProperties jwtProperties, JwtEncoderService defaultJwtEncoderService) {
         this.defaultJwtEncoderService = defaultJwtEncoderService;
         this.expiredJwtEncoderService =
                 new DefaultJwtEncoderService(jwtProperties.algorithm(), jwtProperties.signingKey(), Duration.ZERO);
@@ -141,7 +136,7 @@ public class TestRestTemplateBuilder {
     private TestRestTemplate buildWithToken(String token) {
         return new TestRestTemplate(new RestTemplateBuilder()
                 .baseUri(HOST + testTomcatServerPort)
-                .defaultHeader(HttpHeaders.COOKIE, "%s=%s".formatted(cookieProperties.getAuthCookieName(), token)));
+                .defaultHeader(HttpHeaders.COOKIE, "%s=%s".formatted(CookieProperties.AUTH_COOKIE_NAME, token)));
     }
 
     private TestRestTemplate buildWithTokenInAuthorizationHeader(String token) {

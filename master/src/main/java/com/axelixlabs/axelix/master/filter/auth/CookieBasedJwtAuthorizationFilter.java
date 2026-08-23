@@ -46,6 +46,7 @@ import com.axelixlabs.axelix.common.auth.exception.AuthorizationException;
 import com.axelixlabs.axelix.common.auth.exception.JwtProcessingException;
 import com.axelixlabs.axelix.common.auth.service.Authorizer;
 import com.axelixlabs.axelix.common.auth.service.JwtDecoderService;
+import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.CookieProperties;
 import com.axelixlabs.axelix.master.filter.FiltersOrder;
 import com.axelixlabs.axelix.master.service.auth.intercept.web.OnAccessDenied;
 import com.axelixlabs.axelix.master.service.auth.intercept.web.OnInvalidTokenInRequest;
@@ -70,12 +71,12 @@ public class CookieBasedJwtAuthorizationFilter extends OncePerRequestFilter {
     private final List<OnSuccessfulResult> onSuccessIntercetpros;
 
     public CookieBasedJwtAuthorizationFilter(
-            String authCookieName,
             SecurityContextExecutor securityContextExecutor,
             JwtDecoderService jwtDecoderService,
             Authorizer authorizer,
             List<OnWebIamEventInterceptor> interceptors) {
-        this.authCookieName = authCookieName;
+
+        this.authCookieName = CookieProperties.AUTH_COOKIE_NAME;
         this.securityContextExecutor = securityContextExecutor;
         this.jwtDecoderService = jwtDecoderService;
         this.authorizer = authorizer;

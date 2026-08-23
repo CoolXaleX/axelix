@@ -83,9 +83,6 @@ class UserApiTest extends AbstractProtectedEndpointTest {
     private TestRestTemplateBuilder restTemplateBuilder;
 
     @Autowired
-    private CookieProperties cookieProperties;
-
-    @Autowired
     private JwtProperties jwtProperties;
 
     @Autowired
@@ -121,7 +118,7 @@ class UserApiTest extends AbstractProtectedEndpointTest {
 
         String cookieHeader = response.getHeaders().getFirst(HttpHeaders.SET_COOKIE);
         assertThat(cookieHeader).isNotNull();
-        assertThat(cookieHeader).contains(cookieProperties.getAuthCookieName());
+        assertThat(cookieHeader).contains(CookieProperties.AUTH_COOKIE_NAME);
         assertThat(cookieHeader)
                 .contains(String.valueOf(jwtProperties.lifespan().getSeconds()));
         assertThat(cookieHeader).contains("HttpOnly");
@@ -224,7 +221,7 @@ class UserApiTest extends AbstractProtectedEndpointTest {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.add(HttpHeaders.COOKIE, cookieProperties.getAuthCookieName() + "=" + token);
+        headers.add(HttpHeaders.COOKIE, CookieProperties.AUTH_COOKIE_NAME + "=" + token);
 
         HttpEntity<Void> logoutEntity = new HttpEntity<>(headers);
 
@@ -241,9 +238,9 @@ class UserApiTest extends AbstractProtectedEndpointTest {
                     assertThat(cookieHeader.toLowerCase()).contains("max-age=0");
                 });
         assertThat(logoutResponse.getHeaders().get(HttpHeaders.SET_COOKIE))
-                .anySatisfy(cookieHeader -> assertThat(cookieHeader).contains(cookieProperties.getAuthCookieName()))
+                .anySatisfy(cookieHeader -> assertThat(cookieHeader).contains(CookieProperties.AUTH_COOKIE_NAME))
                 .anySatisfy(
-                        cookieHeader -> assertThat(cookieHeader).contains(cookieProperties.getAuthoritiesCookieName()));
+                        cookieHeader -> assertThat(cookieHeader).contains(CookieProperties.AUTHORITIES_COOKIE_NAME));
         assertSuccessfulCallback(MasterWebEndpoints.AUTH_LOGOUT);
     }
 
