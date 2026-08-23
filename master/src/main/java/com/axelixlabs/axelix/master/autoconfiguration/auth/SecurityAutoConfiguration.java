@@ -62,7 +62,7 @@ import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpointResolver;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.auth.encoder.SuperAdminPasswordEncoder;
-import com.axelixlabs.axelix.master.service.auth.intercept.IamEvaluationInterceptor;
+import com.axelixlabs.axelix.master.service.auth.intercept.web.OnWebIamEventInterceptor;
 import com.axelixlabs.axelix.master.service.auth.oauth.DefaultOidcClient;
 import com.axelixlabs.axelix.master.service.auth.oauth.JmesPathJsonInspector;
 import com.axelixlabs.axelix.master.service.auth.oauth.OidcAuthorizeEndpointAdditionalParametersProvider;
@@ -167,7 +167,7 @@ public class SecurityAutoConfiguration {
                 JwtDecoderService jwtDecoderService,
                 Authorizer authorizer,
                 SecurityContextExecutor securityContextExecutor,
-                ObjectProvider<IamEvaluationInterceptor> iamEvaluationInterceptors) {
+                ObjectProvider<OnWebIamEventInterceptor> iamEvaluationInterceptors) {
             return new CookieBasedJwtAuthorizationFilter(
                     cookieProperties.getAuthCookieName(),
                     securityContextExecutor,

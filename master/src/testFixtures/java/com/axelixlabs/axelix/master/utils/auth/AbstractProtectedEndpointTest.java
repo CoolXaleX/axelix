@@ -20,6 +20,7 @@ package com.axelixlabs.axelix.master.utils.auth;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -62,6 +63,7 @@ public abstract class AbstractProtectedEndpointTest {
      */
     protected abstract Set<TestableMasterWebEndpoint> endpointsUnderTest();
 
+    @AfterEach
     @BeforeEach
     void resetCapturingInterceptor() {
         capturingIamInterceptor.reset();
@@ -85,6 +87,8 @@ public abstract class AbstractProtectedEndpointTest {
                     .isNotNull()
                     .extracting(MasterWebEndpoint::operationCode)
                     .isEqualTo(endpointUnderTest.target().operationCode());
+            assertThat(capturingIamInterceptor.accessDeniedEndpoint()).isNull();
+            assertThat(capturingIamInterceptor.successfulEndpoint()).isNull();
 
             assertThat(response.getStatusCode().value()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         }
@@ -113,6 +117,8 @@ public abstract class AbstractProtectedEndpointTest {
                     .isNotNull()
                     .extracting(MasterWebEndpoint::operationCode)
                     .isEqualTo(endpointUnderTest.target().operationCode());
+            assertThat(capturingIamInterceptor.invalidTokenEndpoint()).isNull();
+            assertThat(capturingIamInterceptor.successfulEndpoint()).isNull();
 
             assertThat(response.getStatusCode().value()).isEqualTo(HttpStatus.FORBIDDEN.value());
         }
@@ -131,4 +137,13 @@ public abstract class AbstractProtectedEndpointTest {
      * @param url the real URL to be used ({@link MasterWebEndpoint} has only the template of the URL).
      */
     public record TestableMasterWebEndpoint(MasterWebEndpoint target, String url) {}
+
+    protected void assertSuccessfulCallback(MasterWebEndpoint target) {
+        assertThat(capturingIamInterceptor.successfulEndpoint())
+                .isNotNull()
+                .extracting(MasterWebEndpoint::operationCode)
+                .isEqualTo(target.operationCode());
+        assertThat(capturingIamInterceptor.invalidTokenEndpoint()).isNull();
+        assertThat(capturingIamInterceptor.accessDeniedEndpoint()).isNull();
+    }
 }

@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.master.service.auth.intercept;
+package com.axelixlabs.axelix.master.service.auth.intercept.web;
 
 /**
  * A marker interface that represents a callback to be called in the
@@ -23,4 +23,4 @@ package com.axelixlabs.axelix.master.service.auth.intercept;
  *
  * @author Mikhail Polivakha
  */
-public interface IamEvaluationInterceptor {}
+public interface OnWebIamEventInterceptor {}

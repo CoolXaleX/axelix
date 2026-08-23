@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.axelixlabs.axelix.master.service.auth.intercept;
+package com.axelixlabs.axelix.master.service.auth.intercept.web;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -23,12 +23,12 @@ import com.axelixlabs.axelix.common.auth.core.User;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
 
 /**
- * {@link IamEvaluationInterceptor} to be invoked when the {@link User} has no
+ * {@link OnWebIamEventInterceptor} to be invoked when the {@link User} has no
  * permissions to access the given {@link MasterWebEndpoint}.
  *
  * @author Mikhail Polivakha
  */
-public interface OnAccessDenied extends IamEvaluationInterceptor {
+public interface OnAccessDenied extends OnWebIamEventInterceptor {
 
     /**
      * Actual callback.
@@ -38,5 +38,5 @@ public interface OnAccessDenied extends IamEvaluationInterceptor {
      * @param user the user (assuming the authentication has already passed at that point)
      *             that attempts to access the resource/exectue given action
      */
-    void onRequest(MasterWebEndpoint target, HttpServletRequest request, User user);
+    void onAccessDenied(MasterWebEndpoint target, HttpServletRequest request, User user);
 }

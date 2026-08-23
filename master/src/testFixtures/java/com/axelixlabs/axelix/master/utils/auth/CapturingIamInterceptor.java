@@ -23,8 +23,9 @@ import org.jspecify.annotations.Nullable;
 
 import com.axelixlabs.axelix.common.auth.core.User;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
-import com.axelixlabs.axelix.master.service.auth.intercept.OnAccessDenied;
-import com.axelixlabs.axelix.master.service.auth.intercept.OnInvalidTokenInRequest;
+import com.axelixlabs.axelix.master.service.auth.intercept.web.OnAccessDenied;
+import com.axelixlabs.axelix.master.service.auth.intercept.web.OnInvalidTokenInRequest;
+import com.axelixlabs.axelix.master.service.auth.intercept.web.OnSuccessfulResult;
 
 /**
  * Test IAM interceptor that records the {@link MasterWebEndpoint} each auth callback is invoked with. It lets
@@ -33,19 +34,25 @@ import com.axelixlabs.axelix.master.service.auth.intercept.OnInvalidTokenInReque
  *
  * @author Mikhail Polivakha
  */
-public class CapturingIamInterceptor implements OnInvalidTokenInRequest, OnAccessDenied {
+public class CapturingIamInterceptor implements OnInvalidTokenInRequest, OnAccessDenied, OnSuccessfulResult {
 
     private @Nullable MasterWebEndpoint invalidTokenEndpoint;
     private @Nullable MasterWebEndpoint accessDeniedEndpoint;
+    private @Nullable MasterWebEndpoint successfulEndpoint;
 
     @Override
-    public void onRequest(MasterWebEndpoint target, HttpServletRequest request) {
+    public void onInvalidToken(MasterWebEndpoint target, HttpServletRequest request) {
         this.invalidTokenEndpoint = target;
     }
 
     @Override
-    public void onRequest(MasterWebEndpoint target, HttpServletRequest request, User user) {
+    public void onAccessDenied(MasterWebEndpoint target, HttpServletRequest request, User user) {
         this.accessDeniedEndpoint = target;
+    }
+
+    @Override
+    public void onSuccess(MasterWebEndpoint target, HttpServletRequest request, User user) {
+        this.successfulEndpoint = target;
     }
 
     /**
@@ -55,6 +62,7 @@ public class CapturingIamInterceptor implements OnInvalidTokenInRequest, OnAcces
     public void reset() {
         this.invalidTokenEndpoint = null;
         this.accessDeniedEndpoint = null;
+        this.successfulEndpoint = null;
     }
 
     public @Nullable MasterWebEndpoint invalidTokenEndpoint() {
@@ -63,5 +71,9 @@ public class CapturingIamInterceptor implements OnInvalidTokenInRequest, OnAcces
 
     public @Nullable MasterWebEndpoint accessDeniedEndpoint() {
         return accessDeniedEndpoint;
+    }
+
+    public @Nullable MasterWebEndpoint successfulEndpoint() {
+        return successfulEndpoint;
     }
 }

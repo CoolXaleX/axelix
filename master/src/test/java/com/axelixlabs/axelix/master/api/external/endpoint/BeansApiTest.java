@@ -289,6 +289,7 @@ class BeansApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_BEANS_JSON);
+        assertSuccessfulCallback(MasterWebEndpoints.BEANS_READ);
     }
 
     @Test

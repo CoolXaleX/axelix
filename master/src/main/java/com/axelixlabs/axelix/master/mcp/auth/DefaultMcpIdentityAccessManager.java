@@ -69,7 +69,9 @@ public class DefaultMcpIdentityAccessManager implements McpIdentityAccessManager
                 mcpAuthenticationHandler,
                 "Unable to find McpAuthenticationHandler to handle the authentication for this request, please report this to maintainers");
 
-        @SuppressWarnings("NullAway") // null away does not recognize custom not null assertion
+        @SuppressWarnings(
+                "NullAway") // null away does not reco@SuppressWarnings({"PMD.CyclomaticComplexity"})gnize custom not
+        // null assertion
         User authenticatedUser = mcpAuthenticationHandler.handleAuthentication(authorizationHeader.credential());
 
         Optional<McpEndpoint> mcpEndpoint = mcpEndpointResolver.resolve(jsonRpcRequest);

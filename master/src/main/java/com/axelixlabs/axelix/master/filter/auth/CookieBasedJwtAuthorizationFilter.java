@@ -47,9 +47,10 @@ import com.axelixlabs.axelix.common.auth.exception.JwtProcessingException;
 import com.axelixlabs.axelix.common.auth.service.Authorizer;
 import com.axelixlabs.axelix.common.auth.service.JwtDecoderService;
 import com.axelixlabs.axelix.master.filter.FiltersOrder;
-import com.axelixlabs.axelix.master.service.auth.intercept.IamEvaluationInterceptor;
-import com.axelixlabs.axelix.master.service.auth.intercept.OnAccessDenied;
-import com.axelixlabs.axelix.master.service.auth.intercept.OnInvalidTokenInRequest;
+import com.axelixlabs.axelix.master.service.auth.intercept.web.OnAccessDenied;
+import com.axelixlabs.axelix.master.service.auth.intercept.web.OnInvalidTokenInRequest;
+import com.axelixlabs.axelix.master.service.auth.intercept.web.OnSuccessfulResult;
+import com.axelixlabs.axelix.master.service.auth.intercept.web.OnWebIamEventInterceptor;
 
 /**
  * Auth filter that is based on the {@link org.springframework.http.HttpHeaders#SET_COOKIE Set-Cookie} header.
@@ -66,19 +67,21 @@ public class CookieBasedJwtAuthorizationFilter extends OncePerRequestFilter {
     private final Authorizer authorizer;
     private final List<OnInvalidTokenInRequest> onInvalidTokenInRequestInterceptors;
     private final List<OnAccessDenied> onAccessDeniedInterceptors;
+    private final List<OnSuccessfulResult> onSuccessIntercetpros;
 
     public CookieBasedJwtAuthorizationFilter(
             String authCookieName,
             SecurityContextExecutor securityContextExecutor,
             JwtDecoderService jwtDecoderService,
             Authorizer authorizer,
-            List<IamEvaluationInterceptor> interceptors) {
+            List<OnWebIamEventInterceptor> interceptors) {
         this.authCookieName = authCookieName;
         this.securityContextExecutor = securityContextExecutor;
         this.jwtDecoderService = jwtDecoderService;
         this.authorizer = authorizer;
         this.onInvalidTokenInRequestInterceptors = getInterceptorsOfType(interceptors, OnInvalidTokenInRequest.class);
         this.onAccessDeniedInterceptors = getInterceptorsOfType(interceptors, OnAccessDenied.class);
+        this.onSuccessIntercetpros = getInterceptorsOfType(interceptors, OnSuccessfulResult.class);
     }
 
     @Override
@@ -122,7 +125,11 @@ public class CookieBasedJwtAuthorizationFilter extends OncePerRequestFilter {
             authorizeUser(request, currentRequestContext, user);
 
             securityContextExecutor.runWithinSecurityContext(
-                    () -> filterChain.doFilter(request, response), new DefaultSecurityContext(user, token));
+                    () -> {
+                        filterChain.doFilter(request, response);
+                        onSuccessfulResult(request, currentRequestContext, user);
+                    },
+                    new DefaultSecurityContext(user, token));
         } catch (ServletException | IOException e) {
             // TODO: What do we do when the user encounters a general error?
             throw e;
@@ -167,17 +174,22 @@ public class CookieBasedJwtAuthorizationFilter extends OncePerRequestFilter {
     private void onInvalidTokenCallback(HttpServletRequest request, WebRequestContext currentRequestContext) {
 
         onInvalidTokenInRequestInterceptors.forEach(
-                it -> it.onRequest(currentRequestContext.masterWebEndpoint(), request));
+                it -> it.onInvalidToken(currentRequestContext.masterWebEndpoint(), request));
     }
 
     private void onAccessDenied(HttpServletRequest request, WebRequestContext currentRequestContext, User user) {
 
         onAccessDeniedInterceptors.forEach(
-                it -> it.onRequest(currentRequestContext.masterWebEndpoint(), request, user));
+                it -> it.onAccessDenied(currentRequestContext.masterWebEndpoint(), request, user));
+    }
+
+    private void onSuccessfulResult(HttpServletRequest request, WebRequestContext currentRequestContext, User user) {
+
+        onSuccessIntercetpros.forEach(it -> it.onSuccess(currentRequestContext.masterWebEndpoint(), request, user));
     }
 
     private static <T> List<T> getInterceptorsOfType(
-            List<IamEvaluationInterceptor> interceptors, Class<T> interceptorType) {
+            List<OnWebIamEventInterceptor> interceptors, Class<T> interceptorType) {
         return interceptors.stream()
                 .filter(it -> interceptorType.isAssignableFrom(ProxyUtils.getUserClass(it.getClass())))
                 .map(interceptorType::cast)
