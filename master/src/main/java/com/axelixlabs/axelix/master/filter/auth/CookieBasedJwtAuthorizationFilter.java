@@ -100,6 +100,7 @@ public class CookieBasedJwtAuthorizationFilter extends OncePerRequestFilter {
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
