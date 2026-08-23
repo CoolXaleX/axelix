@@ -35,6 +35,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.axelixlabs.axelix.common.auth.core.DefaultRole;
 import com.axelixlabs.axelix.common.auth.core.Role;
+import com.axelixlabs.axelix.common.auth.core.User;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoint;
 import com.axelixlabs.axelix.master.utils.CapturingIamInterceptor;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
@@ -144,6 +145,16 @@ public abstract class AbstractProtectedEndpointTest {
                 .isNotNull()
                 .extracting(MasterWebEndpoint::operationCode)
                 .isEqualTo(target.operationCode());
+        assertThat(capturingIamInterceptor.invalidTokenEndpoint()).isNull();
+        assertThat(capturingIamInterceptor.accessDeniedEndpoint()).isNull();
+    }
+
+    protected void assertSuccessfulCallback(MasterWebEndpoint expectedTarget, User expectedActor) {
+        assertThat(capturingIamInterceptor.successfulEndpoint())
+                .isNotNull()
+                .extracting(MasterWebEndpoint::operationCode)
+                .isEqualTo(expectedTarget.operationCode());
+        assertThat(capturingIamInterceptor.actor()).isEqualTo(expectedActor);
         assertThat(capturingIamInterceptor.invalidTokenEndpoint()).isNull();
         assertThat(capturingIamInterceptor.accessDeniedEndpoint()).isNull();
     }

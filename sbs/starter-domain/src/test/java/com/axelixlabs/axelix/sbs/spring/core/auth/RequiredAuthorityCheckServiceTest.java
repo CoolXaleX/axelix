@@ -17,19 +17,13 @@
  */
 package com.axelixlabs.axelix.sbs.spring.core.auth;
 
-import java.util.Set;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import com.axelixlabs.axelix.common.auth.core.Authority;
 import com.axelixlabs.axelix.common.auth.core.DefaultAuthority;
-import com.axelixlabs.axelix.common.auth.core.DefaultRole;
 import com.axelixlabs.axelix.common.auth.core.DefaultSecurityContext;
-import com.axelixlabs.axelix.common.auth.core.PasswordlessUser;
-import com.axelixlabs.axelix.common.auth.core.Role;
 import com.axelixlabs.axelix.common.auth.core.SecurityContext;
-import com.axelixlabs.axelix.common.auth.core.User;
+import com.axelixlabs.axelix.common.testfixtures.UserUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -56,7 +50,7 @@ class RequiredAuthorityCheckServiceTest {
     @Test
     void hasAuthority_ShouldReturnTrue_WhenSecurityContextHasUserWithAuthority() {
         securityContext = new DefaultSecurityContext(
-                createUserWithAuthorities(DefaultAuthority.CONFIG_PROPS_VALUES_READ), "testToken");
+                UserUtils.fromAuthorities(DefaultAuthority.CONFIG_PROPS_VALUES_READ), "testToken");
 
         securityContextExecutor.runWithinSecurityContext(
                 () -> {
@@ -68,7 +62,7 @@ class RequiredAuthorityCheckServiceTest {
 
     @Test
     void hasAuthority_ShouldReturnFalse_WhenSecurityContextHasUserWithoutAuthority() {
-        securityContext = new DefaultSecurityContext(createUserWithAuthorities(), "testToken");
+        securityContext = new DefaultSecurityContext(UserUtils.fromAuthorities(), "testToken");
 
         securityContextExecutor.runWithinSecurityContext(
                 () -> {
@@ -82,11 +76,5 @@ class RequiredAuthorityCheckServiceTest {
     void hasAuthority_ShouldThrowException_WhenNoSecurityContext() {
         assertThatThrownBy(() -> subject.hasAuthority(DefaultAuthority.CONFIG_PROPS_VALUES_READ))
                 .isInstanceOf(IllegalStateException.class);
-    }
-
-    private static User createUserWithAuthorities(DefaultAuthority... authorities) {
-        Set<Authority> authoritySet = Set.of(authorities);
-        Role role = new DefaultRole("testRole", authoritySet);
-        return new PasswordlessUser("testUser", Set.of(role));
     }
 }

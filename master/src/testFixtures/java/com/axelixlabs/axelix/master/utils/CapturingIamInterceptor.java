@@ -19,6 +19,7 @@ package com.axelixlabs.axelix.master.utils;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import com.axelixlabs.axelix.common.auth.core.User;
@@ -35,11 +36,13 @@ import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
  *
  * @author Mikhail Polivakha
  */
+@NullMarked
 public class CapturingIamInterceptor implements OnAuthenticationFailure, OnAccessDenied, OnSuccessfulResult {
 
     private @Nullable MasterWebEndpoint invalidTokenEndpoint;
     private @Nullable MasterWebEndpoint accessDeniedEndpoint;
     private @Nullable MasterWebEndpoint successfulEndpoint;
+    private @Nullable User actor;
 
     @Override
     public void onAuthenticationFailure(MasterWebEndpoint target, HttpServletRequest request) {
@@ -49,11 +52,13 @@ public class CapturingIamInterceptor implements OnAuthenticationFailure, OnAcces
     @Override
     public void onAccessDenied(MasterWebEndpoint target, HttpServletRequest request, User user) {
         this.accessDeniedEndpoint = target;
+        this.actor = user;
     }
 
     @Override
     public void onSuccess(MasterWebEndpoint target, HttpServletRequest request, User user) {
         this.successfulEndpoint = target;
+        this.actor = user;
     }
 
     /**
@@ -76,5 +81,9 @@ public class CapturingIamInterceptor implements OnAuthenticationFailure, OnAcces
 
     public @Nullable MasterWebEndpoint successfulEndpoint() {
         return successfulEndpoint;
+    }
+
+    public @Nullable User actor() {
+        return actor;
     }
 }
