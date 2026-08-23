@@ -18,6 +18,7 @@
 package com.axelixlabs.axelix.master.api.external.endpoint;
 
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,15 +38,12 @@ import com.axelixlabs.axelix.master.domain.UserEntity;
 import com.axelixlabs.axelix.master.domain.UserOrigin;
 import com.axelixlabs.axelix.master.domain.UserStatus;
 import com.axelixlabs.axelix.master.repository.UserRepository;
+import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.UserService;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
-import com.axelixlabs.axelix.master.utils.auth.ProtectedEndpointTests;
+import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
 
-import static com.axelixlabs.axelix.common.auth.core.DefaultAuthority.USERS_MANAGEMENT;
 import static com.axelixlabs.axelix.common.auth.core.DefaultRole.SUPER_ADMIN;
-import static com.axelixlabs.axelix.common.domain.http.HttpMethod.DELETE;
-import static com.axelixlabs.axelix.common.domain.http.HttpMethod.POST;
-import static com.axelixlabs.axelix.common.domain.http.HttpMethod.PUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -56,7 +54,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = "axelix.master.auth.options.local.enabled=true")
-public class UserManagementApiTest {
+public class UserManagementApiTest extends AbstractProtectedEndpointTest {
 
     private static final String USERS_CREATE_PATH = "/api/external/users-management/create";
     private static final String USERS_DELETE_PATH = "/api/external/users-management/delete";
@@ -640,17 +638,14 @@ public class UserManagementApiTest {
         assertThat(response.getBody()).contains("USER_NOT_FOUND");
     }
 
-    @ProtectedEndpointTests(method = POST, path = USERS_CREATE_PATH, requiredAuthority = USERS_MANAGEMENT)
-    void negativeAuthTestsOnCreateUser() {}
-
-    @ProtectedEndpointTests(method = DELETE, path = USERS_DELETE_PATH, requiredAuthority = USERS_MANAGEMENT)
-    void negativeAuthTestsOnDeleteUser() {}
-
-    @ProtectedEndpointTests(method = PUT, path = USERS_UPDATE_PATH, requiredAuthority = USERS_MANAGEMENT)
-    void negativeAuthTestsOnUpdateUser() {}
-
-    @ProtectedEndpointTests(method = PUT, path = USERS_STATUS_PATH, requiredAuthority = USERS_MANAGEMENT)
-    void negativeAuthTestsOnUpdateUserStatus() {}
+    @Override
+    protected Set<TestableMasterWebEndpoint> endpointsUnderTest() {
+        return Set.of(
+                new TestableMasterWebEndpoint(MasterWebEndpoints.USER_CREATE, USERS_CREATE_PATH),
+                new TestableMasterWebEndpoint(MasterWebEndpoints.USER_DELETE, USERS_DELETE_PATH),
+                new TestableMasterWebEndpoint(MasterWebEndpoints.USER_UPDATE, USERS_UPDATE_PATH),
+                new TestableMasterWebEndpoint(MasterWebEndpoints.USER_CHANGE_STATUS, USERS_STATUS_PATH));
+    }
 
     private HttpEntity<String> defaultEntity(String body) {
         HttpHeaders headers = new HttpHeaders();

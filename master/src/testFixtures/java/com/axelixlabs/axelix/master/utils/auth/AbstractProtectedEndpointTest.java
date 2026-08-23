@@ -17,6 +17,7 @@
  */
 package com.axelixlabs.axelix.master.utils.auth;
 
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -91,10 +92,13 @@ public abstract class AbstractProtectedEndpointTest {
 
     @Test
     void shouldRejectRequestWithInsufficientAuthority() {
-        for (TestableMasterWebEndpoint endpointUnderTest : endpointsUnderTest()) {
+        List<TestableMasterWebEndpoint> authorityProtected = endpointsUnderTest().stream()
+                .filter(it -> it.target().authority() != null)
+                .toList();
 
-            assumeTrue(
-                    endpointUnderTest.target().authority() != null, "Endpoint requires no authority; nothing to deny");
+        assumeTrue(!authorityProtected.isEmpty(), "No endpoint requires an authority; nothing to deny");
+
+        for (TestableMasterWebEndpoint endpointUnderTest : authorityProtected) {
 
             ResponseEntity<Void> response = restTemplate
                     .withRole(roleWithoutRequiredAuthority())

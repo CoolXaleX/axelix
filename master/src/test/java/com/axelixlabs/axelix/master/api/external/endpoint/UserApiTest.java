@@ -45,13 +45,12 @@ import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.JwtPropert
 import com.axelixlabs.axelix.master.domain.UserEntity;
 import com.axelixlabs.axelix.master.domain.UserStatus;
 import com.axelixlabs.axelix.master.repository.UserRepository;
+import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.UserService;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
-import com.axelixlabs.axelix.master.utils.auth.ProtectedEndpointTests;
+import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
 
-import static com.axelixlabs.axelix.common.auth.core.DefaultAuthority.USERS_VIEW;
 import static com.axelixlabs.axelix.common.auth.core.DefaultRole.SUPER_ADMIN;
-import static com.axelixlabs.axelix.common.domain.http.HttpMethod.GET;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static net.javacrumbs.jsonunit.core.Option.IGNORING_ARRAY_ORDER;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -72,7 +71,7 @@ import static org.assertj.core.api.Assertions.assertThat;
             "axelix.master.auth.options.super-admin.credentials.username=admin",
             "axelix.master.auth.options.super-admin.credentials.password=admin",
         })
-class UserApiTest {
+class UserApiTest extends AbstractProtectedEndpointTest {
 
     private static final String USERS_FEED_PATH = "/api/external/users/feed";
     private static final String USER_BY_ID_PATH = "/api/external/users/feed/{userId}";
@@ -382,8 +381,10 @@ class UserApiTest {
         assertThatJson(response.getBody()).isEqualTo("[]");
     }
 
-    @ProtectedEndpointTests(method = GET, path = USERS_FEED_PATH, requiredAuthority = USERS_VIEW)
-    void negativeAuthTestsOnGetUsersFeed() {}
+    @Override
+    protected Set<TestableMasterWebEndpoint> endpointsUnderTest() {
+        return Set.of(new TestableMasterWebEndpoint(MasterWebEndpoints.USERS_READ, USERS_FEED_PATH));
+    }
 
     private HttpEntity<String> defaultEntity(LoginRequest loginRequest) {
         String requestBody = objectMapper.writeValueAsString(loginRequest);

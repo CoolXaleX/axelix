@@ -19,6 +19,7 @@ package com.axelixlabs.axelix.master.api.external.endpoint;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -38,17 +39,16 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-import com.axelixlabs.axelix.common.domain.http.HttpMethod;
 import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
-import com.axelixlabs.axelix.master.utils.auth.ProtectedEndpointTests;
+import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
 
 import static com.axelixlabs.axelix.master.utils.ContentType.ACTUATOR_RESPONSE_CONTENT_TYPE;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
@@ -62,8 +62,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Nikita Kirillov
  * @author Sergey Cherkasov
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class ThreadDumpApiTest {
+class ThreadDumpApiTest extends AbstractProtectedEndpointTest {
 
     private static final String EXPECTED_THREAD_DUMP_JSON =
             // language=json
@@ -384,23 +383,21 @@ class ThreadDumpApiTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
-    @ProtectedEndpointTests(
-            method = HttpMethod.GET,
-            path = "/api/external/thread-dump/00000000-0000-0000-0000-000000000001")
-    void negativeAuthTestsOnThreadDump() {}
-
-    @ProtectedEndpointTests(
-            method = HttpMethod.POST,
-            path = "/api/external/thread-dump/00000000-0000-0000-0000-000000000001/thread-contention-monitoring/enable")
-    void negativeAuthTestsOnEnableContentionMonitoring() {}
-
-    @ProtectedEndpointTests(
-            method = HttpMethod.POST,
-            path =
-                    "/api/external/thread-dump/00000000-0000-0000-0000-000000000001/thread-contention-monitoring/disable")
-    void negativeAuthTestsOnDisableContentionMonitoring() {}
-
     private static Stream<Arguments> managementCachesContentionMonitoring() {
         return Stream.of(Arguments.of("/enable"), Arguments.of("/disable"));
+    }
+
+    @Override
+    protected Set<TestableMasterWebEndpoint> endpointsUnderTest() {
+        return Set.of(
+                new TestableMasterWebEndpoint(
+                        MasterWebEndpoints.THREAD_DUMP_READ,
+                        "/api/external/thread-dump/00000000-0000-0000-0000-000000000001"),
+                new TestableMasterWebEndpoint(
+                        MasterWebEndpoints.THREAD_DUMP_ENABLE_CONTENTION,
+                        "/api/external/thread-dump/00000000-0000-0000-0000-000000000001/thread-contention-monitoring/enable"),
+                new TestableMasterWebEndpoint(
+                        MasterWebEndpoints.THREAD_DUMP_DISABLE_CONTENTION,
+                        "/api/external/thread-dump/00000000-0000-0000-0000-000000000001/thread-contention-monitoring/disable"));
     }
 }

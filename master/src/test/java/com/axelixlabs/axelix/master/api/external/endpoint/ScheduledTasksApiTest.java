@@ -18,6 +18,7 @@
 package com.axelixlabs.axelix.master.api.external.endpoint;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -37,7 +38,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,16 +46,15 @@ import com.axelixlabs.axelix.common.api.scheduledtask.ScheduledTaskCronExpressio
 import com.axelixlabs.axelix.common.api.scheduledtask.ScheduledTaskExecuteRequest;
 import com.axelixlabs.axelix.common.api.scheduledtask.ScheduledTaskIntervalModifyRequest;
 import com.axelixlabs.axelix.common.api.scheduledtask.ScheduledTaskToggleRequest;
-import com.axelixlabs.axelix.common.auth.core.DefaultAuthority;
-import com.axelixlabs.axelix.common.domain.http.HttpMethod;
 import com.axelixlabs.axelix.master.api.error.handle.ApiErrorCodes;
 import com.axelixlabs.axelix.master.api.external.request.ScheduledTaskCronExpressionValidationRequest;
 import com.axelixlabs.axelix.master.api.external.response.ScheduledTaskCronExpressionValidationResponse;
 import com.axelixlabs.axelix.master.domain.InstanceId;
+import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
-import com.axelixlabs.axelix.master.utils.auth.ProtectedEndpointTests;
+import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
 
 import static com.axelixlabs.axelix.master.utils.ContentType.ACTUATOR_RESPONSE_CONTENT_TYPE;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
@@ -68,8 +67,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Sergey Cherkasov
  * @since 28.08.2025
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ScheduledTasksApiTest {
+public class ScheduledTasksApiTest extends AbstractProtectedEndpointTest {
 
     // language=json
     private static final String EXPECTED_MASTER_RESPONSE = """
@@ -676,23 +674,6 @@ public class ScheduledTasksApiTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
-    @ProtectedEndpointTests(
-            method = HttpMethod.GET,
-            path = "/api/external/scheduled-tasks/00000000-0000-0000-0000-000000000001")
-    void negativeAuthTestsOnGetAllScheduledTasks() {}
-
-    @ProtectedEndpointTests(
-            method = HttpMethod.POST,
-            path = "/api/external/scheduled-tasks/00000000-0000-0000-0000-000000000001/enable",
-            requiredAuthority = DefaultAuthority.SCHEDULED_TASKS_MODIFY)
-    void negativeAuthTestsOnEnableSingleScheduledTask() {}
-
-    @ProtectedEndpointTests(
-            method = HttpMethod.POST,
-            path = "/api/external/scheduled-tasks/00000000-0000-0000-0000-000000000001/disable",
-            requiredAuthority = DefaultAuthority.SCHEDULED_TASKS_MODIFY)
-    void negativeAuthTestsOnDisableSingleScheduledTask() {}
-
     private static Stream<Arguments> managementScheduledTask() {
         return Stream.of(Arguments.of("/enable"), Arguments.of("/disable"));
     }
@@ -705,5 +686,19 @@ public class ScheduledTasksApiTest {
                 Arguments.of("*/5 * * * * * *"),
                 Arguments.of("60 * * * * *"),
                 Arguments.of("* 60 * * * *"));
+    }
+
+    @Override
+    protected Set<TestableMasterWebEndpoint> endpointsUnderTest() {
+        return Set.of(
+                new TestableMasterWebEndpoint(
+                        MasterWebEndpoints.SCHEDULED_TASKS_READ,
+                        "/api/external/scheduled-tasks/00000000-0000-0000-0000-000000000001"),
+                new TestableMasterWebEndpoint(
+                        MasterWebEndpoints.SCHEDULED_TASK_ENABLE,
+                        "/api/external/scheduled-tasks/00000000-0000-0000-0000-000000000001/enable"),
+                new TestableMasterWebEndpoint(
+                        MasterWebEndpoints.SCHEDULED_TASK_DISABLE,
+                        "/api/external/scheduled-tasks/00000000-0000-0000-0000-000000000001/disable"));
     }
 }

@@ -20,14 +20,11 @@ package com.axelixlabs.axelix.master.mcp.auth;
 import com.axelixlabs.axelix.common.auth.core.User;
 import com.axelixlabs.axelix.common.auth.exception.AuthorizationException;
 import com.axelixlabs.axelix.common.auth.exception.JwtProcessingException;
-import com.axelixlabs.axelix.common.auth.service.WebIdentityAccessManager;
 
 /**
  * The main entrypoint for evaluating the possibility of processing requests came from the AI Agent (both Authentication
  * and Authorization). So essentially this service is the entrypoint for IAM checks for all requests made by AI Agents to
  * Axelix Master MCP.
- *
- * @see WebIdentityAccessManager Similar abstraction but for handling web requests.
  *
  * @author Mikhail Polivakha
  */

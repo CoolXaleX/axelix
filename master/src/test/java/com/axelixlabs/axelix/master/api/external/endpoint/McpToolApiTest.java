@@ -17,15 +17,17 @@
  */
 package com.axelixlabs.axelix.master.api.external.endpoint;
 
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 
-import com.axelixlabs.axelix.common.domain.http.HttpMethod;
+import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
-import com.axelixlabs.axelix.master.utils.auth.ProtectedEndpointTests;
+import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
 
 import static com.axelixlabs.axelix.master.autoconfiguration.mcp.McpAutoConfiguration.MCP_CONFIGURATION_PROPERTIES_PREFIX;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
@@ -41,7 +43,7 @@ import static net.javacrumbs.jsonunit.core.Option.IGNORING_EXTRA_ARRAY_ITEMS;
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {MCP_CONFIGURATION_PROPERTIES_PREFIX + ".enabled=true"})
-public class McpToolApiTest {
+public class McpToolApiTest extends AbstractProtectedEndpointTest {
 
     @Autowired
     private TestRestTemplateBuilder restTemplate;
@@ -243,6 +245,8 @@ public class McpToolApiTest {
                 .isEqualTo(EXPECTED_MCP_TOOLS_FEED);
     }
 
-    @ProtectedEndpointTests(method = HttpMethod.GET, path = "/api/external/mcp/tools-feed")
-    void negativeAuthTests() {}
+    @Override
+    protected Set<TestableMasterWebEndpoint> endpointsUnderTest() {
+        return Set.of(new TestableMasterWebEndpoint(MasterWebEndpoints.MCP_TOOLS_READ, "/api/external/mcp/tools-feed"));
+    }
 }
