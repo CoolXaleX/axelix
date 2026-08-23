@@ -433,6 +433,8 @@ class StateExportApiTest extends AbstractProtectedEndpointTest {
         assertThat(zipData).isNotEmpty();
 
         assertZipArchiveContent(zipData);
+
+        assertSuccessfulCallback(MasterWebEndpoints.STATE_EXPORT);
     }
 
     private static void assertZipArchiveContent(byte[] zipData) throws IOException {

@@ -139,6 +139,7 @@ public class WallboardApiTest extends AbstractProtectedEndpointTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
             assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(expectedJson);
+            assertSuccessfulCallback(MasterWebEndpoints.INSTANCES_READ);
         }
 
         @Test
@@ -161,6 +162,7 @@ public class WallboardApiTest extends AbstractProtectedEndpointTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
             assertThatJson(response.getBody()).isEqualTo(expectedJson);
+            assertSuccessfulCallback(MasterWebEndpoints.INSTANCES_READ);
         }
     }
 

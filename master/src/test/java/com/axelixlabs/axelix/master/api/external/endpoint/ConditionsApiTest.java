@@ -232,6 +232,7 @@ class ConditionsApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_CONDITIONS_JSON);
+        assertSuccessfulCallback(MasterWebEndpoints.CONDITIONS_READ);
     }
 
     @Test

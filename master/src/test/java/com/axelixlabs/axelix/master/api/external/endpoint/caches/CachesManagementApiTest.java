@@ -133,6 +133,8 @@ class CachesManagementApiTest extends AbstractProtectedEndpointTest {
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertSuccessfulCallback(
+                cacheStatus.equals("enable") ? MasterWebEndpoints.CACHE_ENABLE : MasterWebEndpoints.CACHE_DISABLE);
     }
 
     @ParameterizedTest
@@ -149,6 +151,10 @@ class CachesManagementApiTest extends AbstractProtectedEndpointTest {
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertSuccessfulCallback(
+                cacheStatus.equals("enable")
+                        ? MasterWebEndpoints.CACHE_MANAGER_ENABLE
+                        : MasterWebEndpoints.CACHE_MANAGER_DISABLE);
     }
 
     @ParameterizedTest

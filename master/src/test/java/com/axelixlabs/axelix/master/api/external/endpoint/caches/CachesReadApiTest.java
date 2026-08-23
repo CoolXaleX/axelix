@@ -230,6 +230,7 @@ public class CachesReadApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_ALL_CACHES_JSON);
+        assertSuccessfulCallback(MasterWebEndpoints.CACHES_READ);
     }
 
     @Test
@@ -259,6 +260,7 @@ public class CachesReadApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(expectedResponseFromMaster);
+        assertSuccessfulCallback(MasterWebEndpoints.CACHE_READ_ONE);
     }
 
     @Test
@@ -279,6 +281,7 @@ public class CachesReadApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(expectedEmptyCaches);
+        assertSuccessfulCallback(MasterWebEndpoints.CACHES_READ);
     }
 
     @Test

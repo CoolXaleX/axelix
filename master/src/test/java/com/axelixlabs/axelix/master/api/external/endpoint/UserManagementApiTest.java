@@ -120,6 +120,7 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
         assertThat(saved.lastLoginAt()).isNull();
         assertThat(saved.password()).isNotEqualTo("plainPassword"); // Hash password
         assertThat(passwordEncoder.matches("plainPassword", saved.password())).isTrue();
+        assertSuccessfulCallback(MasterWebEndpoints.USER_CREATE);
     }
 
     @Test
@@ -149,6 +150,7 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
         UserEntity saved = userRepository.findByUsername("newUser").orElseThrow();
         assertThat(saved.jobTitle()).isNull();
         assertThat(saved.organizationalUnit()).isNull();
+        assertSuccessfulCallback(MasterWebEndpoints.USER_CREATE);
     }
 
     @Test
@@ -308,6 +310,7 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(userRepository.findById(user.id())).isEmpty();
+        assertSuccessfulCallback(MasterWebEndpoints.USER_DELETE);
     }
 
     @Test
@@ -347,6 +350,7 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
         assertThat(updated.organizationalUnit()).isEqualTo("Engineering");
         assertThat(userService.findRoleNamesByUserId(user.id())).containsExactlyInAnyOrder("ADMIN", "EDITOR");
         assertThat(passwordEncoder.matches("newPass", updated.password())).isTrue();
+        assertSuccessfulCallback(MasterWebEndpoints.USER_UPDATE);
     }
 
     @Test
@@ -380,6 +384,7 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
         assertThat(updated.email()).isEqualTo(null);
         assertThat(userService.findRoleNamesByUserId(user.id())).containsExactly("VIEWER");
         assertThat(passwordEncoder.matches(oldPassword, updated.password())).isTrue();
+        assertSuccessfulCallback(MasterWebEndpoints.USER_UPDATE);
     }
 
     @Test
@@ -574,6 +579,7 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
         UserEntity updated = userRepository.findById(user.id()).orElseThrow();
         assertThat(updated.status()).isEqualTo(UserStatus.SUSPENDED);
         assertThat(updated).usingRecursiveComparison().ignoringFields("status").isEqualTo(user);
+        assertSuccessfulCallback(MasterWebEndpoints.USER_CHANGE_STATUS);
     }
 
     @Test
@@ -595,6 +601,7 @@ public class UserManagementApiTest extends AbstractProtectedEndpointTest {
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(userRepository.findById(user.id()).orElseThrow().status()).isEqualTo(UserStatus.ACTIVE);
+        assertSuccessfulCallback(MasterWebEndpoints.USER_CHANGE_STATUS);
     }
 
     @Test

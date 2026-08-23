@@ -331,6 +331,7 @@ public class ScheduledTasksApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_MASTER_RESPONSE);
+        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASKS_READ);
     }
 
     @ParameterizedTest
@@ -350,6 +351,10 @@ public class ScheduledTasksApiTest extends AbstractProtectedEndpointTest {
 
         // then.
         assertThat(body.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertSuccessfulCallback(
+                scheduledTaskStatus.equals("/enable")
+                        ? MasterWebEndpoints.SCHEDULED_TASK_ENABLE
+                        : MasterWebEndpoints.SCHEDULED_TASK_DISABLE);
     }
 
     @Test
@@ -369,6 +374,7 @@ public class ScheduledTasksApiTest extends AbstractProtectedEndpointTest {
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASK_MODIFY_CRON);
     }
 
     @Test
@@ -388,6 +394,7 @@ public class ScheduledTasksApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().valid()).isTrue();
+        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASK_VALIDATE_CRON);
     }
 
     @ParameterizedTest
@@ -408,6 +415,7 @@ public class ScheduledTasksApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().valid()).isFalse();
+        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASK_VALIDATE_CRON);
     }
 
     @ParameterizedTest
@@ -458,6 +466,7 @@ public class ScheduledTasksApiTest extends AbstractProtectedEndpointTest {
 
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASK_MODIFY_INTERVAL);
     }
 
     @Test
@@ -477,6 +486,7 @@ public class ScheduledTasksApiTest extends AbstractProtectedEndpointTest {
 
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertSuccessfulCallback(MasterWebEndpoints.SCHEDULED_TASK_EXECUTE);
     }
 
     @Test

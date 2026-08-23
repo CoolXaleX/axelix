@@ -290,6 +290,7 @@ public class DetailsApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_DETAILS_JSON);
+        assertSuccessfulCallback(MasterWebEndpoints.DETAILS_READ);
     }
 
     @Test
@@ -303,6 +304,7 @@ public class DetailsApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_DETAILS_JSON_WITHOUT_PLUGIN);
+        assertSuccessfulCallback(MasterWebEndpoints.DETAILS_READ);
     }
 
     @Test

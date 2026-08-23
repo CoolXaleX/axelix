@@ -148,6 +148,7 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
 
         // then.
         assertThat(body.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertSuccessfulCallback(MasterWebEndpoints.LOGGER_GROUP_CHANGE);
     }
 
     @Test
@@ -166,6 +167,7 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
                 .containsExactlyInAnyOrder(
                         "/" + activeInstanceId + "/axelix-loggers/logger/logger.name/change-level",
                         "/" + siblingInstanceId + "/axelix-loggers/logger/logger.name/change-level");
+        assertSuccessfulCallback(MasterWebEndpoints.LOGGERS_BULK_CHANGE);
     }
 
     @Test
@@ -184,6 +186,7 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
 
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertSuccessfulCallback(MasterWebEndpoints.LOGGER_RESET);
     }
 
     @ParameterizedTest
@@ -315,6 +318,7 @@ public class LoggersApiManagementLoggingLevelTest extends AbstractProtectedEndpo
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         assertThat(invokedPaths)
                 .containsExactly("/" + activeInstanceId + "/axelix-loggers/logger/logger.name/change-level");
+        assertSuccessfulCallback(MasterWebEndpoints.LOGGERS_BULK_CHANGE);
     }
 
     @Test

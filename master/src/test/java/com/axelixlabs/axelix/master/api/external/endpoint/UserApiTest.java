@@ -244,6 +244,7 @@ class UserApiTest extends AbstractProtectedEndpointTest {
                 .anySatisfy(cookieHeader -> assertThat(cookieHeader).contains(cookieProperties.getAuthCookieName()))
                 .anySatisfy(
                         cookieHeader -> assertThat(cookieHeader).contains(cookieProperties.getAuthoritiesCookieName()));
+        assertSuccessfulCallback(MasterWebEndpoints.AUTH_LOGOUT);
     }
 
     @Test
@@ -311,6 +312,7 @@ class UserApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(expectedFeed);
         assertThat(response.getBody()).doesNotContain("password");
+        assertSuccessfulCallback(MasterWebEndpoints.USERS_READ);
     }
 
     @Test
@@ -354,6 +356,7 @@ class UserApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).isEqualTo(expectedUser);
         assertThat(response.getBody()).doesNotContain("password");
+        assertSuccessfulCallback(MasterWebEndpoints.USER_READ_ONE);
     }
 
     @Test
@@ -379,6 +382,7 @@ class UserApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).isEqualTo("[]");
+        assertSuccessfulCallback(MasterWebEndpoints.USERS_READ);
     }
 
     @Override

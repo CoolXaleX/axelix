@@ -223,6 +223,7 @@ public class LoggersApiAllLoggersTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_ALL_LOGGERS_JSON);
+        assertSuccessfulCallback(MasterWebEndpoints.LOGGERS_READ);
     }
 
     @Test

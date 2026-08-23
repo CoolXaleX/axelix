@@ -297,6 +297,7 @@ class ThreadDumpApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_THREAD_DUMP_JSON);
+        assertSuccessfulCallback(MasterWebEndpoints.THREAD_DUMP_READ);
     }
 
     @Test
@@ -341,6 +342,10 @@ class ThreadDumpApiTest extends AbstractProtectedEndpointTest {
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertSuccessfulCallback(
+                contentionMonitoringStatus.equals("/enable")
+                        ? MasterWebEndpoints.THREAD_DUMP_ENABLE_CONTENTION
+                        : MasterWebEndpoints.THREAD_DUMP_DISABLE_CONTENTION);
     }
 
     @ParameterizedTest

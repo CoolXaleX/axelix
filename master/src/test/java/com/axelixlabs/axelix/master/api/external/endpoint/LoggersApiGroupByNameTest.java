@@ -149,6 +149,7 @@ public class LoggersApiGroupByNameTest extends AbstractProtectedEndpointTest {
 
         String body = response.getBody();
         assertThatJson(body).when(IGNORING_ARRAY_ORDER).isEqualTo(expectedJson);
+        assertSuccessfulCallback(MasterWebEndpoints.LOGGER_GROUP_READ);
     }
 
     @Test
@@ -174,6 +175,7 @@ public class LoggersApiGroupByNameTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(expectedJson);
+        assertSuccessfulCallback(MasterWebEndpoints.LOGGER_GROUP_READ);
     }
 
     @Test

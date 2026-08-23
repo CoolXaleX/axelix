@@ -152,6 +152,7 @@ class TransactionMonitoringApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_PERSISTENCE_INSIGHTS_JSON);
+        assertSuccessfulCallback(MasterWebEndpoints.TRANSACTION_MONITORING_READ);
     }
 
     @Test
@@ -169,6 +170,7 @@ class TransactionMonitoringApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).isEqualTo(EXPECTED_EMPTY_PERSISTENCE_INSIGHTS_JSON);
+        assertSuccessfulCallback(MasterWebEndpoints.TRANSACTION_MONITORING_READ);
     }
 
     @Test

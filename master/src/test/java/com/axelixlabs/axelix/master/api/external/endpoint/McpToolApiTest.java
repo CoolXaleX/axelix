@@ -243,6 +243,7 @@ public class McpToolApiTest extends AbstractProtectedEndpointTest {
                 .when(IGNORING_EXTRA_ARRAY_ITEMS)
                 .when(IGNORING_ARRAY_ORDER)
                 .isEqualTo(EXPECTED_MCP_TOOLS_FEED);
+        assertSuccessfulCallback(MasterWebEndpoints.MCP_TOOLS_READ);
     }
 
     @Override

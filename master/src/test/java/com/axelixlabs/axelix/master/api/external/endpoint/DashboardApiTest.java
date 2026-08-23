@@ -221,6 +221,7 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_DASHBOARD_JSON_WITH_INSTANCES);
+        assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ);
     }
 
     @Test
@@ -235,6 +236,7 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
         assertThatJson(response.getBody()).when(IGNORING_ARRAY_ORDER).isEqualTo(EXPECTED_DASHBOARD_JSON_EMPTY);
+        assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ);
     }
 
     @Test
@@ -255,6 +257,7 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
             assertThatJson(response.getBody())
                     .node("healthStatus.statuses.UNKNOWN")
                     .isPresent();
+            assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ);
         } finally {
             registry.deRegister(InstanceId.of(unknownInstanceId));
         }
@@ -280,6 +283,7 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
         assertThatJson(response.getBody())
                 .node("garbageCollectorDistribution.ZGC")
                 .isEqualTo(50.0);
+        assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ_JAVA);
     }
 
     @Test
@@ -306,6 +310,7 @@ public class DashboardApiTest extends AbstractProtectedEndpointTest {
                 .when(IGNORING_ARRAY_ORDER)
                 .node("inMemoryPagination")
                 .isEqualTo("[{\"appName\":\"service-b\",\"size\":1}]");
+        assertSuccessfulCallback(MasterWebEndpoints.DASHBOARD_READ_PERSISTENCE);
     }
 
     @Override

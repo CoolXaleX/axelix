@@ -126,6 +126,7 @@ class HeapDumpApiTest extends AbstractProtectedEndpointTest {
         assertThat(contentDisposition).contains("filename=\"heapdump.hprof\"");
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody()).contains(mockHeapDump);
+        assertSuccessfulCallback(MasterWebEndpoints.HEAP_DUMP_READ);
     }
 
     @Test
