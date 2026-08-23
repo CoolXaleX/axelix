@@ -224,8 +224,8 @@ public class CachesReadApiTest extends AbstractProtectedEndpointTest {
     void shouldReturnJSONAllCachesResponse() {
         // when
         IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
-        ResponseEntity<String> response = viewer
-                .getForEntity("/api/external/caches/{instanceId}", String.class, activeInstanceId);
+        ResponseEntity<String> response =
+                viewer.getForEntity("/api/external/caches/{instanceId}", String.class, activeInstanceId);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -250,12 +250,11 @@ public class CachesReadApiTest extends AbstractProtectedEndpointTest {
 
         // when.
         IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
-        ResponseEntity<String> response = viewer
-                .getForEntity(
-                        "/api/external/caches/{instanceId}/cache/{cacheName}?cacheManager=" + requestedCacheManagerName,
-                        String.class,
-                        activeInstanceId,
-                        requestedCacheName);
+        ResponseEntity<String> response = viewer.getForEntity(
+                "/api/external/caches/{instanceId}/cache/{cacheName}?cacheManager=" + requestedCacheManagerName,
+                String.class,
+                activeInstanceId,
+                requestedCacheName);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -275,8 +274,8 @@ public class CachesReadApiTest extends AbstractProtectedEndpointTest {
 
         // when
         IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
-        ResponseEntity<CachesFeed> response = viewer
-                .getForEntity("/api/external/caches/{instanceId}", CachesFeed.class, activeInstanceIdEmptyCaches);
+        ResponseEntity<CachesFeed> response =
+                viewer.getForEntity("/api/external/caches/{instanceId}", CachesFeed.class, activeInstanceIdEmptyCaches);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

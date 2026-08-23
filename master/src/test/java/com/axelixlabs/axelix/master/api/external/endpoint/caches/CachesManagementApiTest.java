@@ -123,13 +123,7 @@ class CachesManagementApiTest extends AbstractProtectedEndpointTest {
                 "/api/external/caches/{instanceId}/{cacheManagerName}/{cacheName}/" + cacheStatus,
                 null,
                 Void.class,
-                Map.of(
-                        "instanceId",
-                        activeInstanceId,
-                        "cacheManagerName",
-                        "cacheManager",
-                        "cacheName",
-                        "vets"));
+                Map.of("instanceId", activeInstanceId, "cacheManagerName", "cacheManager", "cacheName", "vets"));
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

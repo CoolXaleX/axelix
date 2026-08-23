@@ -138,12 +138,8 @@ public class LoggersApiLoggerByNameTest extends AbstractProtectedEndpointTest {
 
         // when.
         IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
-        ResponseEntity<String> response = viewer
-                .getForEntity(
-                        "/api/external/loggers/{instanceId}/logger/{loggerName}",
-                        String.class,
-                        activeInstanceId,
-                        loggerName);
+        ResponseEntity<String> response = viewer.getForEntity(
+                "/api/external/loggers/{instanceId}/logger/{loggerName}", String.class, activeInstanceId, loggerName);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -166,12 +162,8 @@ public class LoggersApiLoggerByNameTest extends AbstractProtectedEndpointTest {
 
         // when.
         IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
-        ResponseEntity<String> response = viewer
-                .getForEntity(
-                        "/api/external/loggers/{instanceId}/logger/{loggerName}",
-                        String.class,
-                        activeInstanceId,
-                        loggerName);
+        ResponseEntity<String> response = viewer.getForEntity(
+                "/api/external/loggers/{instanceId}/logger/{loggerName}", String.class, activeInstanceId, loggerName);
 
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

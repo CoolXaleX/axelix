@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
 
-import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -42,6 +41,7 @@ import org.springframework.http.ResponseEntity;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
@@ -227,8 +227,8 @@ class ConditionsApiTest extends AbstractProtectedEndpointTest {
         // when.
         IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
 
-        ResponseEntity<String> response = viewer
-                .getForEntity("/api/external/conditions/feed/{instanceId}", String.class, activeInstanceId);
+        ResponseEntity<String> response =
+                viewer.getForEntity("/api/external/conditions/feed/{instanceId}", String.class, activeInstanceId);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

@@ -474,10 +474,7 @@ public class ScheduledTasksApiTest extends AbstractProtectedEndpointTest {
         // when.
         var editor = restTemplate.asEditor();
         ResponseEntity<Void> response = editor.postForEntity(
-                "/api/external/scheduled-tasks/{instanceId}/execute",
-                requestBody,
-                Void.class,
-                activeInstanceId);
+                "/api/external/scheduled-tasks/{instanceId}/execute", requestBody, Void.class, activeInstanceId);
 
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);

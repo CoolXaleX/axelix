@@ -41,8 +41,8 @@ import org.springframework.http.ResponseEntity;
 import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
-import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
+import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
 
@@ -137,12 +137,8 @@ public class LoggersApiGroupByNameTest extends AbstractProtectedEndpointTest {
 
         // when.
         IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
-        ResponseEntity<String> response = viewer
-                .getForEntity(
-                        "/api/external/loggers/{instanceId}/group/{groupName}",
-                        String.class,
-                        activeInstanceId,
-                        groupName);
+        ResponseEntity<String> response = viewer.getForEntity(
+                "/api/external/loggers/{instanceId}/group/{groupName}", String.class, activeInstanceId, groupName);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -165,12 +161,8 @@ public class LoggersApiGroupByNameTest extends AbstractProtectedEndpointTest {
 
         // when.
         IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
-        ResponseEntity<String> response = viewer
-                .getForEntity(
-                        "/api/external/loggers/{instanceId}/group/{groupName}",
-                        String.class,
-                        activeInstanceId,
-                        groupName);
+        ResponseEntity<String> response = viewer.getForEntity(
+                "/api/external/loggers/{instanceId}/group/{groupName}", String.class, activeInstanceId, groupName);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

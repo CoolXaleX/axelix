@@ -46,9 +46,9 @@ import com.axelixlabs.axelix.master.domain.InstanceId;
 import com.axelixlabs.axelix.master.service.auth.MasterWebEndpoints;
 import com.axelixlabs.axelix.master.service.state.DatabaseHistoricalApplicationSnapshotService;
 import com.axelixlabs.axelix.master.service.state.InstanceRegistry;
+import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestInstanceFactory;
 import com.axelixlabs.axelix.master.utils.TestMetadataFactory;
-import com.axelixlabs.axelix.master.utils.IdentityAwareTestRestTemplate;
 import com.axelixlabs.axelix.master.utils.TestRestTemplateBuilder;
 import com.axelixlabs.axelix.master.utils.auth.AbstractProtectedEndpointTest;
 
@@ -284,8 +284,8 @@ public class DetailsApiTest extends AbstractProtectedEndpointTest {
     void shouldReturnJSONDetailsResponse() {
         // when.
         IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
-        ResponseEntity<String> response = viewer
-                .getForEntity("/api/external/details/{instanceId}", String.class, activeInstanceId);
+        ResponseEntity<String> response =
+                viewer.getForEntity("/api/external/details/{instanceId}", String.class, activeInstanceId);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -298,8 +298,8 @@ public class DetailsApiTest extends AbstractProtectedEndpointTest {
     void shouldReturnJSONDetailsResponseWithoutPlugin() {
         // when.
         IdentityAwareTestRestTemplate viewer = restTemplate.asViewer();
-        ResponseEntity<String> response = viewer
-                .getForEntity("/api/external/details/{instanceId}", String.class, instanceWithoutPluginId);
+        ResponseEntity<String> response =
+                viewer.getForEntity("/api/external/details/{instanceId}", String.class, instanceWithoutPluginId);
 
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
