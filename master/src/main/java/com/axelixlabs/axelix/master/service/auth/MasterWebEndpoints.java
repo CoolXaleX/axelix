@@ -207,9 +207,13 @@ public final class MasterWebEndpoints {
     public static final MasterWebEndpoint DASHBOARD_READ_PERSISTENCE =
             register("dashboard:read-persistence", HttpMethod.GET, ApiPaths.DashboardApi.PERSISTENCE, null);
 
-    // MCP tools feed
+    // MCP
     public static final MasterWebEndpoint MCP_TOOLS_READ =
             register("mcp-tools:read", HttpMethod.GET, ApiPaths.McpToolApi.TOOLS_LIST, null);
+
+    // MCP OAUTH2
+    public static final MasterWebEndpoint MCP_OIDC_METADATA =
+            register("mcp-tools:oidc:metadata", HttpMethod.GET, ApiPaths.McpOAuth2Api.PROTECTED_RESOURCE_METADATA, null);
 
     // Users
     public static final MasterWebEndpoint USERS_READ =
@@ -220,6 +224,10 @@ public final class MasterWebEndpoints {
             register("auth:login", HttpMethod.POST, ApiPaths.UsersApi.LOGIN, null);
     public static final MasterWebEndpoint AUTH_LOGOUT =
             register("auth:logout", HttpMethod.POST, ApiPaths.UsersApi.LOGOUT, null);
+
+    // Oidc/Oauth
+    public static final MasterWebEndpoint OIDC_AUTH_COMPLETE =
+        register("oidc:auth:complete", HttpMethod.GET, ApiPaths.OAuth2Api.CALLBACK, null);
 
     // User management
     public static final MasterWebEndpoint USER_CREATE = register(
