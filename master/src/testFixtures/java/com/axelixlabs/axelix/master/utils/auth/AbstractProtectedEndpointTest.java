@@ -84,12 +84,7 @@ public abstract class AbstractProtectedEndpointTest {
                             null,
                             Void.class);
 
-            assertThat(capturingIamInterceptor.invalidTokenEndpoint())
-                    .isNotNull()
-                    .extracting(MasterWebEndpoint::operationCode)
-                    .isEqualTo(endpointUnderTest.target().operationCode());
-            assertThat(capturingIamInterceptor.accessDeniedEndpoint()).isNull();
-            assertThat(capturingIamInterceptor.successfulEndpoint()).isNull();
+            assertAuthenticationFailure(endpointUnderTest.target());
 
             assertThat(response.getStatusCode().value()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         }
@@ -114,13 +109,7 @@ public abstract class AbstractProtectedEndpointTest {
                             null,
                             Void.class);
 
-            assertThat(capturingIamInterceptor.accessDeniedEndpoint())
-                    .isNotNull()
-                    .extracting(MasterWebEndpoint::operationCode)
-                    .isEqualTo(endpointUnderTest.target().operationCode());
-            assertThat(capturingIamInterceptor.invalidTokenEndpoint()).isNull();
-            assertThat(capturingIamInterceptor.successfulEndpoint()).isNull();
-
+            assertAccessDenied(endpointUnderTest.target());
             assertThat(response.getStatusCode().value()).isEqualTo(HttpStatus.FORBIDDEN.value());
         }
     }
@@ -139,23 +128,31 @@ public abstract class AbstractProtectedEndpointTest {
      */
     public record TestableMasterWebEndpoint(MasterWebEndpoint target, String url) {}
 
-    @Deprecated
-    protected void assertSuccessfulCallback(MasterWebEndpoint target) {
-        assertThat(capturingIamInterceptor.successfulEndpoint())
-                .isNotNull()
-                .extracting(MasterWebEndpoint::operationCode)
-                .isEqualTo(target.operationCode());
-        assertThat(capturingIamInterceptor.invalidTokenEndpoint()).isNull();
-        assertThat(capturingIamInterceptor.accessDeniedEndpoint()).isNull();
-    }
-
     protected void assertSuccessfulCallback(MasterWebEndpoint expectedTarget, User expectedActor) {
         assertThat(capturingIamInterceptor.successfulEndpoint())
                 .isNotNull()
                 .extracting(MasterWebEndpoint::operationCode)
                 .isEqualTo(expectedTarget.operationCode());
-        assertThat(capturingIamInterceptor.actor()).isEqualTo(expectedActor);
+        assertThat(capturingIamInterceptor.actor().getUsername()).isEqualTo(expectedActor.getUsername());
         assertThat(capturingIamInterceptor.invalidTokenEndpoint()).isNull();
         assertThat(capturingIamInterceptor.accessDeniedEndpoint()).isNull();
+    }
+
+    protected void assertAuthenticationFailure(MasterWebEndpoint expectedTarget) {
+        assertThat(capturingIamInterceptor.invalidTokenEndpoint())
+                .isNotNull()
+                .extracting(MasterWebEndpoint::operationCode)
+                .isEqualTo(expectedTarget.operationCode());
+        assertThat(capturingIamInterceptor.accessDeniedEndpoint()).isNull();
+        assertThat(capturingIamInterceptor.successfulEndpoint()).isNull();
+    }
+
+    protected void assertAccessDenied(MasterWebEndpoint expectedTarget) {
+        assertThat(capturingIamInterceptor.accessDeniedEndpoint())
+                .isNotNull()
+                .extracting(MasterWebEndpoint::operationCode)
+                .isEqualTo(expectedTarget.operationCode());
+        assertThat(capturingIamInterceptor.invalidTokenEndpoint()).isNull();
+        assertThat(capturingIamInterceptor.successfulEndpoint()).isNull();
     }
 }

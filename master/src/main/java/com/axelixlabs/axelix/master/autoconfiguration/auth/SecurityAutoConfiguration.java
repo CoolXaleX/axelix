@@ -53,6 +53,7 @@ import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.OAuth2Prop
 import com.axelixlabs.axelix.master.autoconfiguration.auth.properties.SuperAdminConfigurationProperties;
 import com.axelixlabs.axelix.master.autoconfiguration.mcp.ConditionalOnMcpServerEnabled;
 import com.axelixlabs.axelix.master.filter.auth.ExternalApiCookieAuthorizationFilter;
+import com.axelixlabs.axelix.master.filter.auth.ExternalAuthenticationApiFilter;
 import com.axelixlabs.axelix.master.filter.auth.requestcontext.MasterRequestContextInitFilter;
 import com.axelixlabs.axelix.master.mcp.auth.handler.BasicMcpAuthenticationHandler;
 import com.axelixlabs.axelix.master.mcp.auth.handler.BearerMcpAuthenticationHandler;
@@ -130,6 +131,13 @@ public class SecurityAutoConfiguration {
             ObjectProvider<McpServerStreamableHttpProperties> mcpProperties) {
 
         return new MasterRequestContextInitFilter(masterWebEndpointResolver, mcpProperties);
+    }
+
+    @Bean
+    public ExternalAuthenticationApiFilter externalAuthenticationApiFilter(
+            JwtDecoderService jwtDecoderService, ObjectProvider<OnSuccessfulResult> onSuccessfulResultInterceptors) {
+        return new ExternalAuthenticationApiFilter(
+                jwtDecoderService, onSuccessfulResultInterceptors.stream().toList());
     }
 
     /**

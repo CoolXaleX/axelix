@@ -36,6 +36,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
+import com.axelixlabs.axelix.common.auth.core.DefaultUser;
 import com.axelixlabs.axelix.common.auth.core.PasswordlessUser;
 import com.axelixlabs.axelix.common.auth.service.JwtEncoderService;
 import com.axelixlabs.axelix.common.testfixtures.TestRoles;
@@ -124,7 +125,7 @@ class UserApiTest extends AbstractProtectedEndpointTest {
                 .contains(String.valueOf(jwtProperties.lifespan().getSeconds()));
         assertThat(cookieHeader).contains("HttpOnly");
         assertThat(cookieHeader).contains("SameSite=Strict");
-        assertSuccessfulCallback(MasterWebEndpoints.LOCAL_LOGIN);
+        assertSuccessfulCallback(MasterWebEndpoints.LOCAL_LOGIN, new DefaultUser("admin", "admin", Set.of()));
     }
 
     @Test
@@ -140,14 +141,18 @@ class UserApiTest extends AbstractProtectedEndpointTest {
 
         String cookieHeader = response.getHeaders().getFirst(HttpHeaders.SET_COOKIE);
         assertThat(cookieHeader).isNull();
+        assertAuthenticationFailure(MasterWebEndpoints.LOCAL_LOGIN);
     }
 
     @Test
     void shouldAuthenticateUserFromDatabase() {
-        userService.createLocal("db-user", null, null, "db-user@example.com", null, null, "db-password", "VIEWER");
-        UserEntity user = userRepository.findByUsername("db-user").orElseThrow();
+        String username = "db-user";
+        String password = "db-password";
 
-        LoginRequest loginRequest = new LoginRequest("db-user", "db-password");
+        userService.createLocal(username, null, null, "db-user@example.com", null, null, password, "VIEWER");
+        UserEntity user = userRepository.findByUsername(username).orElseThrow();
+
+        LoginRequest loginRequest = new LoginRequest(username, password);
 
         // when.
         ResponseEntity<String> response = restTemplate.exchange(
@@ -159,7 +164,7 @@ class UserApiTest extends AbstractProtectedEndpointTest {
 
         UserEntity updated = userRepository.findById(user.id()).orElseThrow();
         assertThat(updated.lastLoginAt()).isNotNull();
-        assertSuccessfulCallback(MasterWebEndpoints.LOCAL_LOGIN);
+        assertSuccessfulCallback(MasterWebEndpoints.LOCAL_LOGIN, new DefaultUser(username, password, Set.of()));
     }
 
     @Test
@@ -176,6 +181,7 @@ class UserApiTest extends AbstractProtectedEndpointTest {
         // then.
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE)).isNullOrEmpty();
+        assertAuthenticationFailure(MasterWebEndpoints.LOCAL_LOGIN);
     }
 
     @Test
@@ -196,16 +202,21 @@ class UserApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE)).isNullOrEmpty();
         assertThat(userRepository.findById(user.id()).orElseThrow().lastLoginAt())
                 .isNull();
+        assertAccessDenied(MasterWebEndpoints.LOCAL_LOGIN);
     }
 
     @Test
     void shouldAuthenticateReactivatedDatabaseUser() {
         // given.
-        userService.createLocal("db-user", null, null, "db-user@example.com", null, null, "db-password", "VIEWER");
-        UserEntity user = userRepository.findByUsername("db-user").orElseThrow();
+        String username = "db-user";
+        String password = "db-password";
+
+        // and.
+        userService.createLocal(username, null, null, "db-user@example.com", null, null, password, "VIEWER");
+        UserEntity user = userRepository.findByUsername(username).orElseThrow();
         userService.updateStatus(user.id(), UserStatus.SUSPENDED);
         userService.updateStatus(user.id(), UserStatus.ACTIVE);
-        LoginRequest loginRequest = new LoginRequest("db-user", "db-password");
+        LoginRequest loginRequest = new LoginRequest(username, password);
 
         // when.
         ResponseEntity<String> response = restTemplate.exchange(
@@ -216,6 +227,7 @@ class UserApiTest extends AbstractProtectedEndpointTest {
         assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE)).hasSize(2);
         assertThat(userRepository.findById(user.id()).orElseThrow().lastLoginAt())
                 .isNotNull();
+        assertSuccessfulCallback(MasterWebEndpoints.LOCAL_LOGIN, new DefaultUser(username, password, Set.of()));
     }
 
     @Test
@@ -260,6 +272,7 @@ class UserApiTest extends AbstractProtectedEndpointTest {
 
         // then.
         assertThat(logoutResponse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertAuthenticationFailure(MasterWebEndpoints.LOGOUT);
     }
 
     @Test
