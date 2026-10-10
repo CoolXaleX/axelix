@@ -55,6 +55,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
  * dependency itself.
  *
  * @author Nikita Kirillov
+ * @author Aleksei Ermakov
  */
 @Mojo(name = "axelix-generate-project-info", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class GenerateProjectInfoMojo extends AbstractMojo {
@@ -125,9 +126,8 @@ public class GenerateProjectInfoMojo extends AbstractMojo {
             return;
         }
 
-        try (Repository repository =
-                new FileRepositoryBuilder().setGitDir(gitDir).build()) {
-            if (!addGitProperties(repository, properties)) {
+        try (Repository repository = openGitRepository(gitDir)) {
+            if (!addGitProperties(repository, properties, gitDir)) {
                 getLog().info("Skipping git info: '" + gitDir + "' has no commits yet");
             }
         } catch (Exception e) {
@@ -135,8 +135,31 @@ public class GenerateProjectInfoMojo extends AbstractMojo {
         }
     }
 
-    private boolean addGitProperties(Repository repository, Properties properties) throws IOException {
-        ObjectId head = repository.resolve("HEAD");
+    // JGit 6.x does not follow a linked worktree's commondir file.
+    private static Repository openGitRepository(File gitDir) throws IOException {
+        File commonDirFile = new File(gitDir, "commondir");
+        File repositoryDir = gitDir;
+        if (commonDirFile.isFile()) {
+            String commonDir = Files.readString(commonDirFile.toPath()).trim();
+            if (commonDir.isEmpty()) {
+                throw new IOException("Empty commondir file at " + commonDirFile);
+            }
+            repositoryDir = gitDir.toPath().resolve(commonDir).normalize().toFile();
+        }
+        return new FileRepositoryBuilder().setGitDir(repositoryDir).build();
+    }
+
+    private boolean addGitProperties(Repository repository, Properties properties, File gitDir) throws IOException {
+        String headRef = "HEAD";
+        String branch = null;
+        if (new File(gitDir, "commondir").isFile()) {
+            // The common repository's HEAD belongs to the main checkout, not this worktree.
+            String worktreeHead =
+                    Files.readString(new File(gitDir, "HEAD").toPath()).trim();
+            headRef = worktreeHead.startsWith("ref: ") ? worktreeHead.substring(5) : worktreeHead;
+            branch = headRef.startsWith("refs/heads/") ? headRef.substring(11) : headRef;
+        }
+        ObjectId head = repository.resolve(headRef);
         if (head == null) {
             return false;
         }
@@ -150,7 +173,7 @@ public class GenerateProjectInfoMojo extends AbstractMojo {
 
             properties.setProperty("git.commit.id", head.getName());
             properties.setProperty("git.commit.id.abbrev", abbreviated.name());
-            properties.setProperty("git.branch", repository.getBranch());
+            properties.setProperty("git.branch", branch != null ? branch : repository.getBranch());
             properties.setProperty("git.commit.user.name", author.getName());
             properties.setProperty("git.commit.user.email", author.getEmailAddress());
             properties.setProperty(
